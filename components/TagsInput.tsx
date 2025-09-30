@@ -14,17 +14,25 @@ interface TagsInputProps {
 export function TagsInput({ value, onChange, placeholder = "Type and press Enter", label }: TagsInputProps) {
   const [inputValue, setInputValue] = useState('')
 
+  const commitPending = () => {
+    const tag = inputValue.trim()
+    if (tag && !value.includes(tag)) {
+      onChange([...value, tag])
+    }
+    setInputValue('')
+  }
+
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault()
-      const newTag = inputValue.trim()
-      if (newTag && !value.includes(newTag)) {
-        onChange([...value, newTag])
-        setInputValue('')
-      }
+      commitPending()
     } else if (e.key === 'Backspace' && !inputValue && value.length > 0) {
       onChange(value.slice(0, -1))
     }
+  }
+
+  const handleBlur = () => {
+    commitPending()
   }
 
   const removeTag = (tagToRemove: string) => {
@@ -56,6 +64,7 @@ export function TagsInput({ value, onChange, placeholder = "Type and press Enter
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
           placeholder={value.length === 0 ? placeholder : ''}
           className="flex-1 outline-none bg-transparent min-w-[120px]"
         />

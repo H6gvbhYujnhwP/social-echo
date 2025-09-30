@@ -142,21 +142,62 @@ export function KeywordSuggestions({
             Based on your business info, here are some relevant keywords:
           </p>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-            {suggestions.map((keyword) => (
-              <label
-                key={keyword}
-                className="flex items-center space-x-2 p-2 rounded border bg-white hover:bg-blue-50 cursor-pointer transition-colors"
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {/* Quick action buttons */}
+            <div className="flex gap-2 mb-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onSelectKeywords(suggestions)
+                  setIsOpen(false)
+                }}
+                className="text-xs"
               >
-                <input
-                  type="checkbox"
-                  checked={selectedSuggestions.includes(keyword)}
-                  onChange={() => toggleSuggestion(keyword)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700 capitalize">{keyword}</span>
-              </label>
-            ))}
+                Add All
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedSuggestions([])}
+                className="text-xs"
+              >
+                Clear
+              </Button>
+            </div>
+            
+            {/* Mobile-friendly suggestion buttons */}
+            <div className="grid grid-cols-1 gap-2">
+              {suggestions.map((keyword) => (
+                <button
+                  key={keyword}
+                  type="button"
+                  className={`w-full text-left px-3 py-3 rounded-md border transition-colors ${
+                    selectedSuggestions.includes(keyword)
+                      ? 'bg-blue-100 border-blue-300 text-blue-800'
+                      : 'bg-white border-gray-200 hover:bg-gray-50 active:bg-gray-100'
+                  }`}
+                  onClick={() => toggleSuggestion(keyword)}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium capitalize">{keyword}</span>
+                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                      selectedSuggestions.includes(keyword)
+                        ? 'bg-blue-600 border-blue-600'
+                        : 'border-gray-300'
+                    }`}>
+                      {selectedSuggestions.includes(keyword) && (
+                        <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
           
           {selectedSuggestions.length > 0 && (

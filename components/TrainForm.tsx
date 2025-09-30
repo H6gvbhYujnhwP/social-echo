@@ -10,13 +10,17 @@ import { TagsInput } from './TagsInput'
 import { KeywordSuggestions } from './KeywordSuggestions'
 import { UserProfile, setProfile } from '@/lib/localstore'
 
-// URL validation helper
+// URL validation helper - more forgiving
+const cleanUrl = (v: string) => v.trim()
 const isValidUrl = (url: string): boolean => {
   try {
-    const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`)
+    const u = cleanUrl(url)
+    if (!u) return true // optional field
+    const withProto = u.startsWith('http') ? u : `https://${u}`
+    const urlObj = new URL(withProto)
     return ['http:', 'https:'].includes(urlObj.protocol)
-  } catch {
-    return false
+  } catch { 
+    return false 
   }
 }
 
@@ -54,7 +58,8 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
     if (!formData.business_name.trim()) {
       newErrors.business_name = 'Business name is required'
     }
-    if (formData.website && !isValidUrl(formData.website)) {
+    const website = formData.website.trim()
+    if (website && !isValidUrl(website)) {
       newErrors.website = 'Please enter a valid website URL'
     }
     if (!formData.industry.trim()) {
@@ -85,12 +90,16 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
     setIsSubmitting(true)
     
     try {
-      setProfile(formData)
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('Error saving profile:', error)
+      setProfile({
+        ...formData,
+        website: cleanUrl(formData.website),
+      })
+    } catch (err) {
+      console.error('save failed', err)
     } finally {
       setIsSubmitting(false)
+      // replace avoids back button returning to form half-saved
+      router.replace('/dashboard')
     }
   }
 
