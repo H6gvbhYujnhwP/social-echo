@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { Calendar, User, CreditCard, ArrowLeft } from 'lucide-react'
 import { TodayPanel } from '@/components/TodayPanel'
 import { ImagePanel } from '@/components/ImagePanel'
 import { FineTunePanel } from '@/components/FineTunePanel'
 import { UserProfile, getProfile } from '@/lib/localstore'
+import Link from 'next/link'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -40,8 +43,12 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full"
+        />
       </div>
     )
   }
@@ -51,18 +58,60 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Today's Pack</h1>
-          <p className="text-gray-600 mt-2">
-            Generate your daily LinkedIn content for {profile.business_name}
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white/10 backdrop-blur-lg border-b border-white/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-2xl font-bold text-white">SOCIAL ECHO</h1>
+              <div className="hidden md:block w-px h-6 bg-white/30"></div>
+              <span className="hidden md:block text-white/80">Content Studio</span>
+            </div>
+            <nav className="flex items-center space-x-6">
+              <Link href="/train" className="flex items-center text-white/80 hover:text-white transition-colors">
+                <User className="h-4 w-4 mr-2" />
+                <span className="hidden sm:block">Train Again</span>
+              </Link>
+              <button className="flex items-center text-white/80 hover:text-white transition-colors">
+                <User className="h-4 w-4 mr-2" />
+                <span className="hidden sm:block">Account</span>
+              </button>
+              <button className="flex items-center text-white/80 hover:text-white transition-colors">
+                <CreditCard className="h-4 w-4 mr-2" />
+                <span className="hidden sm:block">Billing</span>
+              </button>
+            </nav>
+          </div>
         </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-8"
+        >
+          <div className="flex items-center mb-4">
+            <Calendar className="h-8 w-8 text-blue-400 mr-3" />
+            <h1 className="text-4xl font-bold text-white">Today's LinkedIn Pack</h1>
+          </div>
+          <p className="text-xl text-blue-100">
+            Generate your daily LinkedIn content for <span className="font-semibold text-white">{profile.business_name}</span>
+          </p>
+        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Content Generation */}
-          <div className="lg:col-span-2 space-y-8">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="lg:col-span-2 space-y-8"
+          >
             <TodayPanel
               key={regenerateKey}
               profile={profile}
@@ -74,19 +123,29 @@ export default function DashboardPage() {
               profile={profile}
               visualPrompt={visualPrompt}
             />
-          </div>
+          </motion.div>
 
           {/* Right Column - Fine-tune Panel */}
-          <div className="lg:col-span-1">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="lg:col-span-1"
+          >
             {showFineTune && (
-              <div className="mb-4">
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4"
+              >
                 <button
                   onClick={() => setShowFineTune(false)}
-                  className="text-gray-500 hover:text-gray-700 text-sm"
+                  className="flex items-center text-white/80 hover:text-white text-sm transition-colors"
                 >
-                  ← Back to content
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to content
                 </button>
-              </div>
+              </motion.div>
             )}
             
             <FineTunePanel
@@ -94,9 +153,9 @@ export default function DashboardPage() {
               onProfileUpdate={handleProfileUpdate}
               onRegenerate={handleRegenerate}
             />
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

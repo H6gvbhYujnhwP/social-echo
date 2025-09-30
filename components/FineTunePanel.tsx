@@ -1,9 +1,10 @@
 'use client'
 
 import React, { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Edit3, RefreshCw, Sparkles } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Textarea } from './ui/Textarea'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/Card'
 import { UserProfile, setProfile } from '@/lib/localstore'
 
 interface FineTunePanelProps {
@@ -30,57 +31,71 @@ export function FineTunePanel({ profile, onProfileUpdate, onRegenerate }: FineTu
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Fine-tune</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <Textarea
-          label="Add a twist for today (optional)"
-          value={twist}
-          onChange={(e) => setTwist(e.target.value)}
-          placeholder="e.g., focus on recent industry news, seasonal trends..."
-          rows={3}
-        />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20"
+    >
+      <div className="p-6 border-b border-gray-200/50">
+        <div className="flex items-center">
+          <Edit3 className="h-6 w-6 text-purple-600 mr-3" />
+          <h2 className="text-2xl font-bold text-gray-900">Customise Today's Output</h2>
+        </div>
+      </div>
+      
+      <div className="p-6 space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Add a twist for today (optional)
+          </label>
+          <Textarea
+            value={twist}
+            onChange={(e) => setTwist(e.target.value)}
+            placeholder="e.g. seasonal news, trending story, new offer"
+            rows={3}
+            className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+          />
+        </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-4">
             Tone rotation: Serious / Quirky
           </label>
-          <div className="flex items-center space-x-4">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="rotation"
-                value="serious"
-                checked={currentRotation === 'serious'}
-                onChange={(e) => handleRotationChange(e.target.value as 'serious')}
-                className="mr-2"
-              />
-              Serious
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="rotation"
-                value="quirky"
-                checked={currentRotation === 'quirky'}
-                onChange={(e) => handleRotationChange(e.target.value as 'quirky')}
-                className="mr-2"
-              />
-              Quirky
-            </label>
+          <div className="relative bg-gray-100 rounded-full p-1">
+            <div className="grid grid-cols-2 gap-1">
+              <button
+                onClick={() => handleRotationChange('serious')}
+                className={`relative px-4 py-3 text-sm font-medium rounded-full transition-all duration-200 ${
+                  currentRotation === 'serious'
+                    ? 'bg-white text-gray-900 shadow-md'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Serious
+              </button>
+              <button
+                onClick={() => handleRotationChange('quirky')}
+                className={`relative px-4 py-3 text-sm font-medium rounded-full transition-all duration-200 ${
+                  currentRotation === 'quirky'
+                    ? 'bg-white text-gray-900 shadow-md'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Quirky
+              </button>
+            </div>
           </div>
         </div>
 
         <Button
           onClick={handleRegenerate}
-          variant="outline"
-          className="w-full"
+          className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
         >
-          Re-generate text
+          <RefreshCw className="mr-2 h-5 w-5" />
+          Re-generate Draft
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </motion.div>
   )
 }
