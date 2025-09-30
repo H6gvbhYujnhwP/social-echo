@@ -191,11 +191,11 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">
+        <label className="text-sm font-medium text-white">
           Rotation
         </label>
         <div className="flex items-center space-x-4">
-          <label className="flex items-center">
+          <label className="flex items-center text-white">
             <input
               type="radio"
               name="rotation"
@@ -206,7 +206,7 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
             />
             Serious
           </label>
-          <label className="flex items-center">
+          <label className="flex items-center text-white">
             <input
               type="radio"
               name="rotation"

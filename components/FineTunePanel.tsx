@@ -46,7 +46,7 @@ export function FineTunePanel({ profile, onProfileUpdate, onRegenerate }: FineTu
       
       <div className="p-6 space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-white mb-3">
             Add a twist for today (optional)
           </label>
           <Textarea
@@ -59,7 +59,7 @@ export function FineTunePanel({ profile, onProfileUpdate, onRegenerate }: FineTu
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-4">
+          <label className="block text-sm font-medium text-white mb-4">
             Tone rotation: Serious / Quirky
           </label>
           <div className="relative bg-gray-100 rounded-full p-1">

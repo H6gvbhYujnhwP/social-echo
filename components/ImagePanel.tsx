@@ -84,7 +84,7 @@ export function ImagePanel({ profile, visualPrompt }: ImagePanelProps) {
       
       <div className="p-6 space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
+          <label className="block text-sm font-medium text-white mb-3 flex items-center">
             <Palette className="h-4 w-4 mr-2" />
             Style
           </label>
