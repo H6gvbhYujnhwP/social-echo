@@ -11,7 +11,7 @@ function assertKey() {
 export async function generateText(prompt: string): Promise<string> {
   assertKey();
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+    model: "gpt-4.1-mini",
     temperature: 0.6,
     messages: [
       { role: "system", content: "Return STRICT JSON only." },
