@@ -7,8 +7,8 @@ import { Button } from './ui/Button'
 import { Badge } from './ui/Badge'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card'
 import { Copyable } from './Copyable'
-import { UserProfile } from '@/lib/localstore'
-import { TextGenerationResponse } from '@/lib/contract'
+import { UserProfile } from '../lib/localstore'
+import { TextGenerationResponse } from '../lib/contract'
 
 interface TodayPanelProps {
   profile: UserProfile

@@ -1,6 +1,4 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  // App directory is now stable in Next.js 13+
+module.exports = {
+  reactStrictMode: true
 }
-
-module.exports = nextConfig

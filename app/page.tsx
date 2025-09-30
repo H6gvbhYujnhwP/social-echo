@@ -1,20 +1,23 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Sparkles, Zap, Target, Clock, Users, TrendingUp, LogIn, UserPlus } from 'lucide-react'
-import Link from 'next/link'
+import { Sparkles, Zap, Target, TrendingUp } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { GradientText } from '../components/ui/GradientText'
+import { FeatureCard } from '../components/ui/FeatureCard'
+import { StatCard } from '../components/ui/StatCard'
+import { GlassCard } from '../components/ui/GlassCard'
 
 export default function HomePage() {
   const router = useRouter()
 
-  const handleLogin = () => {
-    // For now, redirect to Sweetbyte dashboard (we'll add auth later)
-    router.push('/dashboard')
-  }
-
   const handleSignUp = () => {
     router.push('/train')
+  }
+
+  const handleContactClick = () => {
+    // For demo purposes, redirect to dashboard
+    router.push('/dashboard')
   }
 
   return (
@@ -28,39 +31,6 @@ export default function HomePage() {
       
       {/* Main Content */}
       <div className="relative z-10">
-        {/* Header */}
-        <header className="px-6 py-8">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-2xl font-bold text-white"
-            >
-              SOCIAL ECHO
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center space-x-4"
-            >
-              <button
-                onClick={handleLogin}
-                className="flex items-center text-white/80 hover:text-white transition-colors px-4 py-2 rounded-lg hover:bg-white/10"
-              >
-                <LogIn className="h-4 w-4 mr-2" />
-                Login
-              </button>
-              <button
-                onClick={handleSignUp}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center"
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                Sign Up
-              </button>
-            </motion.div>
-          </div>
-        </header>
-
         {/* Hero Section */}
         <section className="px-6 py-16">
           <div className="max-w-4xl mx-auto text-center">
@@ -70,11 +40,7 @@ export default function HomePage() {
               transition={{ duration: 0.8 }}
               className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight"
             >
-              Big Results for SMEs Without
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-                Big Marketing Teams
-              </span>
+              Big Results for SMEs Without Big Marketing Teams
             </motion.h1>
             
             <motion.p
@@ -90,34 +56,16 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed"
+              className="text-xl text-gray-300 mb-16 max-w-3xl mx-auto leading-relaxed"
             >
               Get the visibility and leads your business deserves—at a fraction of the cost. Our streamlined marketing solutions are 
               designed specifically for small and medium enterprises that need professional results without the enterprise-level investment.
             </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="mb-16 flex flex-col sm:flex-row gap-4 justify-center"
-            >
-              <button
-                onClick={handleSignUp}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 py-4 rounded-full text-lg font-semibold shadow-2xl transform hover:scale-105 transition-all duration-200"
-              >
-                <Sparkles className="inline-block mr-2 h-5 w-5" />
-                Start Free Trial
-              </button>
-              <button className="bg-white/10 backdrop-blur-lg border border-white/20 text-white px-12 py-4 rounded-full text-lg font-semibold hover:bg-white/20 transition-all duration-200">
-                See How It Works
-              </button>
-            </motion.div>
           </div>
         </section>
 
-        {/* Value Proposition */}
-        <section className="px-6 py-16">
+        {/* Simple. Affordable. Effective. */}
+        <section className="px-6 py-8">
           <div className="max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -132,90 +80,38 @@ export default function HomePage() {
 
             {/* Feature Cards */}
             <div className="grid md:grid-cols-2 gap-8 mb-16">
-              {/* Social Media Growth Card */}
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.8 }}
-                className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 shadow-2xl"
-              >
-                <div className="flex items-center mb-6">
-                  <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-3 rounded-lg mr-4">
-                    <Zap className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-white">Social Media Growth</h3>
-                    <p className="text-purple-300 font-semibold">£149.99 per month</p>
-                  </div>
-                </div>
-                <ul className="space-y-3 text-gray-300 mb-6">
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
-                    Unlimited posts written in your voice
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
-                    Custom images created for every post
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
-                    Post directly from your smartphone in minutes
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
-                    Just 10 minutes a day to engage on LinkedIn
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
-                    No contracts—switch on or off whenever you like
-                  </li>
-                </ul>
-                <button
-                  onClick={handleSignUp}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-lg font-semibold transition-all duration-200"
-                >
-                  Get Started →
-                </button>
-              </motion.div>
+              <FeatureCard
+                icon={Zap}
+                title="Social Media Growth"
+                price="£149.99 per month"
+                features={[
+                  "Unlimited posts written in your voice",
+                  "Custom images created for every post",
+                  "Post directly from your smartphone in minutes",
+                  "Just 10 minutes a day to engage on LinkedIn",
+                  "No contracts—switch on or off whenever you like"
+                ]}
+                buttonText="Get Started →"
+                onButtonClick={handleSignUp}
+                gradient="purple"
+                delay={0.8}
+              />
 
-              {/* Email Outreach Card */}
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 1.0 }}
-                className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 shadow-2xl"
-              >
-                <div className="flex items-center mb-6">
-                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-3 rounded-lg mr-4">
-                    <Target className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-white">Email Outreach</h3>
-                    <p className="text-blue-300 font-semibold">from £49.99 per campaign</p>
-                  </div>
-                </div>
-                <ul className="space-y-3 text-gray-300 mb-6">
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                    Up to 10,000 cold emails sent each month
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                    Designed, delivered, and fully reported
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                    Tailored to your brand and goals
-                  </li>
-                  <li className="flex items-center">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                    Includes a 1-hour strategy session with our Head of Marketing
-                  </li>
-                </ul>
-                <button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-3 rounded-lg font-semibold transition-all duration-200">
-                  Enquire Now →
-                </button>
-              </motion.div>
+              <FeatureCard
+                icon={Target}
+                title="Email Outreach"
+                price="from £49.99 per campaign"
+                features={[
+                  "Up to 10,000 cold emails sent each month",
+                  "Designed, delivered, and fully reported",
+                  "Tailored to your brand and goals",
+                  "Includes a 1-hour strategy session with our Head of Marketing"
+                ]}
+                buttonText="Enquire Now →"
+                onButtonClick={handleContactClick}
+                gradient="blue"
+                delay={1.0}
+              />
             </div>
 
             {/* CTA Section */}
@@ -225,10 +121,13 @@ export default function HomePage() {
               transition={{ duration: 0.8, delay: 1.2 }}
               className="text-center mb-16"
             >
-              <button className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-8 py-3 rounded-full text-lg font-semibold shadow-xl transform hover:scale-105 transition-all duration-200">
+              <button 
+                onClick={handleContactClick}
+                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-8 py-3 rounded-full text-lg font-semibold shadow-xl transform hover:scale-105 transition-all duration-200 mb-6"
+              >
                 Click here
               </button>
-              <p className="text-xl text-white mt-6 mb-2">
+              <p className="text-xl text-white mb-2">
                 <strong>Speak with Westley or John</strong>
               </p>
               <p className="text-gray-300">
@@ -273,44 +172,29 @@ export default function HomePage() {
 
             {/* Stats */}
             <div className="grid md:grid-cols-3 gap-8">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 1.6 }}
-                className="text-center"
-              >
-                <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-4">
-                  350%
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-2">Follower Growth</h3>
-                <p className="text-gray-300">Average increase in social media following within the first quarter.</p>
-              </motion.div>
+              <StatCard
+                value="350%"
+                title="Follower Growth"
+                description="Average increase in social media following within the first quarter."
+                gradient="purple-pink"
+                delay={1.6}
+              />
 
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 1.8 }}
-                className="text-center"
-              >
-                <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 mb-4">
-                  1000s
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-2">New Subscribers</h3>
-                <p className="text-gray-300">Email list growth through targeted outreach campaigns.</p>
-              </motion.div>
+              <StatCard
+                value="1000s"
+                title="New Subscribers"
+                description="Email list growth through targeted outreach campaigns."
+                gradient="blue-cyan"
+                delay={1.8}
+              />
 
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 2.0 }}
-                className="text-center"
-              >
-                <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-4">
-                  100%
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-2">Inbound Leads</h3>
-                <p className="text-gray-300">Recognition as sector experts driving qualified inquiries.</p>
-              </motion.div>
+              <StatCard
+                value="100%"
+                title="Inbound Leads"
+                description="Recognition as sector experts driving qualified inquiries."
+                gradient="green-emerald"
+                delay={2.0}
+              />
             </div>
           </div>
         </section>

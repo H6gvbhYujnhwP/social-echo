@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Image, Download, RefreshCw, Palette } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Select } from './ui/Select'
-import { UserProfile } from '@/lib/localstore'
+import { UserProfile } from '../lib/localstore'
 
 interface ImagePanelProps {
   profile: UserProfile

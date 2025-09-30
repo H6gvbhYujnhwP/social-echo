@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateText } from '@/lib/openai'
+import { generateText } from '../../../lib/openai'
 import { 
   TextGenerationRequestSchema, 
   parseTextGenerationResponse,
   type TextGenerationResponse 
-} from '@/lib/contract'
+} from '../../../lib/contract'
 
 export async function POST(request: NextRequest) {
   try {

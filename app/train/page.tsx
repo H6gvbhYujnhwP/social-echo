@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowLeft, User, CreditCard } from 'lucide-react'
 import Link from 'next/link'
-import { TrainForm } from '@/components/TrainForm'
-import { UserProfile, getProfile } from '@/lib/localstore'
+import { TrainForm } from '../../components/TrainForm'
+import { UserProfile, getProfile } from '../../lib/localstore'
 
 export default function TrainPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -100,19 +100,20 @@ export default function TrainPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 shadow-2xl overflow-hidden"
           >
-            <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-8 border-b border-white/10">
-              <div className="text-center">
-                <h2 className="text-3xl font-bold text-white mb-2">Business Profile Setup</h2>
-                <p className="text-purple-200">
-                  Tell us about your business so we can create content that resonates with your audience
-                </p>
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 shadow-2xl overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 p-8 border-b border-white/10">
+                <div className="text-center">
+                  <h2 className="text-3xl font-bold text-white mb-2">Business Profile Setup</h2>
+                  <p className="text-purple-200">
+                    Tell us about your business so we can create content that resonates with your audience
+                  </p>
+                </div>
               </div>
-            </div>
-            
-            <div className="p-8">
-              <TrainForm initialProfile={profile || undefined} />
+              
+              <div className="p-8">
+                <TrainForm initialProfile={profile || undefined} />
+              </div>
             </div>
           </motion.div>
 

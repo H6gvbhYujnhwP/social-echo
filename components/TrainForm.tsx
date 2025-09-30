@@ -8,7 +8,7 @@ import { Textarea } from './ui/Textarea'
 import { Select } from './ui/Select'
 import { TagsInput } from './TagsInput'
 import { KeywordSuggestions } from './KeywordSuggestions'
-import { UserProfile, setProfile } from '@/lib/localstore'
+import { UserProfile, setProfile } from '../lib/localstore'
 
 // URL validation helper - more forgiving
 const cleanUrl = (v: string) => v.trim()

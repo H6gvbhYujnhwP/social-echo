@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Edit3, RefreshCw, Sparkles } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Textarea } from './ui/Textarea'
-import { UserProfile, setProfile } from '@/lib/localstore'
+import { UserProfile, setProfile } from '../lib/localstore'
 
 interface FineTunePanelProps {
   profile: UserProfile

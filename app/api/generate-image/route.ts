@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateImage } from '@/lib/openai'
+import { generateImage } from '../../../lib/openai'
 import { 
   ImageGenerationRequestSchema,
   type ImageGenerationResponse 
-} from '@/lib/contract'
+} from '../../../lib/contract'
 
 export async function POST(request: NextRequest) {
   try {
