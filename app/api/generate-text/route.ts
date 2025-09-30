@@ -24,16 +24,27 @@ Products/Services: ${validatedRequest.products_services}
 Target Audience: ${validatedRequest.target_audience}
 Keywords (weave naturally, not hashtag spam): ${validatedRequest.keywords || 'general business topics'}
 
-Rotation today: ${validatedRequest.rotation}   // "serious" or "quirky"
-
 Task: Create a LinkedIn post in the style of Chris Donnelly — direct, tactical, problem-led, story-first.
 
 Steps:
-1) Provide 3 headline/title hooks.
-2) Write the full LinkedIn post draft with DOUBLE SPACING between sentences, ending with a reflection or question.
-3) Add 6–8 hashtags (mix broad SME finance reach and niche targeting).
-4) Suggest ONE strong image concept that pairs with the post (visual only, no copy).
-5) Suggest the best time to post today (UK time) as HH:MM.
+1) Provide 3 headline/title options (hooks).
+2) Write the full LinkedIn post draft with double spacing between sentences, ending in a reflection or question.
+3) Add hashtags at the foot of the post (6–8, mixing broad SME finance reach and niche targeting).
+4) Suggest 1 strong image concept that pairs with the post.
+5) Suggest the best time to post that day (UK time).
+
+Content rotation: Alternate between:
+- A serious SME finance post (cashflow, staff, late payments, interest rates, growth, resilience) when rotation is "serious"
+- A funny/quirky finance industry story (weird leases, unusual loans, absurd expenses, strange finance deals) when rotation is "quirky"
+
+Current rotation: ${validatedRequest.rotation}
+
+Output format:
+- Headline options
+- LinkedIn post draft  
+- Hashtags
+- Visual concept
+- Best time to post today
 
 Return ONLY valid JSON with keys:
 - headline_options (array of 3),
