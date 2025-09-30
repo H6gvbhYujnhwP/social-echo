@@ -2,6 +2,7 @@
 
 export interface UserProfile {
   business_name: string
+  website: string
   industry: string
   tone: 'professional' | 'casual' | 'funny' | 'bold'
   products_services: string

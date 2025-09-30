@@ -7,7 +7,18 @@ import { Input } from './ui/Input'
 import { Textarea } from './ui/Textarea'
 import { Select } from './ui/Select'
 import { TagsInput } from './TagsInput'
+import { KeywordSuggestions } from './KeywordSuggestions'
 import { UserProfile, setProfile } from '@/lib/localstore'
+
+// URL validation helper
+const isValidUrl = (url: string): boolean => {
+  try {
+    const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`)
+    return ['http:', 'https:'].includes(urlObj.protocol)
+  } catch {
+    return false
+  }
+}
 
 const toneOptions = [
   { value: 'professional', label: 'Professional' },
@@ -25,6 +36,7 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
   const [formData, setFormData] = useState<UserProfile>(
     initialProfile || {
       business_name: '',
+      website: '',
       industry: '',
       tone: 'professional',
       products_services: '',
@@ -42,6 +54,9 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
     if (!formData.business_name.trim()) {
       newErrors.business_name = 'Business name is required'
     }
+    if (formData.website && !isValidUrl(formData.website)) {
+      newErrors.website = 'Please enter a valid website URL'
+    }
     if (!formData.industry.trim()) {
       newErrors.industry = 'Industry is required'
     }
@@ -51,9 +66,10 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
     if (!formData.target_audience.trim()) {
       newErrors.target_audience = 'Target audience description is required'
     }
-    if (formData.keywords.length === 0) {
-      newErrors.keywords = 'At least one keyword is required'
-    }
+    // Keywords are optional but recommended
+    // if (formData.keywords.length === 0) {
+    //   newErrors.keywords = 'At least one keyword is recommended'
+    // }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -98,6 +114,15 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
       />
 
       <Input
+        label="Company Website"
+        value={formData.website}
+        onChange={(e) => updateField('website', e.target.value)}
+        error={errors.website}
+        placeholder="e.g., www.yourcompany.com"
+        type="url"
+      />
+
+      <Input
         label="Industry/Sector"
         value={formData.industry}
         onChange={(e) => updateField('industry', e.target.value)}
@@ -134,15 +159,27 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
         required
       />
 
-      <TagsInput
-        label="Keywords"
-        value={formData.keywords}
-        onChange={(keywords) => updateField('keywords', keywords)}
-        placeholder="Enter keywords and press Enter"
-      />
-      {errors.keywords && (
-        <p className="text-sm text-red-600">{errors.keywords}</p>
-      )}
+      <div className="space-y-3">
+        <KeywordSuggestions
+          businessName={formData.business_name}
+          website={formData.website}
+          industry={formData.industry}
+          existingKeywords={formData.keywords}
+          onSelectKeywords={(selectedKeywords) => {
+            updateField('keywords', [...formData.keywords, ...selectedKeywords])
+          }}
+        />
+        
+        <TagsInput
+          label="Keywords"
+          value={formData.keywords}
+          onChange={(keywords) => updateField('keywords', keywords)}
+          placeholder="Enter keywords and press Enter"
+        />
+        {errors.keywords && (
+          <p className="text-sm text-red-600">{errors.keywords}</p>
+        )}
+      </div>
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">
