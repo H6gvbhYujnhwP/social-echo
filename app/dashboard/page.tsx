@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Calendar, User, CreditCard, ArrowLeft } from 'lucide-react'
+import { Calendar, User, CreditCard, ArrowLeft, Sparkles } from 'lucide-react'
 import { TodayPanel } from '@/components/TodayPanel'
 import { ImagePanel } from '@/components/ImagePanel'
 import { FineTunePanel } from '@/components/FineTunePanel'
@@ -43,7 +43,7 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -58,102 +58,120 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="1"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/10 backdrop-blur-lg border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-white">SOCIAL ECHO</h1>
-              <div className="hidden md:block w-px h-6 bg-white/30"></div>
-              <span className="hidden md:block text-white/80">Content Studio</span>
-            </div>
-            <nav className="flex items-center space-x-6">
-              <Link href="/train" className="flex items-center text-white/80 hover:text-white transition-colors">
-                <User className="h-4 w-4 mr-2" />
-                <span className="hidden sm:block">Train Again</span>
-              </Link>
-              <button className="flex items-center text-white/80 hover:text-white transition-colors">
-                <User className="h-4 w-4 mr-2" />
-                <span className="hidden sm:block">Account</span>
-              </button>
-              <button className="flex items-center text-white/80 hover:text-white transition-colors">
-                <CreditCard className="h-4 w-4 mr-2" />
-                <span className="hidden sm:block">Billing</span>
-              </button>
-            </nav>
-          </div>
+      <header className="relative z-10 px-6 py-6 border-b border-white/10 backdrop-blur-lg bg-white/5">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center space-x-4"
+          >
+            <Link href="/" className="text-2xl font-bold text-white hover:text-purple-300 transition-colors">
+              SOCIAL ECHO
+            </Link>
+            <div className="hidden md:block w-px h-6 bg-white/30"></div>
+            <span className="hidden md:block text-white/80">Content Studio</span>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center space-x-6"
+          >
+            <Link href="/train" className="flex items-center text-white/80 hover:text-white transition-colors">
+              <User className="h-4 w-4 mr-2" />
+              <span className="hidden sm:block">Train Again</span>
+            </Link>
+            <button className="flex items-center text-white/80 hover:text-white transition-colors">
+              <User className="h-4 w-4 mr-2" />
+              <span className="hidden sm:block">Account</span>
+            </button>
+            <button className="flex items-center text-white/80 hover:text-white transition-colors">
+              <CreditCard className="h-4 w-4 mr-2" />
+              <span className="hidden sm:block">Billing</span>
+            </button>
+          </motion.div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-8"
-        >
-          <div className="flex items-center mb-4">
-            <Calendar className="h-8 w-8 text-blue-400 mr-3" />
-            <h1 className="text-4xl font-bold text-white">Today's LinkedIn Pack</h1>
-          </div>
-          <p className="text-xl text-blue-100">
-            Generate your daily LinkedIn content for <span className="font-semibold text-white">{profile.business_name}</span>
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Content Generation */}
+      <main className="relative z-10 px-6 py-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Page Header */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="lg:col-span-2 space-y-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-8"
           >
-            <TodayPanel
-              key={regenerateKey}
-              profile={profile}
-              twist={twist}
-              onFineTuneClick={() => setShowFineTune(true)}
-            />
-            
-            <ImagePanel
-              profile={profile}
-              visualPrompt={visualPrompt}
-            />
+            <div className="flex items-center mb-4">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-lg mr-4">
+                <Calendar className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-white">Today's LinkedIn Pack</h1>
+                <p className="text-xl text-purple-200">
+                  Generate your daily LinkedIn content for{' '}
+                  <span className="font-semibold text-white">{profile.business_name}</span>
+                </p>
+              </div>
+            </div>
           </motion.div>
 
-          {/* Right Column - Fine-tune Panel */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="lg:col-span-1"
-          >
-            {showFineTune && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-4"
-              >
-                <button
-                  onClick={() => setShowFineTune(false)}
-                  className="flex items-center text-white/80 hover:text-white text-sm transition-colors"
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column - Content Generation */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="lg:col-span-2 space-y-8"
+            >
+              <TodayPanel
+                key={regenerateKey}
+                profile={profile}
+                twist={twist}
+                onFineTuneClick={() => setShowFineTune(true)}
+              />
+              
+              <ImagePanel
+                profile={profile}
+                visualPrompt={visualPrompt}
+              />
+            </motion.div>
+
+            {/* Right Column - Fine-tune Panel */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="lg:col-span-1"
+            >
+              {showFineTune && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4"
                 >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to content
-                </button>
-              </motion.div>
-            )}
-            
-            <FineTunePanel
-              profile={profile}
-              onProfileUpdate={handleProfileUpdate}
-              onRegenerate={handleRegenerate}
-            />
-          </motion.div>
+                  <button
+                    onClick={() => setShowFineTune(false)}
+                    className="flex items-center text-white/80 hover:text-white text-sm transition-colors"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to content
+                  </button>
+                </motion.div>
+              )}
+              
+              <FineTunePanel
+                profile={profile}
+                onProfileUpdate={handleProfileUpdate}
+                onRegenerate={handleRegenerate}
+              />
+            </motion.div>
+          </div>
         </div>
       </main>
     </div>
