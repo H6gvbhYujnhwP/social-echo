@@ -28,6 +28,8 @@ export default function DashboardPage() {
 
   const handleProfileUpdate = (updatedProfile: UserProfile) => {
     setProfile(updatedProfile)
+    // Force regeneration when profile changes (like rotation)
+    setRegenerateKey(prev => prev + 1)
   }
 
   const handleRegenerate = (newTwist: string) => {

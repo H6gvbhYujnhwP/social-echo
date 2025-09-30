@@ -21,6 +21,8 @@ export function FineTunePanel({ profile, onProfileUpdate, onRegenerate }: FineTu
     const updatedProfile = { ...profile, rotation: newRotation }
     setProfile(updatedProfile)
     onProfileUpdate(updatedProfile)
+    // Automatically regenerate content with new tone
+    onRegenerate(twist)
   }
 
   const handleRegenerate = () => {

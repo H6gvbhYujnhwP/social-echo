@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Button } from './ui/Button'
 import { Badge } from './ui/Badge'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card'
@@ -18,8 +18,9 @@ export function TodayPanel({ profile, twist, onFineTuneClick }: TodayPanelProps)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedContent, setGeneratedContent] = useState<TextGenerationResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [lastRotation, setLastRotation] = useState(profile.rotation)
 
-  const handleGenerateText = async () => {
+  const handleGenerateText = useCallback(async () => {
     setIsGenerating(true)
     setError(null)
     
@@ -56,7 +57,15 @@ export function TodayPanel({ profile, twist, onFineTuneClick }: TodayPanelProps)
     } finally {
       setIsGenerating(false)
     }
-  }
+  }, [profile, twist])
+
+  // Auto-regenerate when rotation changes and we have existing content
+  useEffect(() => {
+    if (generatedContent && lastRotation !== profile.rotation) {
+      setLastRotation(profile.rotation)
+      handleGenerateText()
+    }
+  }, [profile.rotation, generatedContent, lastRotation, handleGenerateText])
 
   return (
     <Card>
