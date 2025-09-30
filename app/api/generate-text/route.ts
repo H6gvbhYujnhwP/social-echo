@@ -22,7 +22,7 @@ Industry: ${validatedRequest.industry}
 Tone: ${validatedRequest.tone} (obey this voice consistently)
 Products/Services: ${validatedRequest.products_services}
 Target Audience: ${validatedRequest.target_audience}
-Keywords (weave naturally, not hashtag spam): ${validatedRequest.keywords}
+Keywords (weave naturally, not hashtag spam): ${validatedRequest.keywords || 'general business topics'}
 
 Rotation today: ${validatedRequest.rotation}   // "serious" or "quirky"
 

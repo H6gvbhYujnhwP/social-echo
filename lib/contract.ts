@@ -6,7 +6,7 @@ export const TextGenerationRequestSchema = z.object({
   tone: z.enum(['professional', 'casual', 'funny', 'bold']),
   products_services: z.string().min(1),
   target_audience: z.string().min(1),
-  keywords: z.string().min(1),
+  keywords: z.string().optional().default(''),
   rotation: z.enum(['serious', 'quirky']),
 })
 

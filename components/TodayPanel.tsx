@@ -30,7 +30,10 @@ export function TodayPanel({ profile, twist, onFineTuneClick }: TodayPanelProps)
         tone: profile.tone,
         products_services: profile.products_services,
         target_audience: profile.target_audience,
-        keywords: profile.keywords.join(', ') + (twist ? `, ${twist}` : ''),
+        keywords: [
+          ...profile.keywords,
+          ...(twist ? [twist] : [])
+        ].filter(Boolean).join(', '),
         rotation: profile.rotation,
       }
 
