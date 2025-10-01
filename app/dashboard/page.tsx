@@ -136,6 +136,7 @@ export default function DashboardPage() {
                 profile={profile}
                 twist={twist}
                 onFineTuneClick={() => setShowFineTune(true)}
+                onVisualPromptChange={setVisualPrompt}
               />
               
               <ImagePanel

@@ -14,11 +14,12 @@ interface TodayPanelProps {
   profile: UserProfile
   twist?: string
   onFineTuneClick: () => void
+  onVisualPromptChange?: (visualPrompt: string) => void
 }
 
 type PostTypeMode = 'auto' | PostType
 
-export function TodayPanel({ profile, twist, onFineTuneClick }: TodayPanelProps) {
+export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChange }: TodayPanelProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedContent, setGeneratedContent] = useState<TextGenerationResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -86,6 +87,11 @@ export function TodayPanel({ profile, twist, onFineTuneClick }: TodayPanelProps)
 
       const data = await response.json()
       setGeneratedContent(data)
+      
+      // Pass visual prompt to parent component for image generation
+      if (data.visual_concept && onVisualPromptChange) {
+        onVisualPromptChange(data.visual_concept)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
