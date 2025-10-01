@@ -49,8 +49,12 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
   }
 
   const handleGenerateText = useCallback(async () => {
+    // Get current values at the time of execution
+    const currentTodayPlan = getTodayPostType()
+    const currentPostType = postTypeMode === 'auto' ? (currentTodayPlan?.type || 'informational') : postTypeMode
+    
     // Check if today is disabled in planner
-    if (postTypeMode === 'auto' && todayPlan && !todayPlan.enabled) {
+    if (postTypeMode === 'auto' && currentTodayPlan && !currentTodayPlan.enabled) {
       setError('No post scheduled for today. Switch to manual mode to generate anyway.')
       return
     }
@@ -70,7 +74,7 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
           ...(twist ? [twist] : [])
         ].filter(Boolean).join(', '),
         rotation: profile.rotation,
-        post_type: getEffectivePostType(),
+        post_type: currentPostType,
         platform: 'linkedin' as const,
       }
 
@@ -98,7 +102,7 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
     } finally {
       setIsGenerating(false)
     }
-  }, [profile, twist, postTypeMode, todayPlan, getEffectivePostType])
+  }, []) // Remove all dependencies to prevent automatic triggering
 
   // Create a regeneration function that can be called directly
   const triggerRegeneration = useCallback(() => {
