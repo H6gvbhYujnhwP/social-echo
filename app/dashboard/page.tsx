@@ -37,8 +37,7 @@ export default function DashboardPage() {
 
   const handleRegenerate = (newTwist: string) => {
     setTwist(newTwist)
-    setRegenerateKey(prev => prev + 1)
-    setShowFineTune(false)
+    // Don't close the FineTunePanel so users can see the result and make further adjustments
   }
 
   if (isLoading) {
@@ -134,7 +133,6 @@ export default function DashboardPage() {
               className="lg:col-span-2 space-y-8"
             >
               <TodayPanel
-                key={regenerateKey}
                 profile={profile}
                 twist={twist}
                 onFineTuneClick={() => setShowFineTune(true)}

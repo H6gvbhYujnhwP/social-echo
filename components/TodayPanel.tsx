@@ -101,6 +101,13 @@ export function TodayPanel({ profile, twist, onFineTuneClick }: TodayPanelProps)
     }
   }, [profile.rotation, generatedContent, lastRotation, handleGenerateText])
 
+  // Auto-regenerate when twist changes (for fine-tuning)
+  useEffect(() => {
+    if (twist && twist.trim() !== '') {
+      handleGenerateText()
+    }
+  }, [twist, handleGenerateText])
+
   return (
     <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20">
       <div className="p-6 border-b border-gray-200/50">
