@@ -89,8 +89,8 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
       setGeneratedContent(data)
       
       // Pass visual prompt to parent component for image generation
-      if (data.visual_concept && onVisualPromptChange) {
-        onVisualPromptChange(data.visual_concept)
+      if (data.visual_prompt && onVisualPromptChange) {
+        onVisualPromptChange(data.visual_prompt)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')

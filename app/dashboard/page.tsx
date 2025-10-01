@@ -17,6 +17,11 @@ export default function DashboardPage() {
   const [showFineTune, setShowFineTune] = useState(false)
   const [twist, setTwist] = useState('')
   const [visualPrompt, setVisualPrompt] = useState<string>()
+
+  // Debug: Log visual prompt changes
+  useEffect(() => {
+    console.log('Dashboard visual prompt updated:', visualPrompt)
+  }, [visualPrompt])
   const [regenerateKey, setRegenerateKey] = useState(0)
 
   useEffect(() => {
