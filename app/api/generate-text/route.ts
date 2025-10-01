@@ -30,6 +30,8 @@ Always return STRICT JSON only; no markdown, no preamble.`
           return 'Hook → Context → 3 takeaways → Implication → Question'
         case 'advice':
           return 'Hook → Checklist/steps → Quick-win → Question'
+        case 'news':
+          return 'News headline → Summary (2-3 lines) → Analysis/Why it matters → Reflection/Question'
         default:
           return 'Hook → Context → Value → Question'
       }
@@ -43,6 +45,8 @@ Always return STRICT JSON only; no markdown, no preamble.`
           return 'Include industry insight hashtags like #BusinessTrends #MarketInsights #SMENews'
         case 'advice':
           return 'Include actionable hashtags like #BusinessTips #SMEAdvice #Productivity'
+        case 'news':
+          return 'Include timely news hashtags like #BreakingNews #IndustryNews #CurrentEvents plus industry-specific tags'
         default:
           return 'Mix broad SME and niche targeting hashtags'
       }
@@ -64,6 +68,16 @@ Seed: ${seed}
 Task: Create a ${validatedRequest.platform} post in the style of Chris Donnelly — direct, tactical, problem-led, story-first.
 
 Post Structure for ${validatedRequest.post_type} posts: ${getPostStructure(validatedRequest.post_type)}
+
+${validatedRequest.post_type === 'news' ? `
+Special Instructions for News Posts:
+- Select a current news headline relevant to the ${validatedRequest.industry} industry
+- Summarize the news in 2-3 simple lines
+- Add analysis or commentary showing why this news matters to SMEs in the ${validatedRequest.industry} industry
+- Keep tone professional, timely, and relevant
+- If no truly relevant breaking news is found, fallback to "Industry Insight" style using recent trends or observations
+- Ensure the news is recent (within the last few days or weeks)
+` : ''}
 
 Steps:
 1) Provide 3 headline/title options (hooks) that fit the ${validatedRequest.post_type} structure.

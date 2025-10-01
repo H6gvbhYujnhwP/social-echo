@@ -8,7 +8,7 @@ export const TextGenerationRequestSchema = z.object({
   target_audience: z.string().min(1),
   keywords: z.string().optional().default(''),
   rotation: z.enum(['serious', 'quirky']),
-  post_type: z.enum(['selling', 'informational', 'advice']),
+  post_type: z.enum(['selling', 'informational', 'advice', 'news']),
   platform: z.enum(['linkedin', 'facebook']).optional().default('linkedin'),
 })
 

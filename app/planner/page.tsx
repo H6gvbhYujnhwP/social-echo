@@ -24,13 +24,15 @@ const dayLabels = {
 const postTypeLabels = {
   selling: 'Selling',
   informational: 'Info',
-  advice: 'Advice'
+  advice: 'Advice',
+  news: 'News'
 }
 
 const postTypeColors = {
   selling: 'bg-green-500/20 text-green-300 border-green-400/30',
   informational: 'bg-blue-500/20 text-blue-300 border-blue-400/30',
-  advice: 'bg-purple-500/20 text-purple-300 border-purple-400/30'
+  advice: 'bg-purple-500/20 text-purple-300 border-purple-400/30',
+  news: 'bg-orange-500/20 text-orange-300 border-orange-400/30'
 }
 
 export default function PlannerPage() {
@@ -127,7 +129,7 @@ export default function PlannerPage() {
 
               {/* Post Type Pills */}
               <div className="space-y-2 mb-4">
-                {(['selling', 'informational', 'advice'] as PostType[]).map((type) => (
+                {(['selling', 'informational', 'advice', 'news'] as PostType[]).map((type) => (
                   <button
                     key={type}
                     onClick={() => updateDay(day.day, { type })}
@@ -180,8 +182,8 @@ export default function PlannerPage() {
         {/* Weekly Summary */}
         <div className="mt-8 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-6">
           <h3 className="text-xl font-semibold text-white mb-4">Weekly Summary</h3>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            {(['advice', 'informational', 'selling'] as PostType[]).map((type) => {
+          <div className="grid grid-cols-4 gap-4 text-center">
+            {(['advice', 'informational', 'selling', 'news'] as PostType[]).map((type) => {
               const count = planner.days.filter(d => d.enabled && d.type === type).length
               return (
                 <div key={type} className="bg-white/5 rounded-lg p-4">

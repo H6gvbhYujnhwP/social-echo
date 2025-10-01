@@ -151,7 +151,7 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
           
           {/* Segmented Control */}
           <div className="flex bg-gray-100 rounded-xl p-1">
-            {(['auto', 'informational', 'advice', 'selling'] as const).map((mode) => (
+            {(['auto', 'informational', 'advice', 'selling', 'news'] as const).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setPostTypeMode(mode)}
