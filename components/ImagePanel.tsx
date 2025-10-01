@@ -5,11 +5,11 @@ import { motion } from 'framer-motion'
 import { Image, Download, RefreshCw, Palette } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Select } from './ui/Select'
-import { UserProfile } from '../lib/localstore'
 
 interface ImagePanelProps {
-  profile: UserProfile
   visualPrompt?: string
+  industry: string
+  tone: string
 }
 
 const styleOptions = [
@@ -18,7 +18,7 @@ const styleOptions = [
   { value: 'photo-real', label: 'Photo-real' },
 ]
 
-export function ImagePanel({ profile, visualPrompt }: ImagePanelProps) {
+export function ImagePanel({ visualPrompt, industry, tone }: ImagePanelProps) {
   const [selectedStyle, setSelectedStyle] = useState<'meme' | 'illustration' | 'photo-real'>('illustration')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
@@ -43,8 +43,8 @@ export function ImagePanel({ profile, visualPrompt }: ImagePanelProps) {
     try {
       const requestData = {
         visual_prompt: visualPrompt,
-        industry: profile.industry,
-        tone: profile.tone,
+        industry: industry,
+        tone: tone,
         style: selectedStyle,
       }
 

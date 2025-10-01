@@ -1,68 +1,35 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, Sparkles, Copy, Clock, Eye, RefreshCw, Settings } from 'lucide-react'
+import { Sparkles, Copy, RefreshCw, Edit3, Calendar as CalendarIcon } from 'lucide-react'
 import { Button } from './ui/Button'
+import { Copyable } from './ui/Copyable'
 import { Badge } from './ui/Badge'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/Card'
-import { Copyable } from './Copyable'
 import { UserProfile, getTodayPostType, type PostType } from '../lib/localstore'
-import { TextGenerationResponse } from '../lib/contract'
+import { GeneratedDraft } from '../app/dashboard/page'
 
 interface TodayPanelProps {
   profile: UserProfile
-  twist?: string
-  onFineTuneClick: () => void
-  onVisualPromptChange?: (visualPrompt: string) => void
-  onRegenerateRequest?: (regenerateFunc: () => void) => void
+  todayDraft: GeneratedDraft | null
+  postTypeMode: 'auto' | PostType
+  onGenerate: (options?: { regenerate?: boolean }) => void
+  onPostTypeChange: (postType: PostType) => void
+  onOpenCustomise: () => void
 }
 
-type PostTypeMode = 'auto' | PostType
-
-export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChange, onRegenerateRequest }: TodayPanelProps) {
+export function TodayPanel({ 
+  profile, 
+  todayDraft, 
+  postTypeMode, 
+  onGenerate, 
+  onPostTypeChange,
+  onOpenCustomise 
+}: TodayPanelProps) {
   const [isGenerating, setIsGenerating] = useState(false)
-  const [generatedContent, setGeneratedContent] = useState<TextGenerationResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [lastRotation, setLastRotation] = useState(profile.rotation)
-  const [postTypeMode, setPostTypeMode] = useState<PostTypeMode>('auto')
-  const [todayPlan, setTodayPlan] = useState<{ type: PostType; enabled: boolean } | null>(null)
-  
-  // Single-flight guard to prevent multiple parallel requests
-  const inflightRef = useRef<AbortController | null>(null)
-  
-  // Track if we've already set up the regenerate function
-  const regenerateSetupRef = useRef(false)
+  const todayPlan = getTodayPostType()
 
-  // Get today's date as a key for localStorage
-  const getTodayKey = () => {
-    const today = new Date()
-    return `social-echo-draft-${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
-  }
-
-  // Load saved draft from localStorage on mount
-  useEffect(() => {
-    const plan = getTodayPostType()
-    setTodayPlan(plan)
-    
-    // Load saved draft for today if it exists
-    const todayKey = getTodayKey()
-    const savedDraft = localStorage.getItem(todayKey)
-    if (savedDraft) {
-      try {
-        const parsed = JSON.parse(savedDraft)
-        setGeneratedContent(parsed)
-        // Also restore visual prompt if available
-        if (parsed.visual_prompt && onVisualPromptChange) {
-          onVisualPromptChange(parsed.visual_prompt)
-        }
-      } catch (error) {
-        console.error('Failed to load saved draft:', error)
-      }
-    }
-  }, [])
-
-  // Get the effective post type (from planner or manual override)
+  // Get the effective post type
   const getEffectivePostType = (): PostType => {
     if (postTypeMode === 'auto') {
       return todayPlan?.type || 'informational'
@@ -76,203 +43,149 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
     return days[new Date().getDay()]
   }
 
-  const handleGenerateText = useCallback(async () => {
-    // Get current values at the time of execution
-    const currentTodayPlan = getTodayPostType()
-    const currentPostType = postTypeMode === 'auto' ? (currentTodayPlan?.type || 'informational') : postTypeMode
-    
-    // Check if today is disabled in planner
-    if (postTypeMode === 'auto' && currentTodayPlan && !currentTodayPlan.enabled) {
-      setError('No post scheduled for today. Switch to manual mode to generate anyway.')
-      return
-    }
-
-    // SINGLE-FLIGHT: avoid multiple parallel POSTs
-    if (inflightRef.current) return
-    const ac = new AbortController()
-    inflightRef.current = ac
-
+  const handleGenerate = async () => {
     setIsGenerating(true)
-    setError(null)
-    
     try {
-      // Get the current twist value from props at execution time
-      const currentTwist = (typeof twist === 'string' ? twist : '') || ''
-      
-      const requestData = {
-        business_name: profile.business_name,
-        industry: profile.industry,
-        tone: profile.tone,
-        products_services: profile.products_services,
-        target_audience: profile.target_audience,
-        keywords: [
-          ...profile.keywords,
-          ...(currentTwist ? [currentTwist] : [])
-        ].filter(Boolean).join(', '),
-        rotation: profile.rotation,
-        post_type: currentPostType,
-        platform: 'linkedin' as const,
-        force: true, // <- important so re-gen visibly changes
-      }
-
-      const response = await fetch('/api/generate-text', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-        signal: ac.signal,
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to generate content (HTTP ${response.status})`)
-      }
-
-      const data = await response.json()
-      setGeneratedContent(data)
-      
-      // Save draft to localStorage for today
-      const todayKey = getTodayKey()
-      localStorage.setItem(todayKey, JSON.stringify(data))
-      
-      // Pass visual prompt to parent component for image generation
-      if (data.visual_prompt && onVisualPromptChange) {
-        onVisualPromptChange(data.visual_prompt)
-      }
-    } catch (err: any) {
-      if (err?.name !== 'AbortError') {
-        setError(err?.message ?? 'An error occurred')
-      }
+      await onGenerate({ regenerate: false })
     } finally {
-      inflightRef.current?.abort()
-      inflightRef.current = null
       setIsGenerating(false)
     }
-  }, [profile, twist, postTypeMode])
+  }
 
-  // Expose the latest generator to parent (so the external button always calls the current one)
-  // Only set up the function reference once, don't call it on mount
-  useEffect(() => {
-    if (onRegenerateRequest && !regenerateSetupRef.current) {
-      onRegenerateRequest(() => handleGenerateText())
-      regenerateSetupRef.current = true
+  const handleRegenerate = async () => {
+    setIsGenerating(true)
+    try {
+      await onGenerate({ regenerate: true })
+    } finally {
+      setIsGenerating(false)
     }
-  }, [onRegenerateRequest])
+  }
+
+  const effectivePostType = getEffectivePostType()
 
   return (
     <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20">
       <div className="p-6 border-b border-gray-200/50">
-        <div className="flex items-center">
-          <Calendar className="h-6 w-6 text-blue-600 mr-3" />
-          <h2 className="text-2xl font-bold text-gray-900">Generate Today's Text</h2>
-        </div>
-      </div>
-      
-      <div className="p-6 space-y-6">
-        {/* Post Type Selector */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Content Type</h3>
-            <a 
-              href="/planner" 
-              className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
-            >
-              <Settings className="h-4 w-4 mr-1" />
-              Edit Planner
-            </a>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Sparkles className="h-6 w-6 text-purple-600 mr-3" />
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Today's Content</h2>
+              <p className="text-sm text-gray-600">{getTodayDayName()}</p>
+            </div>
           </div>
-          
-          {/* Segmented Control */}
-          <div className="flex bg-gray-100 rounded-xl p-1">
-            {(['auto', 'informational', 'advice', 'selling', 'news'] as const).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setPostTypeMode(mode)}
-                className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  postTypeMode === mode
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                {mode === 'auto' ? 'Auto' : mode.charAt(0).toUpperCase() + mode.slice(1)}
-              </button>
-            ))}
-          </div>
-
-          {/* Status Badge */}
-          <div className="flex items-center justify-center">
-            {postTypeMode === 'auto' ? (
-              todayPlan ? (
-                todayPlan.enabled ? (
-                  <Badge className="bg-green-100 text-green-800 border-green-200">
-                    Today's plan: {todayPlan.type.charAt(0).toUpperCase() + todayPlan.type.slice(1)} ({getTodayDayName()})
-                  </Badge>
-                ) : (
-                  <Badge className="bg-red-100 text-red-800 border-red-200">
-                    No post scheduled today
-                  </Badge>
-                )
-              ) : (
-                <Badge className="bg-gray-100 text-gray-800 border-gray-200">
-                  Loading planner...
-                </Badge>
-              )
-            ) : (
-              <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                Manual override: {postTypeMode.charAt(0).toUpperCase() + postTypeMode.slice(1)}
+          <div className="flex items-center space-x-2">
+            <Badge className={`${
+              effectivePostType === 'selling' ? 'bg-green-100 text-green-800 border-green-200' :
+              effectivePostType === 'informational' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+              effectivePostType === 'advice' ? 'bg-purple-100 text-purple-800 border-purple-200' :
+              'bg-orange-100 text-orange-800 border-orange-200'
+            }`}>
+              {effectivePostType.charAt(0).toUpperCase() + effectivePostType.slice(1)}
+            </Badge>
+            {postTypeMode === 'auto' && todayPlan && (
+              <Badge className="bg-gray-100 text-gray-800 border-gray-200">
+                <CalendarIcon className="h-3 w-3 mr-1" />
+                From Planner
               </Badge>
             )}
           </div>
         </div>
+      </div>
 
-        <Button
-          type="button"
-          onClick={handleGenerateText}
-          disabled={isGenerating}
-          size="lg"
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
-        >
-          {isGenerating ? (
-            <>
-              <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-              {generatedContent ? 'Regenerating...' : 'Creating today\'s draft...'}
-            </>
-          ) : (
-            <>
-              {generatedContent ? (
+      <div className="p-6 space-y-6">
+        {/* Post Type Selector */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Post Type
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => onPostTypeChange('auto' as any)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                postTypeMode === 'auto'
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Auto (Planner)
+            </button>
+            {(['informational', 'advice', 'selling', 'news'] as PostType[]).map((type) => (
+              <button
+                key={type}
+                onClick={() => onPostTypeChange(type)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  postTypeMode === type
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Buttons */}
+        {!todayDraft ? (
+          // No draft exists - show Generate button
+          <Button
+            type="button"
+            onClick={handleGenerate}
+            disabled={isGenerating}
+            size="lg"
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+          >
+            {isGenerating ? (
+              <>
+                <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-5 w-5" />
+                Generate Today's Post
+              </>
+            )}
+          </Button>
+        ) : (
+          // Draft exists - show Regenerate and Customise buttons
+          <div className="space-y-3">
+            <Button
+              type="button"
+              onClick={handleRegenerate}
+              disabled={isGenerating}
+              size="lg"
+              className="w-full bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white shadow-lg"
+            >
+              {isGenerating ? (
+                <>
+                  <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+                  Regenerating...
+                </>
+              ) : (
                 <>
                   <RefreshCw className="mr-2 h-5 w-5" />
                   Regenerate Post
                 </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-5 w-5" />
-                  Generate Today's Post
-                </>
               )}
-            </>
-          )}
-        </Button>
-
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 bg-red-50 border border-red-200 rounded-xl"
-          >
-            <p className="text-red-600 mb-3">{error}</p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleGenerateText}
-              className="border-red-300 text-red-600 hover:bg-red-50"
-            >
-              Try again
             </Button>
-          </motion.div>
+            <Button
+              type="button"
+              onClick={onOpenCustomise}
+              disabled={isGenerating}
+              size="lg"
+              variant="outline"
+              className="w-full border-2 border-purple-600 text-purple-600 hover:bg-purple-50"
+            >
+              <Edit3 className="mr-2 h-5 w-5" />
+              Customise Today's Output
+            </Button>
+          </div>
         )}
 
-        {generatedContent && (
+        {/* Generated Content Display */}
+        {todayDraft && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -286,7 +199,7 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
                 Headline Options
               </h3>
               <div className="space-y-3">
-                {generatedContent.headline_options.map((headline, index) => (
+                {todayDraft.headline_options.map((headline, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, x: -10 }}
@@ -312,14 +225,14 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
                 <Copy className="h-5 w-5 text-blue-600 mr-2" />
                 Post Draft
               </h3>
-              <Copyable text={generatedContent.post_text}>
+              <Copyable text={todayDraft.post_text}>
                 <div className="p-6 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border border-gray-200/50 min-h-[200px] hover:shadow-md transition-all duration-200 cursor-pointer group">
                   <div className="flex items-start justify-between mb-4">
                     <span className="text-sm font-medium text-gray-600">LinkedIn Post</span>
                     <Copy className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
                   </div>
                   <p className="whitespace-pre-wrap leading-relaxed text-gray-900">
-                    {generatedContent.post_text}
+                    {todayDraft.post_text}
                   </p>
                 </div>
               </Copyable>
@@ -328,55 +241,35 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
             {/* Hashtags */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Hashtags</h3>
-              <Copyable text={generatedContent.hashtags.join(' ')}>
+              <Copyable text={todayDraft.hashtags.join(' ')}>
                 <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200/50 hover:shadow-md transition-all duration-200 cursor-pointer group">
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-start justify-between mb-2">
                     <span className="text-sm font-medium text-gray-600">Copy all hashtags</span>
                     <Copy className="h-4 w-4 text-gray-400 group-hover:text-purple-600 transition-colors" />
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {generatedContent.hashtags.map((hashtag, index) => (
-                      <Badge key={index} className="bg-purple-100 text-purple-800 border-purple-200">
-                        {hashtag}
-                      </Badge>
+                    {todayDraft.hashtags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-white/60 rounded-full text-sm text-purple-700 font-medium"
+                      >
+                        {tag}
+                      </span>
                     ))}
                   </div>
                 </div>
               </Copyable>
             </div>
 
-            {/* Best Time & Visual Concept */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Clock className="h-5 w-5 text-blue-600 mr-2" />
-                  Best Time (UK)
-                </h3>
-                <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50">
-                  <Badge className="bg-green-100 text-green-800 border-green-200 text-lg px-4 py-2">
-                    {generatedContent.best_time_uk}
-                  </Badge>
+            {/* Best Time */}
+            <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50">
+              <div className="flex items-center">
+                <CalendarIcon className="h-5 w-5 text-green-600 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Best time to post</p>
+                  <p className="text-lg font-semibold text-gray-900">{todayDraft.best_time_uk}</p>
                 </div>
               </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Eye className="h-5 w-5 text-blue-600 mr-2" />
-                  Visual Concept
-                </h3>
-                <div className="p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl border border-orange-200/50">
-                  <p className="text-gray-700 italic">{generatedContent.visual_prompt}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-6 border-t border-gray-200/50">
-              <button
-                onClick={onFineTuneClick}
-                className="text-blue-600 hover:text-blue-800 font-medium underline transition-colors"
-              >
-                Not quite right? Adjust inputs
-              </button>
             </div>
           </motion.div>
         )}
