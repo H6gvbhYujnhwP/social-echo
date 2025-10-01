@@ -24,7 +24,14 @@ export function ImagePanel({ profile, visualPrompt }: ImagePanelProps) {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Debug: Log visual prompt changes
+  React.useEffect(() => {
+    console.log('ImagePanel received visual prompt:', visualPrompt)
+  }, [visualPrompt])
+
   const handleGenerateImage = async () => {
+    console.log('Generate Image clicked! Visual prompt:', visualPrompt)
+    
     if (!visualPrompt) {
       setError('Please generate text content first to get a visual concept')
       return
@@ -98,7 +105,7 @@ export function ImagePanel({ profile, visualPrompt }: ImagePanelProps) {
 
         <Button
           onClick={handleGenerateImage}
-          disabled={isGenerating || !visualPrompt}
+          disabled={isGenerating}
           className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
         >
           {isGenerating ? (
