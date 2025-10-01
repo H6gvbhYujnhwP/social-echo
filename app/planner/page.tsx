@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, RotateCcw, Save, CheckCircle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Calendar, RotateCcw, Save, CheckCircle, ArrowLeft } from 'lucide-react'
 import { 
   getOrCreatePlanner, 
   setPlanner, 
@@ -36,6 +37,7 @@ const postTypeColors = {
 }
 
 export default function PlannerPage() {
+  const router = useRouter()
   const [planner, setLocalPlanner] = useState<Planner | null>(null)
   const [showSaveToast, setShowSaveToast] = useState(false)
 
@@ -60,7 +62,11 @@ export default function PlannerPage() {
     
     setPlanner(planner)
     setShowSaveToast(true)
-    setTimeout(() => setShowSaveToast(false), 3000)
+    
+    // Redirect to dashboard after a brief delay to show the toast
+    setTimeout(() => {
+      router.push('/dashboard')
+    }, 1000)
   }
 
   const handleReset = () => {
@@ -86,6 +92,17 @@ export default function PlannerPage() {
       </div>
       
       <div className="relative z-10 container mx-auto px-4 py-8">
+        {/* Back Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="flex items-center text-white/80 hover:text-white transition-colors text-sm"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </button>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">

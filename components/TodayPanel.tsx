@@ -30,6 +30,9 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
   
   // Single-flight guard to prevent multiple parallel requests
   const inflightRef = useRef<AbortController | null>(null)
+  
+  // Track if we've already set up the regenerate function
+  const regenerateSetupRef = useRef(false)
 
   // Get today's date as a key for localStorage
   const getTodayKey = () => {
@@ -148,9 +151,13 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
   }, [profile, twist, postTypeMode])
 
   // Expose the latest generator to parent (so the external button always calls the current one)
+  // Only set up the function reference once, don't call it on mount
   useEffect(() => {
-    onRegenerateRequest?.(() => handleGenerateText())
-  }, [onRegenerateRequest, handleGenerateText])
+    if (onRegenerateRequest && !regenerateSetupRef.current) {
+      onRegenerateRequest(() => handleGenerateText())
+      regenerateSetupRef.current = true
+    }
+  }, [onRegenerateRequest])
 
   return (
     <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20">
