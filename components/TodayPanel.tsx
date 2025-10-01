@@ -15,12 +15,12 @@ interface TodayPanelProps {
   twist?: string
   onFineTuneClick: () => void
   onVisualPromptChange?: (visualPrompt: string) => void
-  regenerateTrigger?: number
+  onRegenerateRequest?: (regenerateFunc: () => void) => void
 }
 
 type PostTypeMode = 'auto' | PostType
 
-export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChange, regenerateTrigger }: TodayPanelProps) {
+export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChange, onRegenerateRequest }: TodayPanelProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedContent, setGeneratedContent] = useState<TextGenerationResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -100,20 +100,17 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
     }
   }, [profile, twist, postTypeMode, todayPlan, getEffectivePostType])
 
-  // Auto-regenerate when rotation changes and we have existing content
-  useEffect(() => {
-    if (generatedContent && lastRotation !== profile.rotation) {
-      setLastRotation(profile.rotation)
-      handleGenerateText()
-    }
-  }, [profile.rotation, generatedContent, lastRotation, handleGenerateText])
+  // Create a regeneration function that can be called directly
+  const triggerRegeneration = useCallback(() => {
+    handleGenerateText()
+  }, [handleGenerateText])
 
-  // Manual regeneration trigger (when user clicks "Re-generate Draft")
+  // Expose regeneration function to parent
   useEffect(() => {
-    if (regenerateTrigger && regenerateTrigger > 0) {
-      handleGenerateText()
+    if (onRegenerateRequest) {
+      onRegenerateRequest(triggerRegeneration)
     }
-  }, [regenerateTrigger, handleGenerateText])
+  }, [onRegenerateRequest, triggerRegeneration])
 
   return (
     <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20">

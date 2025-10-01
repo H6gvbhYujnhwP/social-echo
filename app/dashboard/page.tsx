@@ -22,7 +22,7 @@ export default function DashboardPage() {
   useEffect(() => {
     console.log('Dashboard visual prompt updated:', visualPrompt)
   }, [visualPrompt])
-  const [regenerateKey, setRegenerateKey] = useState(0)
+  const [regenerateFunction, setRegenerateFunction] = useState<(() => void) | null>(null)
 
   useEffect(() => {
     const existingProfile = getProfile()
@@ -36,13 +36,15 @@ export default function DashboardPage() {
 
   const handleProfileUpdate = (updatedProfile: UserProfile) => {
     setProfile(updatedProfile)
-    // Force regeneration when profile changes (like rotation)
-    setRegenerateKey(prev => prev + 1)
+    // Profile change will trigger natural regeneration through TodayPanel's useEffect
   }
 
   const handleRegenerate = (newTwist: string) => {
     setTwist(newTwist)
-    setRegenerateKey(prev => prev + 1) // Trigger regeneration
+    // Call regeneration function directly if available
+    if (regenerateFunction) {
+      regenerateFunction()
+    }
     // Don't close the FineTunePanel so users can see the result and make further adjustments
   }
 
@@ -143,7 +145,7 @@ export default function DashboardPage() {
                 twist={twist}
                 onFineTuneClick={() => setShowFineTune(true)}
                 onVisualPromptChange={setVisualPrompt}
-                regenerateTrigger={regenerateKey}
+                onRegenerateRequest={setRegenerateFunction}
               />
               
               <ImagePanel
