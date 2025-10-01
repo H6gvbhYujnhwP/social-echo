@@ -26,8 +26,7 @@ export function FineTunePanel({ profile, onProfileUpdate, onRegenerate, currentP
     const updatedProfile = { ...profile, rotation: newRotation }
     setProfile(updatedProfile)
     onProfileUpdate(updatedProfile)
-    // Automatically regenerate content with new tone
-    onRegenerate(twist)
+    // Note: User must click "Re-generate Draft" to apply the new tone
   }
 
   const handleRegenerate = () => {

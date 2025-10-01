@@ -107,7 +107,7 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
   // Create a regeneration function that can be called directly
   const triggerRegeneration = useCallback(() => {
     handleGenerateText()
-  }, [handleGenerateText])
+  }, [])
 
   // Expose regeneration function to parent
   useEffect(() => {

@@ -36,7 +36,7 @@ export default function DashboardPage() {
 
   const handleProfileUpdate = (updatedProfile: UserProfile) => {
     setProfile(updatedProfile)
-    // Profile change will trigger natural regeneration through TodayPanel's useEffect
+    // Note: Profile changes do NOT trigger automatic regeneration
   }
 
   const handleRegenerate = (newTwist: string) => {
