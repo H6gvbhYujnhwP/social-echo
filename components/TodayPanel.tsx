@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, Sparkles, Copy, Clock, Eye, RefreshCw, Settings } from 'lucide-react'
 import { Button } from './ui/Button'
@@ -24,9 +24,19 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedContent, setGeneratedContent] = useState<TextGenerationResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [lastRotation, setLastRotation] = useState(profile.rotation)
   const [postTypeMode, setPostTypeMode] = useState<PostTypeMode>('auto')
   const [todayPlan, setTodayPlan] = useState<{ type: PostType; enabled: boolean } | null>(null)
+  const [version, setVersion] = useState(0) // Version bump for guaranteed UI updates
+
+  // Single-flight lock to prevent parallel requests
+  const inflightRef = useRef<AbortController | null>(null)
+  
+  // One-shot guard to prevent auto-generation on mount
+  const didInitRef = useRef(false)
+  
+  // Ref to always get latest twist value
+  const twistRef = useRef(twist)
+  twistRef.current = twist
 
   // Get today's plan from planner
   useEffect(() => {
@@ -48,7 +58,17 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
     return days[new Date().getDay()]
   }
 
-  const handleGenerateText = useCallback(async () => {
+  const handleGenerateText = useCallback(async (force = false) => {
+    // Single-flight protection - prevent parallel requests
+    if (inflightRef.current && !force) {
+      console.log('Generation already in progress, ignoring duplicate request')
+      return
+    }
+
+    // Create abort controller for this request
+    const abortController = new AbortController()
+    inflightRef.current = abortController
+
     // Get current values at the time of execution
     const currentTodayPlan = getTodayPostType()
     const currentPostType = postTypeMode === 'auto' ? (currentTodayPlan?.type || 'informational') : postTypeMode
@@ -56,6 +76,7 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
     // Check if today is disabled in planner
     if (postTypeMode === 'auto' && currentTodayPlan && !currentTodayPlan.enabled) {
       setError('No post scheduled for today. Switch to manual mode to generate anyway.')
+      inflightRef.current = null
       return
     }
 
@@ -63,14 +84,18 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
     setError(null)
     
     try {
-      // Get the current twist value from props at execution time
-      const currentTwist = twist || ''
+      // Get the current twist value from ref (always latest)
+      const currentTwist = twistRef.current || ''
       
       // Combine keywords with twist for better content generation
       const allKeywords = [...profile.keywords]
       if (currentTwist.trim()) {
         allKeywords.push(currentTwist.trim())
       }
+      
+      // Add generation ID for debugging
+      const generationId = Math.random().toString(36).slice(2, 8)
+      console.log(`Starting generation ${generationId} with twist: "${currentTwist}"`)
       
       const requestData = {
         business_name: profile.business_name,
@@ -82,6 +107,8 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
         rotation: profile.rotation,
         post_type: currentPostType,
         platform: 'linkedin' as const,
+        force: force, // Tell server to vary content
+        generationId: generationId
       }
 
       const response = await fetch('/api/generate-text', {
@@ -90,6 +117,7 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestData),
+        signal: abortController.signal
       })
 
       if (!response.ok) {
@@ -97,34 +125,49 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
       }
 
       const data = await response.json()
+      console.log(`Completed generation ${generationId}`)
+      
       setGeneratedContent(data)
+      setVersion(v => v + 1) // Guarantee UI update
       
       // Pass visual prompt to parent component for image generation
       if (data.visual_prompt && onVisualPromptChange) {
         onVisualPromptChange(data.visual_prompt)
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+    } catch (err: any) {
+      if (err?.name !== 'AbortError') {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      }
     } finally {
+      // Clean up abort controller
+      if (inflightRef.current === abortController) {
+        inflightRef.current = null
+      }
       setIsGenerating(false)
     }
-  }, []) // Remove all dependencies to prevent automatic execution
+  }, [profile, postTypeMode]) // Only include stable dependencies
 
-  // Create a regeneration function that can be called directly
-  const triggerRegeneration = useCallback(() => {
-    // Call handleGenerateText which will use current values at execution time
-    handleGenerateText()
+  // Manual generation function (for button clicks)
+  const handleManualGeneration = useCallback(() => {
+    handleGenerateText(false) // Manual generation, not forced
+  }, [handleGenerateText])
+
+  // Regeneration function (for Re-generate Draft button)
+  const handleRegeneration = useCallback(() => {
+    handleGenerateText(true) // Force regeneration with latest twist
   }, [handleGenerateText])
 
   // Expose regeneration function to parent
   useEffect(() => {
     if (onRegenerateRequest) {
-      onRegenerateRequest(triggerRegeneration)
+      onRegenerateRequest(handleRegeneration)
     }
-  }, [onRegenerateRequest, triggerRegeneration])
+  }, [onRegenerateRequest, handleRegeneration])
+
+  // NO AUTO-GENERATION ON MOUNT - completely removed
 
   return (
-    <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20">
+    <div key={version} className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20">
       <div className="p-6 border-b border-gray-200/50">
         <div className="flex items-center">
           <Calendar className="h-6 w-6 text-blue-600 mr-3" />
@@ -190,7 +233,7 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
         </div>
 
         <Button
-          onClick={handleGenerateText}
+          onClick={handleManualGeneration}
           disabled={isGenerating || (postTypeMode === 'auto' && todayPlan && !todayPlan.enabled) || false}
           className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
         >
