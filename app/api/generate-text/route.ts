@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 import { generateText } from '../../../lib/openai'
 import { 
   TextGenerationRequestSchema, 
@@ -9,6 +10,9 @@ import {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    
+    // Extract force parameter
+    const force = body.force || false
     
     // Validate request
     const validatedRequest = TextGenerationRequestSchema.parse(body)
@@ -44,6 +48,9 @@ Always return STRICT JSON only; no markdown, no preamble.`
       }
     }
 
+    // Vary output if force is true
+    const seed = force ? crypto.randomBytes(4).toString('hex') : 'stable'
+
     const userPrompt = `Company: ${validatedRequest.business_name}
 Industry: ${validatedRequest.industry}
 Platform: ${validatedRequest.platform}
@@ -52,6 +59,7 @@ Products/Services: ${validatedRequest.products_services}
 Target Audience: ${validatedRequest.target_audience}
 Keywords (weave naturally, not hashtag spam): ${validatedRequest.keywords || 'general business topics'}
 Post Type: ${validatedRequest.post_type}
+Seed: ${seed}
 
 Task: Create a ${validatedRequest.platform} post in the style of Chris Donnelly — direct, tactical, problem-led, story-first.
 
@@ -98,7 +106,11 @@ Return ONLY valid JSON with keys:
       parsedResponse = parseTextGenerationResponse(response)
     }
     
-    return NextResponse.json(parsedResponse)
+    // Attach meta for debugging
+    return NextResponse.json({
+      ...parsedResponse,
+      meta: { seed, force: !!force, ts: Date.now() }
+    })
     
   } catch (error) {
     console.error('Text generation error:', error)

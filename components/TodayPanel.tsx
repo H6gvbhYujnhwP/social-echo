@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, Sparkles, Copy, Clock, Eye, RefreshCw, Settings } from 'lucide-react'
 import { Button } from './ui/Button'
@@ -27,6 +27,9 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
   const [lastRotation, setLastRotation] = useState(profile.rotation)
   const [postTypeMode, setPostTypeMode] = useState<PostTypeMode>('auto')
   const [todayPlan, setTodayPlan] = useState<{ type: PostType; enabled: boolean } | null>(null)
+  
+  // Single-flight guard to prevent multiple parallel requests
+  const inflightRef = useRef<AbortController | null>(null)
 
   // Get today's plan from planner
   useEffect(() => {
@@ -59,12 +62,17 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
       return
     }
 
+    // SINGLE-FLIGHT: avoid multiple parallel POSTs
+    if (inflightRef.current) return
+    const ac = new AbortController()
+    inflightRef.current = ac
+
     setIsGenerating(true)
     setError(null)
     
     try {
       // Get the current twist value from props at execution time
-      const currentTwist = twist || ''
+      const currentTwist = (typeof twist === 'string' ? twist : '') || ''
       
       const requestData = {
         business_name: profile.business_name,
@@ -79,6 +87,7 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
         rotation: profile.rotation,
         post_type: currentPostType,
         platform: 'linkedin' as const,
+        force: true, // <- important so re-gen visibly changes
       }
 
       const response = await fetch('/api/generate-text', {
@@ -87,10 +96,11 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestData),
+        signal: ac.signal,
       })
 
       if (!response.ok) {
-        throw new Error('Failed to generate content')
+        throw new Error(`Failed to generate content (HTTP ${response.status})`)
       }
 
       const data = await response.json()
@@ -100,25 +110,21 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
       if (data.visual_prompt && onVisualPromptChange) {
         onVisualPromptChange(data.visual_prompt)
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+    } catch (err: any) {
+      if (err?.name !== 'AbortError') {
+        setError(err?.message ?? 'An error occurred')
+      }
     } finally {
+      inflightRef.current?.abort()
+      inflightRef.current = null
       setIsGenerating(false)
     }
-  }, [profile, twist, postTypeMode, getTodayPostType]) // Include dependencies but don't auto-execute
+  }, [profile, twist, postTypeMode])
 
-  // Create a regeneration function that can be called directly
-  const triggerRegeneration = useCallback(() => {
-    // Get the current twist value from the dashboard
-    handleGenerateText()
-  }, [])
-
-  // Expose regeneration function to parent
+  // Expose the latest generator to parent (so the external button always calls the current one)
   useEffect(() => {
-    if (onRegenerateRequest) {
-      onRegenerateRequest(triggerRegeneration)
-    }
-  }, [onRegenerateRequest, triggerRegeneration])
+    onRegenerateRequest?.(() => handleGenerateText())
+  }, [onRegenerateRequest, handleGenerateText])
 
   return (
     <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20">
@@ -187,6 +193,7 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
         </div>
 
         <Button
+          type="button"
           onClick={handleGenerateText}
           disabled={isGenerating || (postTypeMode === 'auto' && todayPlan && !todayPlan.enabled) || false}
           className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
