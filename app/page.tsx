@@ -82,14 +82,14 @@ export default function HomePage() {
             <div className="grid md:grid-cols-2 gap-8 mb-16">
               <FeatureCard
                 icon={Zap}
-                title="Social Media Growth"
-                price="£149.99 per month"
+                title="Starter Plan"
+                price="£29.99 per month"
                 features={[
-                  "Unlimited posts written in your voice",
-                  "Custom images created for every post",
-                  "Post directly from your smartphone in minutes",
-                  "Just 10 minutes a day to engage on LinkedIn",
-                  "No contracts—switch on or off whenever you like"
+                  "2 posts per week written in your voice",
+                  "Text + image generation",
+                  "Content Mix Planner (Selling / Info / Advice / News)",
+                  "Copy and download workflows",
+                  "Ideal for freelancers and solopreneurs"
                 ]}
                 buttonText="Get Started →"
                 onButtonClick={handleSignUp}
@@ -99,33 +99,161 @@ export default function HomePage() {
 
               <FeatureCard
                 icon={Target}
-                title="Email Outreach"
-                price="from £49.99 per campaign"
+                title="Pro Plan"
+                price="£49.99 per month"
                 features={[
-                  "Up to 10,000 cold emails sent each month",
-                  "Designed, delivered, and fully reported",
-                  "Tailored to your brand and goals",
-                  "Includes a 1-hour strategy session with our Head of Marketing"
+                  "Unlimited posts written in your voice",
+                  "Text + image generation",
+                  "Full Content Mix Planner (4 post types)",
+                  "Copy, download, and share workflows",
+                  "Perfect for SMEs who want daily visibility"
                 ]}
-                buttonText="Enquire Now →"
-                onButtonClick={handleContactClick}
+                buttonText="Get Started →"
+                onButtonClick={handleSignUp}
                 gradient="blue"
                 delay={1.0}
               />
             </div>
 
-            {/* CTA Section */}
+            {/* Enterprise White Label Section */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 1.2 }}
+              className="mb-16"
+            >
+              <div className="text-center mb-12">
+                <h3 className="text-3xl font-bold text-white mb-4">
+                  Enterprise White Label Plans
+                </h3>
+                <p className="text-xl text-gray-300 mb-8">
+                  White-label ready for agencies — resell at 5× markup
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Agency Starter */}
+                <GlassCard className="p-6 text-center hover:scale-105 transition-transform duration-200">
+                  <h4 className="text-xl font-bold text-white mb-2">Agency Starter</h4>
+                  <div className="text-3xl font-bold text-purple-400 mb-4">£199/mo</div>
+                  <ul className="text-left text-gray-300 space-y-2 text-sm mb-6">
+                    <li>✓ Up to 10 client accounts</li>
+                    <li>✓ Branded white-label instance</li>
+                    <li>✓ Unlimited posts per client</li>
+                    <li>✓ Admin dashboard</li>
+                    <li>✓ Email support</li>
+                  </ul>
+                  <button 
+                    onClick={handleContactClick}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+                  >
+                    Get Started
+                  </button>
+                </GlassCard>
+
+                {/* Agency Growth */}
+                <GlassCard className="p-6 text-center hover:scale-105 transition-transform duration-200 border-2 border-blue-500">
+                  <div className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full inline-block mb-2">
+                    POPULAR
+                  </div>
+                  <h4 className="text-xl font-bold text-white mb-2">Agency Growth</h4>
+                  <div className="text-3xl font-bold text-blue-400 mb-4">£399/mo</div>
+                  <ul className="text-left text-gray-300 space-y-2 text-sm mb-6">
+                    <li>✓ Up to 25 client accounts</li>
+                    <li>✓ Everything in Starter</li>
+                    <li>✓ Custom domain</li>
+                    <li>✓ Priority support</li>
+                    <li>✓ Export-ready content (CSV, PDF)</li>
+                  </ul>
+                  <button 
+                    onClick={handleContactClick}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+                  >
+                    Get Started
+                  </button>
+                </GlassCard>
+
+                {/* Agency Scale */}
+                <GlassCard className="p-6 text-center hover:scale-105 transition-transform duration-200">
+                  <h4 className="text-xl font-bold text-white mb-2">Agency Scale</h4>
+                  <div className="text-3xl font-bold text-green-400 mb-4">£799/mo</div>
+                  <ul className="text-left text-gray-300 space-y-2 text-sm mb-6">
+                    <li>✓ Up to 50 client accounts</li>
+                    <li>✓ Everything in Growth</li>
+                    <li>✓ Advanced branding</li>
+                    <li>✓ Team seats</li>
+                    <li>✓ Dedicated support channel</li>
+                    <li>✓ Quarterly strategy call</li>
+                  </ul>
+                  <button 
+                    onClick={handleContactClick}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+                  >
+                    Get Started
+                  </button>
+                </GlassCard>
+
+                {/* Enterprise Unlimited */}
+                <GlassCard className="p-6 text-center hover:scale-105 transition-transform duration-200">
+                  <h4 className="text-xl font-bold text-white mb-2">Enterprise Unlimited</h4>
+                  <div className="text-3xl font-bold text-orange-400 mb-4">£1,499+/mo</div>
+                  <ul className="text-left text-gray-300 space-y-2 text-sm mb-6">
+                    <li>✓ Unlimited client accounts</li>
+                    <li>✓ Full white-label SaaS</li>
+                    <li>✓ API access</li>
+                    <li>✓ Custom onboarding</li>
+                    <li>✓ SLA guarantees</li>
+                    <li>✓ Revenue-share model</li>
+                  </ul>
+                  <button 
+                    onClick={handleContactClick}
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+                  >
+                    Contact Sales
+                  </button>
+                </GlassCard>
+              </div>
+
+              {/* Agency Revenue Example */}
+              <div className="mt-12 bg-gradient-to-r from-purple-900/50 to-blue-900/50 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+                <h4 className="text-2xl font-bold text-white mb-4 text-center">
+                  Agency Revenue Potential
+                </h4>
+                <div className="grid md:grid-cols-3 gap-6 text-center">
+                  <div>
+                    <div className="text-gray-400 mb-2">You Pay</div>
+                    <div className="text-3xl font-bold text-white">£399/mo</div>
+                    <div className="text-sm text-gray-400">(25 accounts)</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400 mb-2">You Charge</div>
+                    <div className="text-3xl font-bold text-green-400">£99/mo</div>
+                    <div className="text-sm text-gray-400">per client</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400 mb-2">Your Margin</div>
+                    <div className="text-3xl font-bold text-green-400">£2,076/mo</div>
+                    <div className="text-sm text-gray-400">(520% markup)</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* CTA Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1.4 }}
               className="text-center mb-16"
             >
+              <p className="text-2xl text-white mb-6 font-semibold">
+                Stop paying £2,000+ per month for agencies — get daily posts for £49.
+              </p>
               <button 
-                onClick={handleContactClick}
+                onClick={handleSignUp}
                 className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-8 py-3 rounded-full text-lg font-semibold shadow-xl transform hover:scale-105 transition-all duration-200 mb-6"
               >
-                Click here
+                Start Your Free Trial
               </button>
             </motion.div>
           </div>
