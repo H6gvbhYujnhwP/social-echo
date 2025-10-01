@@ -2,20 +2,24 @@
 
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Edit3, RefreshCw, Sparkles } from 'lucide-react'
+import { Edit3, RefreshCw, Sparkles, FileText } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Textarea } from './ui/Textarea'
-import { UserProfile, setProfile } from '../lib/localstore'
+import { Badge } from './ui/Badge'
+import { UserProfile, setProfile, getTodayPostType, type PostType } from '../lib/localstore'
 
 interface FineTunePanelProps {
   profile: UserProfile
   onProfileUpdate: (profile: UserProfile) => void
   onRegenerate: (twist: string) => void
+  currentPostType?: PostType
+  onPostTypeChange?: (postType: PostType) => void
 }
 
-export function FineTunePanel({ profile, onProfileUpdate, onRegenerate }: FineTunePanelProps) {
+export function FineTunePanel({ profile, onProfileUpdate, onRegenerate, currentPostType, onPostTypeChange }: FineTunePanelProps) {
   const [twist, setTwist] = useState('')
   const [currentRotation, setCurrentRotation] = useState(profile.rotation)
+  const todayPlan = getTodayPostType()
 
   const handleRotationChange = (newRotation: 'serious' | 'quirky') => {
     setCurrentRotation(newRotation)
@@ -45,6 +49,49 @@ export function FineTunePanel({ profile, onProfileUpdate, onRegenerate }: FineTu
       </div>
       
       <div className="p-6 space-y-6">
+        {/* Current Post Type Display */}
+        {currentPostType && (
+          <div>
+            <label className="block text-sm font-medium text-white mb-3 flex items-center">
+              <FileText className="h-4 w-4 mr-2" />
+              Current Post Type
+            </label>
+            <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+              <div className="flex items-center space-x-3">
+                <Badge className={`${
+                  currentPostType === 'selling' ? 'bg-green-100 text-green-800 border-green-200' :
+                  currentPostType === 'informational' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                  'bg-purple-100 text-purple-800 border-purple-200'
+                }`}>
+                  {currentPostType.charAt(0).toUpperCase() + currentPostType.slice(1)}
+                </Badge>
+                {todayPlan && todayPlan.type === currentPostType && (
+                  <span className="text-sm text-white/70">
+                    (From today's plan)
+                  </span>
+                )}
+              </div>
+              {onPostTypeChange && (
+                <div className="flex space-x-2">
+                  {(['selling', 'informational', 'advice'] as PostType[]).map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => onPostTypeChange(type)}
+                      className={`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
+                        currentPostType === type
+                          ? 'bg-white/20 text-white'
+                          : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+                      }`}
+                    >
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <div>
           <label className="block text-sm font-medium text-white mb-3">
             Add a twist for today (optional)

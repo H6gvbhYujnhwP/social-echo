@@ -17,32 +17,63 @@ export async function POST(request: NextRequest) {
     const systemPrompt = `You are SOCIAL ECHO, a marketing copy expert for SMEs. You write crisp, tactical, story-first LinkedIn posts that read like Chris Donnelly: direct, practical, and engaging for busy professionals.
 Always return STRICT JSON only; no markdown, no preamble.`
 
+    // Define post structure based on type
+    const getPostStructure = (postType: string) => {
+      switch (postType) {
+        case 'selling':
+          return 'Hook → Pain → Benefit → Mini proof → CTA'
+        case 'informational':
+          return 'Hook → Context → 3 takeaways → Implication → Question'
+        case 'advice':
+          return 'Hook → Checklist/steps → Quick-win → Question'
+        default:
+          return 'Hook → Context → Value → Question'
+      }
+    }
+
+    const getHashtagFocus = (postType: string) => {
+      switch (postType) {
+        case 'selling':
+          return 'Include sales-focused hashtags like #SMEGrowth #BusinessSolutions #ROI'
+        case 'informational':
+          return 'Include industry insight hashtags like #BusinessTrends #MarketInsights #SMENews'
+        case 'advice':
+          return 'Include actionable hashtags like #BusinessTips #SMEAdvice #Productivity'
+        default:
+          return 'Mix broad SME and niche targeting hashtags'
+      }
+    }
+
     const userPrompt = `Company: ${validatedRequest.business_name}
 Industry: ${validatedRequest.industry}
+Platform: ${validatedRequest.platform}
 Tone: ${validatedRequest.tone} (obey this voice consistently)
 Products/Services: ${validatedRequest.products_services}
 Target Audience: ${validatedRequest.target_audience}
 Keywords (weave naturally, not hashtag spam): ${validatedRequest.keywords || 'general business topics'}
+Post Type: ${validatedRequest.post_type}
 
-Task: Create a LinkedIn post in the style of Chris Donnelly — direct, tactical, problem-led, story-first.
+Task: Create a ${validatedRequest.platform} post in the style of Chris Donnelly — direct, tactical, problem-led, story-first.
+
+Post Structure for ${validatedRequest.post_type} posts: ${getPostStructure(validatedRequest.post_type)}
 
 Steps:
-1) Provide 3 headline/title options (hooks).
-2) Write the full LinkedIn post draft with double spacing between sentences, ending in a reflection or question.
-3) Add hashtags at the foot of the post (6–8, mixing broad SME finance reach and niche targeting).
-4) Suggest 1 strong image concept that pairs with the post.
+1) Provide 3 headline/title options (hooks) that fit the ${validatedRequest.post_type} structure.
+2) Write the full ${validatedRequest.platform} post draft following the ${validatedRequest.post_type} structure with double spacing between sentences.
+3) Add hashtags at the foot of the post (6–8). ${getHashtagFocus(validatedRequest.post_type)}.
+4) Suggest 1 strong image concept that pairs with the ${validatedRequest.post_type} post.
 5) Suggest the best time to post that day (UK time).
 
 Content rotation: Alternate between:
-- A serious SME finance post (cashflow, staff, late payments, interest rates, growth, resilience) when rotation is "serious"
-- A funny/quirky finance industry story (weird leases, unusual loans, absurd expenses, strange finance deals) when rotation is "quirky"
+- A serious SME business post (growth, challenges, solutions, success stories) when rotation is "serious"
+- A funny/quirky business story (unusual situations, light-hearted takes, relatable moments) when rotation is "quirky"
 
 Current rotation: ${validatedRequest.rotation}
 
 Output format:
-- Headline options
-- LinkedIn post draft  
-- Hashtags
+- Headline options (3 hooks that work for ${validatedRequest.post_type} posts)
+- ${validatedRequest.platform} post draft following ${validatedRequest.post_type} structure
+- Hashtags (6-8, optimized for ${validatedRequest.post_type} content)
 - Visual concept
 - Best time to post today
 

@@ -127,12 +127,59 @@ export default function HomePage() {
               >
                 Click here
               </button>
-              <p className="text-xl text-white mb-2">
-                <strong>Speak with Westley or John</strong>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Why 7 Days of Posting Works */}
+        <section className="px-6 py-16">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
+                Why Posting Smart, Every Day, Wins
+              </h2>
+              <p className="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed mb-12">
+                Our 7-day posting method ensures you're not just filling a feed — you're building authority, trust, and sales.
               </p>
-              <p className="text-gray-300">
-                today to start growing your visibility and winning more customers.
+              
+              <div className="grid md:grid-cols-3 gap-8 mb-12">
+                <GlassCard className="p-8 text-center">
+                  <div className="text-4xl mb-4">📘</div>
+                  <h3 className="text-xl font-semibold text-white mb-4">Informational Posts</h3>
+                  <p className="text-gray-300">Position you as the expert in your field with valuable insights and industry knowledge.</p>
+                </GlassCard>
+                
+                <GlassCard className="p-8 text-center">
+                  <div className="text-4xl mb-4">💡</div>
+                  <h3 className="text-xl font-semibold text-white mb-4">Advice Posts</h3>
+                  <p className="text-gray-300">Deliver quick wins and real value that your audience can implement immediately.</p>
+                </GlassCard>
+                
+                <GlassCard className="p-8 text-center">
+                  <div className="text-4xl mb-4">💰</div>
+                  <h3 className="text-xl font-semibold text-white mb-4">Selling Posts</h3>
+                  <p className="text-gray-300">Give clear CTAs without overwhelming your audience, perfectly timed for maximum impact.</p>
+                </GlassCard>
+              </div>
+              
+              <p className="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed mb-8">
+                This balanced rhythm means your audience sees you as helpful, insightful, and credible — and when you do sell, they're ready to buy.
               </p>
+              
+              <motion.button
+                onClick={handleSignUp}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-10 py-4 rounded-full text-xl font-semibold shadow-xl transform transition-all duration-200"
+              >
+                Start My Free Trial Today
+              </motion.button>
             </motion.div>
           </div>
         </section>

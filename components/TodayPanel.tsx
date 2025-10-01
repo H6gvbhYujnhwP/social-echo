@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, Sparkles, Copy, Clock, Eye, RefreshCw } from 'lucide-react'
+import { Calendar, Sparkles, Copy, Clock, Eye, RefreshCw, Settings } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Badge } from './ui/Badge'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card'
 import { Copyable } from './Copyable'
-import { UserProfile } from '../lib/localstore'
+import { UserProfile, getTodayPostType, type PostType } from '../lib/localstore'
 import { TextGenerationResponse } from '../lib/contract'
 
 interface TodayPanelProps {
@@ -16,13 +16,43 @@ interface TodayPanelProps {
   onFineTuneClick: () => void
 }
 
+type PostTypeMode = 'auto' | PostType
+
 export function TodayPanel({ profile, twist, onFineTuneClick }: TodayPanelProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedContent, setGeneratedContent] = useState<TextGenerationResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [lastRotation, setLastRotation] = useState(profile.rotation)
+  const [postTypeMode, setPostTypeMode] = useState<PostTypeMode>('auto')
+  const [todayPlan, setTodayPlan] = useState<{ type: PostType; enabled: boolean } | null>(null)
+
+  // Get today's plan from planner
+  useEffect(() => {
+    const plan = getTodayPostType()
+    setTodayPlan(plan)
+  }, [])
+
+  // Get the effective post type (from planner or manual override)
+  const getEffectivePostType = (): PostType => {
+    if (postTypeMode === 'auto') {
+      return todayPlan?.type || 'informational'
+    }
+    return postTypeMode
+  }
+
+  // Get day name for display
+  const getTodayDayName = (): string => {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    return days[new Date().getDay()]
+  }
 
   const handleGenerateText = useCallback(async () => {
+    // Check if today is disabled in planner
+    if (postTypeMode === 'auto' && todayPlan && !todayPlan.enabled) {
+      setError('No post scheduled for today. Switch to manual mode to generate anyway.')
+      return
+    }
+
     setIsGenerating(true)
     setError(null)
     
@@ -38,6 +68,8 @@ export function TodayPanel({ profile, twist, onFineTuneClick }: TodayPanelProps)
           ...(twist ? [twist] : [])
         ].filter(Boolean).join(', '),
         rotation: profile.rotation,
+        post_type: getEffectivePostType(),
+        platform: 'linkedin' as const,
       }
 
       const response = await fetch('/api/generate-text', {
@@ -59,7 +91,7 @@ export function TodayPanel({ profile, twist, onFineTuneClick }: TodayPanelProps)
     } finally {
       setIsGenerating(false)
     }
-  }, [profile, twist])
+  }, [profile, twist, postTypeMode, todayPlan, getEffectivePostType])
 
   // Auto-regenerate when rotation changes and we have existing content
   useEffect(() => {
@@ -79,10 +111,66 @@ export function TodayPanel({ profile, twist, onFineTuneClick }: TodayPanelProps)
       </div>
       
       <div className="p-6 space-y-6">
+        {/* Post Type Selector */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">Content Type</h3>
+            <a 
+              href="/planner" 
+              className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+            >
+              <Settings className="h-4 w-4 mr-1" />
+              Edit Planner
+            </a>
+          </div>
+          
+          {/* Segmented Control */}
+          <div className="flex bg-gray-100 rounded-xl p-1">
+            {(['auto', 'informational', 'advice', 'selling'] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setPostTypeMode(mode)}
+                className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  postTypeMode === mode
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {mode === 'auto' ? 'Auto' : mode.charAt(0).toUpperCase() + mode.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          {/* Status Badge */}
+          <div className="flex items-center justify-center">
+            {postTypeMode === 'auto' ? (
+              todayPlan ? (
+                todayPlan.enabled ? (
+                  <Badge className="bg-green-100 text-green-800 border-green-200">
+                    Today's plan: {todayPlan.type.charAt(0).toUpperCase() + todayPlan.type.slice(1)} ({getTodayDayName()})
+                  </Badge>
+                ) : (
+                  <Badge className="bg-red-100 text-red-800 border-red-200">
+                    No post scheduled today
+                  </Badge>
+                )
+              ) : (
+                <Badge className="bg-gray-100 text-gray-800 border-gray-200">
+                  Loading planner...
+                </Badge>
+              )
+            ) : (
+              <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                Manual override: {postTypeMode.charAt(0).toUpperCase() + postTypeMode.slice(1)}
+              </Badge>
+            )}
+          </div>
+        </div>
+
         <Button
           onClick={handleGenerateText}
-          disabled={isGenerating}
-          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+          disabled={isGenerating || (postTypeMode === 'auto' && todayPlan && !todayPlan.enabled) || false}
+          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
         >
           {isGenerating ? (
             <>
