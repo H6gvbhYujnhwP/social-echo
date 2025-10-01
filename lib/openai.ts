@@ -35,9 +35,10 @@ export async function generateImage(prompt: string): Promise<string> {
   try {
     const client = getOpenAIClient();
     const res = await client.images.generate({
-      model: "gpt-image-1",
+      model: "dall-e-3",
       prompt,
       size: "1024x1024",
+      quality: "standard",
       response_format: "b64_json",
     });
     const b64 = res.data?.[0]?.b64_json;
