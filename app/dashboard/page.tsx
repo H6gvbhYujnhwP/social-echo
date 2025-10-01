@@ -40,11 +40,16 @@ export default function DashboardPage() {
   }
 
   const handleRegenerate = (newTwist: string) => {
+    // Update twist state first
     setTwist(newTwist)
-    // Call regeneration function directly if available
-    if (regenerateFunction) {
-      regenerateFunction()
-    }
+    
+    // Use setTimeout to ensure state update is processed before regeneration
+    setTimeout(() => {
+      if (regenerateFunction) {
+        regenerateFunction()
+      }
+    }, 0)
+    
     // Don't close the FineTunePanel so users can see the result and make further adjustments
   }
 

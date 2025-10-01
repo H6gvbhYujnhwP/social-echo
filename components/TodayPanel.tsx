@@ -66,16 +66,19 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
       // Get the current twist value from props at execution time
       const currentTwist = twist || ''
       
+      // Combine keywords with twist for better content generation
+      const allKeywords = [...profile.keywords]
+      if (currentTwist.trim()) {
+        allKeywords.push(currentTwist.trim())
+      }
+      
       const requestData = {
         business_name: profile.business_name,
         industry: profile.industry,
         tone: profile.tone,
         products_services: profile.products_services,
         target_audience: profile.target_audience,
-        keywords: [
-          ...profile.keywords,
-          ...(currentTwist ? [currentTwist] : [])
-        ].filter(Boolean).join(', '),
+        keywords: allKeywords.join(', '),
         rotation: profile.rotation,
         post_type: currentPostType,
         platform: 'linkedin' as const,
@@ -105,13 +108,13 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
     } finally {
       setIsGenerating(false)
     }
-  }, [profile, twist, postTypeMode, getTodayPostType]) // Include dependencies but don't auto-execute
+  }, []) // Remove all dependencies to prevent automatic execution
 
   // Create a regeneration function that can be called directly
   const triggerRegeneration = useCallback(() => {
-    // Get the current twist value from the dashboard
+    // Call handleGenerateText which will use current values at execution time
     handleGenerateText()
-  }, [])
+  }, [handleGenerateText])
 
   // Expose regeneration function to parent
   useEffect(() => {
