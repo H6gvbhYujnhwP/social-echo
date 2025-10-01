@@ -71,15 +71,21 @@ Post Structure for ${validatedRequest.post_type} posts: ${getPostStructure(valid
 
 ${validatedRequest.post_type === 'news' ? `
 Special Instructions for News Posts:
-- Select a GLOBAL or LOCAL top headline from the ${validatedRequest.industry} sector (NOT news about ${validatedRequest.business_name})
-- Focus on: major industry announcements, regulatory changes, market trends, economic indicators, or breaking developments
-- Examples: "Bank of England raises rates", "New AI regulations announced", "Tech sector layoffs reach record high"
-- DO NOT create news about the customer's business - focus on external industry news that affects their sector
+- Select a GLOBAL or LOCAL top headline that is HIGHLY RELEVANT to the ${validatedRequest.industry} sector (NOT news about ${validatedRequest.business_name} itself)
+- The news MUST relate directly to their business context:
+  * Industry: ${validatedRequest.industry}
+  * Products/Services: ${validatedRequest.products_services}
+  * Target Audience: ${validatedRequest.target_audience}
+  * Keywords: ${validatedRequest.keywords || 'general business topics'}
+- Focus on external news that IMPACTS their specific sector: regulatory changes affecting their services, market trends in their niche, economic indicators relevant to their customers, technology/policy changes in their field
+- Examples for a finance SME: "Bank of England raises rates" (affects lending), "New FCA regulations" (compliance), "SME loan defaults rise 15%" (market trend)
+- Examples for a tech SME: "New AI regulations announced", "GDPR fines increase 40%", "Cloud computing costs drop 20%"
+- DO NOT create news about the customer's business - focus on external industry news that directly affects their sector and services
 - Summarize the news in 2-3 simple lines
-- Add analysis or commentary showing why this news matters to SMEs in the ${validatedRequest.industry} industry
+- Add analysis or commentary showing why this specific news matters to SMEs like ${validatedRequest.business_name} in the ${validatedRequest.industry} industry
 - Keep tone professional, timely, and relevant
-- If no truly relevant breaking news is found, fallback to "Industry Insight" style using recent trends or observations
-- Ensure the news is recent (within the last few days or weeks)
+- If no truly relevant breaking news is found, fallback to "Industry Insight" style using recent trends or observations specific to their sector
+- Ensure the news is recent (within the last few days or weeks) and directly applicable to their business context
 ` : ''}
 
 Steps:
