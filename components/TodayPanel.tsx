@@ -31,10 +31,32 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
   // Single-flight guard to prevent multiple parallel requests
   const inflightRef = useRef<AbortController | null>(null)
 
-  // Get today's plan from planner
+  // Get today's date as a key for localStorage
+  const getTodayKey = () => {
+    const today = new Date()
+    return `social-echo-draft-${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
+  }
+
+  // Load saved draft from localStorage on mount
   useEffect(() => {
     const plan = getTodayPostType()
     setTodayPlan(plan)
+    
+    // Load saved draft for today if it exists
+    const todayKey = getTodayKey()
+    const savedDraft = localStorage.getItem(todayKey)
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft)
+        setGeneratedContent(parsed)
+        // Also restore visual prompt if available
+        if (parsed.visual_prompt && onVisualPromptChange) {
+          onVisualPromptChange(parsed.visual_prompt)
+        }
+      } catch (error) {
+        console.error('Failed to load saved draft:', error)
+      }
+    }
   }, [])
 
   // Get the effective post type (from planner or manual override)
@@ -105,6 +127,10 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
 
       const data = await response.json()
       setGeneratedContent(data)
+      
+      // Save draft to localStorage for today
+      const todayKey = getTodayKey()
+      localStorage.setItem(todayKey, JSON.stringify(data))
       
       // Pass visual prompt to parent component for image generation
       if (data.visual_prompt && onVisualPromptChange) {
@@ -195,18 +221,28 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
         <Button
           type="button"
           onClick={handleGenerateText}
-          disabled={isGenerating || (postTypeMode === 'auto' && todayPlan && !todayPlan.enabled) || false}
-          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
+          disabled={isGenerating}
+          size="lg"
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
         >
           {isGenerating ? (
             <>
               <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-              Creating today's draft...
+              {generatedContent ? 'Regenerating...' : 'Creating today\'s draft...'}
             </>
           ) : (
             <>
-              <Sparkles className="mr-2 h-5 w-5" />
-              Create today's draft
+              {generatedContent ? (
+                <>
+                  <RefreshCw className="mr-2 h-5 w-5" />
+                  Regenerate Post
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  Generate Today's Post
+                </>
+              )}
             </>
           )}
         </Button>

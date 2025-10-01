@@ -71,7 +71,10 @@ Post Structure for ${validatedRequest.post_type} posts: ${getPostStructure(valid
 
 ${validatedRequest.post_type === 'news' ? `
 Special Instructions for News Posts:
-- Select a current news headline relevant to the ${validatedRequest.industry} industry
+- Select a GLOBAL or LOCAL top headline from the ${validatedRequest.industry} sector (NOT news about ${validatedRequest.business_name})
+- Focus on: major industry announcements, regulatory changes, market trends, economic indicators, or breaking developments
+- Examples: "Bank of England raises rates", "New AI regulations announced", "Tech sector layoffs reach record high"
+- DO NOT create news about the customer's business - focus on external industry news that affects their sector
 - Summarize the news in 2-3 simple lines
 - Add analysis or commentary showing why this news matters to SMEs in the ${validatedRequest.industry} industry
 - Keep tone professional, timely, and relevant
