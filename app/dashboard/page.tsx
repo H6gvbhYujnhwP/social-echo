@@ -42,6 +42,7 @@ export default function DashboardPage() {
 
   const handleRegenerate = (newTwist: string) => {
     setTwist(newTwist)
+    setRegenerateKey(prev => prev + 1) // Trigger regeneration
     // Don't close the FineTunePanel so users can see the result and make further adjustments
   }
 
@@ -142,6 +143,7 @@ export default function DashboardPage() {
                 twist={twist}
                 onFineTuneClick={() => setShowFineTune(true)}
                 onVisualPromptChange={setVisualPrompt}
+                regenerateTrigger={regenerateKey}
               />
               
               <ImagePanel

@@ -15,11 +15,12 @@ interface TodayPanelProps {
   twist?: string
   onFineTuneClick: () => void
   onVisualPromptChange?: (visualPrompt: string) => void
+  regenerateTrigger?: number
 }
 
 type PostTypeMode = 'auto' | PostType
 
-export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChange }: TodayPanelProps) {
+export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChange, regenerateTrigger }: TodayPanelProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedContent, setGeneratedContent] = useState<TextGenerationResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -107,12 +108,12 @@ export function TodayPanel({ profile, twist, onFineTuneClick, onVisualPromptChan
     }
   }, [profile.rotation, generatedContent, lastRotation, handleGenerateText])
 
-  // Auto-regenerate when twist changes (for fine-tuning)
+  // Manual regeneration trigger (when user clicks "Re-generate Draft")
   useEffect(() => {
-    if (twist && twist.trim() !== '') {
+    if (regenerateTrigger && regenerateTrigger > 0) {
       handleGenerateText()
     }
-  }, [twist, handleGenerateText])
+  }, [regenerateTrigger, handleGenerateText])
 
   return (
     <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20">
