@@ -7,7 +7,8 @@ import { Calendar, User } from 'lucide-react'
 import { TodayPanel } from '../../components/TodayPanel'
 import { ImagePanel } from '../../components/ImagePanel'
 import { FineTunePanel } from '../../components/FineTunePanel'
-import { UserProfile, getProfile, getOrCreatePlanner, type Planner, type PostType } from '../../lib/localstore'
+import { LearningProgress } from '../../components/LearningProgress'
+import { UserProfile, getProfile, getOrCreatePlanner, savePostHistory, type Planner, type PostType } from '../../lib/localstore'
 import Link from 'next/link'
 
 // Type for generated draft
@@ -26,6 +27,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
   const [todayDraft, setTodayDraft] = useState<GeneratedDraft | null>(null)
+  const [currentPostId, setCurrentPostId] = useState<string | null>(null)
   const [postTypeMode, setPostTypeMode] = useState<'auto' | PostType>('auto')
   const [showCustomiseModal, setShowCustomiseModal] = useState(false)
 
@@ -130,6 +132,18 @@ export default function DashboardPage() {
       const todayKey = getTodayKey()
       localStorage.setItem(todayKey, JSON.stringify(data))
       
+      // Save to post history and get postId
+      const postId = savePostHistory({
+        date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+        postType: effectivePostType === 'auto' ? 'informational' : effectivePostType,
+        tone: (options?.tone as UserProfile['tone']) || profile.tone,
+        headlineOptions: data.headline_options,
+        postText: data.post_text,
+        hashtags: data.hashtags,
+        visualPrompt: data.visual_prompt
+      })
+      setCurrentPostId(postId)
+      
       // Close modal if open (already closed by handleCustomiseApply)
       setShowCustomiseModal(false)
       
@@ -229,6 +243,7 @@ export default function DashboardPage() {
             <TodayPanel
               profile={profile}
               todayDraft={todayDraft}
+              currentPostId={currentPostId}
               postTypeMode={postTypeMode}
               isGenerating={isGenerating}
               onGenerate={handleGeneratePost}
@@ -242,6 +257,11 @@ export default function DashboardPage() {
               industry={profile.industry}
               tone={profile.tone}
             />
+          </div>
+
+          {/* Learning Progress Section */}
+          <div className="mt-8">
+            <LearningProgress />
           </div>
         </div>
       </main>

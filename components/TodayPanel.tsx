@@ -6,12 +6,14 @@ import { Sparkles, Copy, RefreshCw, Edit3, Calendar as CalendarIcon } from 'luci
 import { Button } from './ui/Button'
 import { Copyable } from './Copyable'
 import { Badge } from './ui/Badge'
+import { FeedbackButtons } from './FeedbackButtons'
 import { UserProfile, getTodayPostType, type PostType } from '../lib/localstore'
 import { GeneratedDraft } from '../app/dashboard/page'
 
 interface TodayPanelProps {
   profile: UserProfile
   todayDraft: GeneratedDraft | null
+  currentPostId: string | null
   postTypeMode: 'auto' | PostType
   isGenerating: boolean
   onGenerate: (options?: { regenerate?: boolean }) => void
@@ -22,6 +24,7 @@ interface TodayPanelProps {
 export function TodayPanel({ 
   profile, 
   todayDraft, 
+  currentPostId,
   postTypeMode, 
   isGenerating,
   onGenerate, 
@@ -262,6 +265,13 @@ export function TodayPanel({
                 </div>
               </div>
             </div>
+
+            {/* Feedback Buttons */}
+            {currentPostId && (
+              <div className="mt-6">
+                <FeedbackButtons postId={currentPostId} />
+              </div>
+            )}
           </motion.div>
         )}
       </div>
