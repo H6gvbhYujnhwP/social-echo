@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { authenticator } from 'otplib'
-import * as QRCode from 'qrcode'
+import QRCode from 'qrcode'
 
 // Force Node.js runtime
 export const runtime = 'nodejs'
