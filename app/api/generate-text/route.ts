@@ -93,6 +93,14 @@ Steps:
 2) Write the full ${validatedRequest.platform} post draft following the ${validatedRequest.post_type} structure with double spacing between sentences.
 3) Add hashtags at the foot of the post (6–8). ${getHashtagFocus(validatedRequest.post_type)}.
 4) Suggest 1 strong image concept that pairs with the ${validatedRequest.post_type} post.
+   CRITICAL: The visual concept MUST accurately match the post content:
+   - If the post mentions a specific person by name (e.g., "Sarah"), the visual MUST describe that exact person with correct gender and context
+   - If the post describes a woman, the visual must explicitly say "woman" or "female professional"
+   - If the post describes a man, the visual must explicitly say "man" or "male professional"
+   - Include specific details from the post: profession (e.g., "legal firm owner"), setting (e.g., "law office"), scenario (e.g., "reviewing contracts")
+   - Match the emotional arc: if post shows before/after, visual should show transformation
+   - Keep it catchy and social media-friendly while being accurate
+   Example: If post says "Sarah runs a legal firm", visual should say "Professional woman in her 40s, legal firm owner named Sarah, in a modern law office..."
 5) Suggest the best time to post that day (UK time).
 
 Content rotation: Alternate between:
