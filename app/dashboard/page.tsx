@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { Calendar, User } from 'lucide-react'
 import { TodayPanel } from '../../components/TodayPanel'
@@ -22,6 +23,7 @@ export interface GeneratedDraft {
 
 export default function DashboardPage() {
   const router = useRouter()
+  const { data: session, status } = useSession()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [planner, setPlanner] = useState<Planner | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -30,6 +32,14 @@ export default function DashboardPage() {
   const [currentPostId, setCurrentPostId] = useState<string | null>(null)
   const [postTypeMode, setPostTypeMode] = useState<'auto' | PostType>('auto')
   const [showCustomiseModal, setShowCustomiseModal] = useState(false)
+
+  // Check authentication
+  useEffect(() => {
+    if (status === 'loading') return
+    if (!session) {
+      router.push('/signin')
+    }
+  }, [session, status, router])
 
   // Get today's date as a key for localStorage
   const getTodayKey = () => {
@@ -40,6 +50,8 @@ export default function DashboardPage() {
   // On mount: Load profile, planner, and today's draft if it exists
   // DO NOT call generation here
   useEffect(() => {
+    if (status === 'loading' || !session) return
+    
     const existingProfile = getProfile()
     if (!existingProfile) {
       router.push('/train')

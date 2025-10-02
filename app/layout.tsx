@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import '../styles/globals.css'
 import { Providers } from '@/components/Providers'
+import { Header } from '@/components/Header'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://socialecho.ai'),
@@ -72,25 +73,10 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-background text-foreground">
         <Providers>
-        <header className="border-b border-gray-200 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-4">
-              <div className="flex items-center">
-                <h1 className="text-2xl font-bold text-blue-600">SOCIAL ECHO</h1>
-              </div>
-              <nav className="flex items-center space-x-4">
-                <a href="/train" className="text-gray-600 hover:text-blue-600">Train again</a>
-                <span className="text-gray-400">•</span>
-                <span className="text-gray-600">Account</span>
-                <span className="text-gray-400">•</span>
-                <span className="text-gray-600">Billing</span>
-              </nav>
-            </div>
-          </div>
-        </header>
-        <main className="flex-1">
-          {children}
-        </main>
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
         </Providers>
       </body>
     </html>

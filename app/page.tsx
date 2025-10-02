@@ -12,12 +12,12 @@ export default function HomePage() {
   const router = useRouter()
 
   const handleSignUp = () => {
-    router.push('/train')
+    router.push('/signup')
   }
 
   const handleContactClick = () => {
-    // For demo purposes, redirect to dashboard
-    router.push('/dashboard')
+    // For demo purposes, redirect to sign-in
+    router.push('/signin')
   }
 
   return (
