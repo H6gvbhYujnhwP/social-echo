@@ -99,7 +99,7 @@ export function FineTunePanel({
           </label>
           <select
             value={tone}
-            onChange={(e) => setTone(e.target.value)}
+            onChange={(e) => setTone(e.target.value as UserProfile['tone'])}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           >
             <option value="professional">Professional</option>
