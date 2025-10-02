@@ -210,10 +210,10 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
           value={formData.website}
           onChange={(e) => updateField('website', e.target.value)}
           error={errors.website}
-          placeholder="e.g., www.yourcompany.com or yourcompany.co.uk"
-          type="url"
+          placeholder="e.g., sweetbyte.co.uk or www.yourcompany.com or https://example.com"
+          type="text"
         />
-        <FieldHelp text="Your company website URL (optional). This helps the AI understand your business better by analyzing your online presence and services." />
+        <FieldHelp text="Your company website URL (optional). You can enter it as: domain.com, www.domain.com, or https://domain.com - all formats work! This helps the AI understand your business better by analyzing your online presence and services." />
       </div>
 
       {/* Industry */}
