@@ -32,10 +32,11 @@ async function main() {
       },
       subscription: {
         create: {
-          plan: 'STARTER',
-          postsThisMonth: 0,
-          postsLimit: 8,
-          periodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+          plan: 'starter',
+          status: 'active',
+          usageCount: 0,
+          usageLimit: 8,
+          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
         }
       }
     },
