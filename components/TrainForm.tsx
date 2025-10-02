@@ -154,17 +154,38 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
         ? `${selectedAudiences.join(', ')}${formData.target_audience ? '. ' + formData.target_audience : ''}`
         : formData.target_audience
 
+      // Save to database via API
+      const response = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...formData,
+          website: cleanUrl(formData.website),
+          target_audience: audienceText
+        })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to save profile')
+      }
+
+      // Also save to localStorage for backward compatibility (temporary)
       setProfile({
         ...formData,
         website: cleanUrl(formData.website),
         target_audience: audienceText,
       })
+
+      // Navigate to dashboard
+      router.replace('/dashboard')
     } catch (err) {
       console.error('save failed', err)
+      alert('Failed to save profile. Please try again.')
     } finally {
       setIsSubmitting(false)
-      // replace avoids back button returning to form half-saved
-      router.replace('/dashboard')
     }
   }
 

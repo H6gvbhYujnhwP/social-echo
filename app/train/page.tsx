@@ -12,9 +12,32 @@ export default function TrainPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const existingProfile = getProfile()
-    setProfile(existingProfile)
-    setIsLoading(false)
+    // Load profile from database API
+    const loadProfile = async () => {
+      try {
+        const response = await fetch('/api/profile')
+        if (response.ok) {
+          const data = await response.json()
+          setProfile(data)
+        } else if (response.status === 404) {
+          // No profile yet - that's OK
+          setProfile(null)
+        } else {
+          // Fallback to localStorage if API fails
+          const existingProfile = getProfile()
+          setProfile(existingProfile)
+        }
+      } catch (error) {
+        console.error('Failed to load profile:', error)
+        // Fallback to localStorage
+        const existingProfile = getProfile()
+        setProfile(existingProfile)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    loadProfile()
   }, [])
 
   if (isLoading) {
