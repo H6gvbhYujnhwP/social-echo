@@ -104,10 +104,10 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
       {showNoteInput && !submitted && (
         <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
           <div className="flex items-start gap-2">
-            <MessageSquare className="w-4 h-4 text-gray-500 mt-0.5" />
+            <MessageSquare className="w-4 h-4 text-purple-500 mt-0.5" />
             <div className="flex-1 space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Tell us why (optional)
+                Give SOCIAL ECHO your feedback so it learns to give you a better experience!
               </label>
               <textarea
                 value={note}

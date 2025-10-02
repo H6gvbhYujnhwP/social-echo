@@ -6,6 +6,8 @@ import {
   parseTextGenerationResponse,
   type TextGenerationResponse 
 } from '../../../lib/contract'
+import { analyzeFeedback, generatePromptAdjustments } from '../../../lib/learning-engine'
+import { type UserProfile } from '../../../lib/localstore'
 
 // Force Node.js runtime (OpenAI SDK doesn't work well in Edge)
 export const runtime = 'nodejs'
@@ -53,9 +55,25 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Use default values (learning will be client-side)
-    const effectiveTone = validatedRequest.tone
-    const effectiveHashtagCount = 8
+    // Analyze user feedback and generate learning insights
+    const userProfile: UserProfile = {
+      business_name: validatedRequest.business_name,
+      website: '', // Not passed in API request
+      industry: validatedRequest.industry,
+      tone: validatedRequest.tone,
+      products_services: validatedRequest.products_services,
+      target_audience: validatedRequest.target_audience,
+      usp: validatedRequest.usp || '',
+      keywords: validatedRequest.keywords ? validatedRequest.keywords.split(',').map(k => k.trim()) : [],
+      rotation: validatedRequest.rotation
+    }
+    
+    const learningInsights = analyzeFeedback(userProfile)
+    const promptAdjustments = generatePromptAdjustments(learningInsights)
+    
+    // Apply learning adjustments
+    const effectiveTone = promptAdjustments.toneOverride || validatedRequest.tone
+    const effectiveHashtagCount = promptAdjustments.hashtagCount || 8
     
     // Build the prompt
     const systemPrompt = `You are SOCIAL ECHO, a marketing copy expert for SMEs. You write crisp, tactical, story-first LinkedIn posts that read like Chris Donnelly: direct, practical, and engaging for busy professionals.
@@ -101,13 +119,18 @@ Always return STRICT JSON only; no markdown, no preamble.`
 
     const userPrompt = `Business Name: ${validatedRequest.business_name}
 Industry: ${validatedRequest.industry}
-Tone: ${effectiveTone} (obey this voice consistently)
+Tone: ${effectiveTone} (obey this voice consistently)${promptAdjustments.toneOverride ? ' [LEARNED PREFERENCE]' : ''}
 Products/Services: ${validatedRequest.products_services}
 Target Audience: ${validatedRequest.target_audience}
 USP (Unique Selling Point): ${validatedRequest.usp || 'Not provided'}
 Keywords (weave naturally, not hashtag spam): ${validatedRequest.keywords || 'general business topics'}
 Post Type: ${validatedRequest.post_type}
 Seed: ${seed}
+
+${promptAdjustments.additionalInstructions.length > 0 ? `
+LEARNING INSIGHTS (from user feedback):
+${promptAdjustments.additionalInstructions.map(i => `- ${i}`).join('\n')}
+` : ''}
 
 IMPORTANT: When creating ${validatedRequest.post_type} posts (especially "informational" and "selling" types), ALWAYS keep the company's USP in mind:
 - For SELLING posts: Subtly weave in the USP to differentiate from competitors and highlight unique value
