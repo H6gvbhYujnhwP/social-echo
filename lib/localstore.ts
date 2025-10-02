@@ -7,6 +7,7 @@ export interface UserProfile {
   tone: 'professional' | 'casual' | 'funny' | 'bold'
   products_services: string
   target_audience: string
+  usp: string  // Unique Selling Point
   keywords: string[]
   rotation: 'serious' | 'quirky'
 }

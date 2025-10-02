@@ -95,6 +95,7 @@ export default function DashboardPage() {
         tone: options?.tone || profile.tone,
         products_services: profile.products_services,
         target_audience: profile.target_audience,
+        usp: profile.usp || '',
         keywords: [
           profile.keywords,
           options?.keywords || '',

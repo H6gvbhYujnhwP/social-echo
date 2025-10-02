@@ -11,15 +11,44 @@ import { KeywordSuggestions } from './KeywordSuggestions'
 import { UserProfile, setProfile } from '../lib/localstore'
 import { HelpCircle } from 'lucide-react'
 
-// URL validation helper - more forgiving
-const cleanUrl = (v: string) => v.trim()
+// URL validation helper - accepts domain.com, www.domain.com, https://domain.com
+const cleanUrl = (v: string) => {
+  const trimmed = v.trim()
+  // If empty, return empty (optional field)
+  if (!trimmed) return ''
+  // If already has protocol, return as-is
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed
+  }
+  // Otherwise add https://
+  return `https://${trimmed}`
+}
+
 const isValidUrl = (url: string): boolean => {
+  const u = url.trim()
+  if (!u) return true // optional field
+  
   try {
-    const u = cleanUrl(url)
-    if (!u) return true // optional field
-    const withProto = u.startsWith('http') ? u : `https://${u}`
+    // Clean the URL (add https:// if needed)
+    const withProto = cleanUrl(u)
     const urlObj = new URL(withProto)
-    return ['http:', 'https:'].includes(urlObj.protocol)
+    
+    // Check it's http or https
+    if (!['http:', 'https:'].includes(urlObj.protocol)) {
+      return false
+    }
+    
+    // Check it has a valid hostname (e.g., sweetbyte.co.uk, www.example.com)
+    if (!urlObj.hostname || urlObj.hostname.length < 3) {
+      return false
+    }
+    
+    // Check hostname has at least one dot (e.g., example.com)
+    if (!urlObj.hostname.includes('.')) {
+      return false
+    }
+    
+    return true
   } catch { 
     return false 
   }
@@ -74,6 +103,7 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
       tone: 'professional',
       products_services: '',
       target_audience: '',
+      usp: '',
       keywords: [],
       rotation: 'serious',
     }
@@ -100,6 +130,9 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
     }
     if (!formData.target_audience.trim() && selectedAudiences.length === 0) {
       newErrors.target_audience = 'Target audience description is required'
+    }
+    if (!formData.usp.trim()) {
+      newErrors.usp = 'USP (Unique Selling Point) is required'
     }
 
     setErrors(newErrors)
@@ -219,7 +252,21 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
           rows={4}
           required
         />
-        <FieldHelp text="Describe what you offer in detail. Include key services, products, unique selling points, and benefits. The more specific you are, the better your posts will resonate with potential clients." />
+        <FieldHelp text="Describe what you offer in detail. Include key services, products, and benefits. The more specific you are, the better your posts will resonate with potential clients." />
+      </div>
+
+      {/* USP (Unique Selling Point) */}
+      <div>
+        <Textarea
+          label="USP (Unique Selling Point)"
+          value={formData.usp}
+          onChange={(e) => updateField('usp', e.target.value)}
+          error={errors.usp}
+          placeholder="e.g., Unlike traditional consultancies that charge £10k+ for automation, we deliver AI solutions in under 2 weeks for a fraction of the cost, with guaranteed ROI or your money back."
+          rows={3}
+          required
+        />
+        <FieldHelp text="What makes you different from competitors? This is crucial for your marketing strategy. A strong USP helps you stand out, attracts the right clients, and gives people a clear reason to choose you. Include specific benefits, unique approaches, guarantees, or competitive advantages that only you offer." />
       </div>
 
       {/* Target Audience - Multi-Select */}

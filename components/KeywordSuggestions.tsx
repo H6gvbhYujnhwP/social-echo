@@ -32,18 +32,21 @@ export function KeywordSuggestions({
     const generateSuggestions = () => {
       const keywordSet = new Set<string>()
       
-      // Industry-based keywords
+      // Industry-based keywords - more specific and target-market focused
       const industryKeywords: Record<string, string[]> = {
-        'IT Support': ['technology', 'IT services', 'tech support', 'cybersecurity', 'cloud computing', 'network management'],
-        'Financial Services': ['finance', 'investment', 'banking', 'financial planning', 'wealth management', 'insurance'],
-        'Marketing': ['digital marketing', 'social media', 'SEO', 'content marketing', 'advertising', 'branding'],
-        'Healthcare': ['healthcare', 'medical services', 'patient care', 'health technology', 'wellness', 'telemedicine'],
-        'Education': ['education', 'learning', 'training', 'e-learning', 'professional development', 'skills'],
-        'Real Estate': ['real estate', 'property', 'investment', 'housing', 'commercial property', 'property management'],
-        'Legal': ['legal services', 'law', 'compliance', 'legal advice', 'litigation', 'corporate law'],
-        'Consulting': ['consulting', 'business strategy', 'management', 'advisory', 'expertise', 'solutions'],
-        'Manufacturing': ['manufacturing', 'production', 'quality control', 'supply chain', 'automation', 'industrial'],
-        'Retail': ['retail', 'e-commerce', 'customer service', 'sales', 'shopping', 'consumer goods']
+        'IT Support': ['digital transformation', 'cybersecurity solutions', 'cloud migration', 'IT infrastructure', 'managed services', 'business continuity', 'data protection', 'remote work technology'],
+        'Financial Services': ['financial planning', 'investment strategy', 'wealth management', 'retirement planning', 'tax optimization', 'portfolio management', 'financial independence', 'risk management'],
+        'Marketing': ['content strategy', 'brand positioning', 'lead generation', 'conversion optimization', 'social media strategy', 'marketing automation', 'customer acquisition', 'ROI marketing'],
+        'Healthcare': ['patient experience', 'healthcare innovation', 'medical technology', 'preventive care', 'healthcare compliance', 'telehealth solutions', 'patient outcomes', 'clinical excellence'],
+        'Education': ['professional development', 'skills training', 'corporate learning', 'leadership development', 'upskilling', 'workforce training', 'learning strategy', 'talent development'],
+        'Real Estate': ['property investment', 'commercial real estate', 'property valuation', 'real estate strategy', 'portfolio diversification', 'property development', 'market analysis', 'investment returns'],
+        'Legal': ['legal compliance', 'corporate governance', 'contract law', 'business law', 'regulatory compliance', 'legal risk management', 'commercial litigation', 'legal strategy'],
+        'Consulting': ['business transformation', 'strategic consulting', 'operational excellence', 'change management', 'business optimization', 'growth strategy', 'performance improvement', 'strategic planning'],
+        'Manufacturing': ['lean manufacturing', 'process optimization', 'supply chain efficiency', 'quality assurance', 'production automation', 'operational efficiency', 'manufacturing innovation', 'cost reduction'],
+        'Retail': ['customer experience', 'retail innovation', 'omnichannel strategy', 'customer loyalty', 'retail technology', 'merchandising strategy', 'sales optimization', 'customer engagement'],
+        'Automation': ['process automation', 'AI implementation', 'workflow optimization', 'efficiency gains', 'digital workflows', 'automation ROI', 'business process improvement', 'intelligent automation'],
+        'Software': ['software solutions', 'digital innovation', 'SaaS platforms', 'technology adoption', 'software development', 'product innovation', 'tech stack', 'scalable solutions'],
+        'Professional Services': ['client success', 'professional expertise', 'service excellence', 'client relationships', 'trusted advisor', 'industry expertise', 'value delivery', 'client outcomes']
       }
 
       // Add industry-specific keywords
@@ -79,10 +82,11 @@ export function KeywordSuggestions({
         })
       }
 
-      // Add common business keywords
+      // Add strategic business keywords
       const commonKeywords = [
-        'business growth', 'professional services', 'customer satisfaction', 'innovation', 'expertise',
-        'quality service', 'trusted partner', 'industry leader', 'best practices', 'client success'
+        'business growth', 'SME success', 'competitive advantage', 'market leadership', 'client results',
+        'proven ROI', 'industry expertise', 'business transformation', 'strategic partnerships', 'value creation',
+        'operational excellence', 'customer success', 'innovation strategy', 'business intelligence', 'scalable solutions'
       ]
       
       // Add a few common keywords if we don't have many suggestions

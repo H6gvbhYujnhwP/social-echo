@@ -61,9 +61,18 @@ Platform: ${validatedRequest.platform}
 Tone: ${validatedRequest.tone} (obey this voice consistently)
 Products/Services: ${validatedRequest.products_services}
 Target Audience: ${validatedRequest.target_audience}
+USP (Unique Selling Point): ${validatedRequest.usp || 'Not provided'}
 Keywords (weave naturally, not hashtag spam): ${validatedRequest.keywords || 'general business topics'}
 Post Type: ${validatedRequest.post_type}
 Seed: ${seed}
+
+IMPORTANT: When creating ${validatedRequest.post_type} posts (especially "informational" and "selling" types), ALWAYS keep the company's USP in mind:
+- For SELLING posts: Subtly weave in the USP to differentiate from competitors and highlight unique value
+- For INFORMATIONAL posts: Position insights in a way that demonstrates the company's unique expertise and approach
+- For ADVICE posts: Frame recommendations that align with the company's unique methodology or philosophy
+- For NEWS posts: Analyze how industry news specifically impacts or validates the company's unique positioning
+
+The USP should inform the perspective and angle of every post, making it clear why THIS company is uniquely qualified to discuss the topic.
 
 Task: Create a ${validatedRequest.platform} post in the style of Chris Donnelly — direct, tactical, problem-led, story-first.
 
