@@ -7,35 +7,31 @@ async function main() {
   console.log('🌱 Seeding database...')
 
   // Create test user
-  const passwordHash = await bcrypt.hash('Passw0rd!', 10)
+  const password = await bcrypt.hash('Passw0rd!', 10)
   
   const user = await prisma.user.upsert({
     where: { email: 'test@sweetbyte.co.uk' },
     update: {},
     create: {
       email: 'test@sweetbyte.co.uk',
-      passwordHash,
+      password,
       name: 'Sweetbyte Tester',
       emailVerified: new Date(),
       profile: {
         create: {
-          businessName: 'Sweetbyte',
-          website: 'https://www.sweetbyte.co.uk',
           industry: 'IT Services and Support',
-          productsServices: 'Managed IT services, cloud backup, cybersecurity, IT support',
+          company: 'Sweetbyte',
           targetAudience: 'Small and medium businesses in the UK',
-          usp: 'Proactive IT support that prevents problems before they happen',
-          tone: 'Professional',
           keywords: 'backups, security, IT support, cloud services',
-          rotation: 'serious'
+          tone: 'Professional'
         }
       },
       subscription: {
         create: {
-          plan: 'starter',
-          status: 'active',
-          usageLimit: 8,
-          usageCount: 0
+          plan: 'STARTER',
+          postsThisMonth: 0,
+          postsLimit: 8,
+          periodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
         }
       }
     },
@@ -49,21 +45,21 @@ async function main() {
 
   // Create planner schedule (7 days)
   const plannerSchedule = [
-    { weekday: 0, postType: 'advice' },      // Sunday
-    { weekday: 1, postType: 'informational' }, // Monday
-    { weekday: 2, postType: 'selling' },     // Tuesday
-    { weekday: 3, postType: 'informational' }, // Wednesday
-    { weekday: 4, postType: 'advice' },      // Thursday
-    { weekday: 5, postType: 'news' },        // Friday
-    { weekday: 6, postType: 'informational' }  // Saturday
+    { dayOfWeek: 0, postType: 'advice' },      // Sunday
+    { dayOfWeek: 1, postType: 'informational' }, // Monday
+    { dayOfWeek: 2, postType: 'selling' },     // Tuesday
+    { dayOfWeek: 3, postType: 'informational' }, // Wednesday
+    { dayOfWeek: 4, postType: 'advice' },      // Thursday
+    { dayOfWeek: 5, postType: 'news' },        // Friday
+    { dayOfWeek: 6, postType: 'informational' }  // Saturday
   ]
 
   for (const day of plannerSchedule) {
     await prisma.plannerDay.upsert({
       where: {
-        userId_weekday: {
+        userId_dayOfWeek: {
           userId: user.id,
-          weekday: day.weekday
+          dayOfWeek: day.dayOfWeek
         }
       },
       update: {
@@ -71,7 +67,7 @@ async function main() {
       },
       create: {
         userId: user.id,
-        weekday: day.weekday,
+        dayOfWeek: day.dayOfWeek,
         postType: day.postType
       }
     })
@@ -84,18 +80,12 @@ async function main() {
     data: {
       userId: user.id,
       postType: 'advice',
-      tone: 'Professional',
-      draft: {
-        headline_options: [
-          '5 IT Security Mistakes That Could Cost Your Business Everything',
-          'Is Your Business Ready for a Cyber Attack? Here\'s How to Prepare',
-          'The IT Support Checklist Every SME Should Follow'
-        ],
-        post_text: 'Most small businesses think they\'re too small to be targeted by cybercriminals. That\'s exactly what makes them perfect targets.\n\nHere are 5 critical IT security mistakes we see every week:\n\n1. No backup strategy - "It won\'t happen to us"\n2. Weak passwords - Still using "Password123"?\n3. No employee training - Your team is your first line of defense\n4. Outdated software - Those updates exist for a reason\n5. No incident response plan - Hoping for the best isn\'t a strategy\n\nThe good news? All of these are fixable with the right IT partner.\n\nWhat\'s your biggest IT security concern right now?',
-        hashtags: ['CyberSecurity', 'ITSupport', 'BusinessTips', 'SME', 'DataProtection', 'CloudBackup'],
-        visual_prompt: 'Professional illustration showing a shield protecting a small business office from digital threats, with icons representing backups, passwords, and security updates',
-        best_time_uk: '09:00'
-      }
+      headline: '5 IT Security Mistakes That Could Cost Your Business Everything',
+      postText: 'Most small businesses think they\'re too small to be targeted by cybercriminals. That\'s exactly what makes them perfect targets.\n\nHere are 5 critical IT security mistakes we see every week:\n\n1. No backup strategy - "It won\'t happen to us"\n2. Weak passwords - Still using "Password123"?\n3. No employee training - Your team is your first line of defense\n4. Outdated software - Those updates exist for a reason\n5. No incident response plan - Hoping for the best isn\'t a strategy\n\nThe good news? All of these are fixable with the right IT partner.\n\nWhat\'s your biggest IT security concern right now?',
+      hashtags: ['CyberSecurity', 'ITSupport', 'BusinessTips', 'SME', 'DataProtection', 'CloudBackup'],
+      visualPrompt: 'Professional illustration showing a shield protecting a small business office from digital threats, with icons representing backups, passwords, and security updates',
+      bestTimeUk: '09:00',
+      isRegeneration: false
     }
   })
 
