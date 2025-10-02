@@ -1,21 +1,57 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { generateText } from '../../../lib/openai'
+import { generateText, assertOpenAIKey } from '../../../lib/openai'
 import { 
   TextGenerationRequestSchema, 
   parseTextGenerationResponse,
   type TextGenerationResponse 
 } from '../../../lib/contract'
 
+// Force Node.js runtime (OpenAI SDK doesn't work well in Edge)
+export const runtime = 'nodejs'
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    // Assert API key is available
+    assertOpenAIKey()
+    
+    // Parse body with error handling
+    let body: any
+    try {
+      body = await request.json()
+    } catch (parseError) {
+      console.error('[generate-text] JSON parse error:', parseError)
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      )
+    }
     
     // Extract force parameter
     const force = body.force || false
     
-    // Validate request
-    const validatedRequest = TextGenerationRequestSchema.parse(body)
+    // Validate request with better error handling
+    let validatedRequest
+    try {
+      validatedRequest = TextGenerationRequestSchema.parse(body)
+    } catch (validationError: any) {
+      console.error('[generate-text] Validation error:', validationError)
+      return NextResponse.json(
+        { 
+          error: 'Invalid request data',
+          details: validationError.errors || validationError.message 
+        },
+        { status: 400 }
+      )
+    }
+    
+    // Check required field
+    if (!validatedRequest.industry) {
+      return NextResponse.json(
+        { error: 'industry is required' },
+        { status: 400 }
+      )
+    }
     
     // Use default values (learning will be client-side)
     const effectiveTone = validatedRequest.tone
@@ -120,22 +156,47 @@ Steps:
 
 Return JSON:
 {
-  "headlines": ["...", "...", "..."],
+  "headline_options": ["...", "...", "..."],
   "post_text": "...",
   "hashtags": ["...", "..."],
   "visual_prompt": "...",
-  "best_time": "HH:MM"
+  "best_time_uk": "HH:MM"
 }`
 
-    // Call OpenAI
-    const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`
-    const rawResponse = await generateText(combinedPrompt)
+    // Call OpenAI with error handling
+    let rawResponse: string
+    try {
+      const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`
+      rawResponse = await generateText(combinedPrompt)
+    } catch (openaiError: any) {
+      console.error('[generate-text] OpenAI API error:', openaiError?.message, openaiError?.stack)
+      return NextResponse.json(
+        { 
+          error: 'Failed to generate content from AI',
+          details: openaiError?.message || 'Unknown OpenAI error'
+        },
+        { status: 502 }
+      )
+    }
     
     // Parse and validate response
-    const parsed = parseTextGenerationResponse(rawResponse)
+    let parsed: TextGenerationResponse
+    try {
+      parsed = parseTextGenerationResponse(rawResponse)
+    } catch (parseError: any) {
+      console.error('[generate-text] Response parsing error:', parseError?.message)
+      console.error('[generate-text] Raw response:', rawResponse?.substring(0, 500))
+      return NextResponse.json(
+        { 
+          error: 'Failed to parse AI response',
+          details: parseError?.message || 'Invalid response format'
+        },
+        { status: 502 }
+      )
+    }
     
     // Return with metadata
-    return Response.json({
+    return NextResponse.json({
       ...parsed,
       meta: {
         seed: seed || null,
@@ -144,9 +205,13 @@ Return JSON:
     })
     
   } catch (error: any) {
-    console.error('[generate-text] Error:', error)
-    return Response.json(
-      { error: error.message || 'Failed to generate content' },
+    // Catch-all error handler
+    console.error('[generate-text] Unexpected error:', error?.message, error?.stack)
+    return NextResponse.json(
+      { 
+        error: 'Internal server error',
+        details: error?.message || 'Unknown error'
+      },
       { status: 500 }
     )
   }

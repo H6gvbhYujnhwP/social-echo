@@ -120,6 +120,13 @@ export function TodayPanel({
           </div>
         </div>
 
+        {/* Feedback Buttons - Show at top when draft exists */}
+        {todayDraft && currentPostId && (
+          <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border-2 border-purple-200">
+            <FeedbackButtons postId={currentPostId} />
+          </div>
+        )}
+
         {/* Buttons */}
         {!todayDraft ? (
           // No draft exists - show Generate button
@@ -265,13 +272,6 @@ export function TodayPanel({
                 </div>
               </div>
             </div>
-
-            {/* Feedback Buttons */}
-            {currentPostId && (
-              <div className="mt-6">
-                <FeedbackButtons postId={currentPostId} />
-              </div>
-            )}
           </motion.div>
         )}
       </div>
