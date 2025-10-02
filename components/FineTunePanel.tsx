@@ -155,7 +155,7 @@ export function FineTunePanel({
           </Button>
           <Button
             onClick={handleApply}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg"
+            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 active:from-purple-800 active:to-pink-800 active:scale-95 text-white shadow-lg transition-all duration-150"
           >
             <Sparkles className="mr-2 h-5 w-5" />
             Apply & Generate

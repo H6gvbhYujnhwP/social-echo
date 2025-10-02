@@ -13,6 +13,7 @@ interface TodayPanelProps {
   profile: UserProfile
   todayDraft: GeneratedDraft | null
   postTypeMode: 'auto' | PostType
+  isGenerating: boolean
   onGenerate: (options?: { regenerate?: boolean }) => void
   onPostTypeChange: (postType: PostType) => void
   onOpenCustomise: () => void
@@ -22,11 +23,11 @@ export function TodayPanel({
   profile, 
   todayDraft, 
   postTypeMode, 
+  isGenerating,
   onGenerate, 
   onPostTypeChange,
   onOpenCustomise 
 }: TodayPanelProps) {
-  const [isGenerating, setIsGenerating] = useState(false)
   const todayPlan = getTodayPostType()
 
   // Get the effective post type
@@ -43,22 +44,12 @@ export function TodayPanel({
     return days[new Date().getDay()]
   }
 
-  const handleGenerate = async () => {
-    setIsGenerating(true)
-    try {
-      await onGenerate({ regenerate: false })
-    } finally {
-      setIsGenerating(false)
-    }
+  const handleGenerate = () => {
+    onGenerate({ regenerate: false })
   }
 
-  const handleRegenerate = async () => {
-    setIsGenerating(true)
-    try {
-      await onGenerate({ regenerate: true })
-    } finally {
-      setIsGenerating(false)
-    }
+  const handleRegenerate = () => {
+    onGenerate({ regenerate: true })
   }
 
   const effectivePostType = getEffectivePostType()

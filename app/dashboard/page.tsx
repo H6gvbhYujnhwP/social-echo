@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [planner, setPlanner] = useState<Planner | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isGenerating, setIsGenerating] = useState(false)
   const [todayDraft, setTodayDraft] = useState<GeneratedDraft | null>(null)
   const [postTypeMode, setPostTypeMode] = useState<'auto' | PostType>('auto')
   const [showCustomiseModal, setShowCustomiseModal] = useState(false)
@@ -83,6 +84,9 @@ export default function DashboardPage() {
     
     if (!profile) return
 
+    // Set generating state to show spinner
+    setIsGenerating(true)
+
     // Get effective post type
     const effectivePostType = options?.postType || postTypeMode
 
@@ -126,12 +130,16 @@ export default function DashboardPage() {
       const todayKey = getTodayKey()
       localStorage.setItem(todayKey, JSON.stringify(data))
       
-      // Close modal if open
+      // Close modal if open (already closed by handleCustomiseApply)
       setShowCustomiseModal(false)
+      
+      // Clear generating state
+      setIsGenerating(false)
       
     } catch (error) {
       console.error('Generation error:', error)
       alert('Failed to generate content. Please try again.')
+      setIsGenerating(false)
     }
   }
 
@@ -141,10 +149,13 @@ export default function DashboardPage() {
     twist: string
     keywords: string
   }) => {
+    // Close modal immediately for better UX
+    setShowCustomiseModal(false)
+    
     // Update post type mode
     setPostTypeMode(options.postType)
     
-    // Generate with custom options
+    // Generate with custom options (will show loading spinner)
     handleGeneratePost({
       postType: options.postType === 'auto' ? undefined : options.postType,
       tone: options.tone,
@@ -219,6 +230,7 @@ export default function DashboardPage() {
               profile={profile}
               todayDraft={todayDraft}
               postTypeMode={postTypeMode}
+              isGenerating={isGenerating}
               onGenerate={handleGeneratePost}
               onPostTypeChange={handlePostTypeChange}
               onOpenCustomise={() => setShowCustomiseModal(true)}
