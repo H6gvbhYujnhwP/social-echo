@@ -56,6 +56,18 @@ export default function DashboardPage() {
       try {
         const parsed = JSON.parse(savedDraft)
         setTodayDraft(parsed)
+        
+        // Find the postId from post history for today
+        const today = new Date().toISOString().split('T')[0]
+        const historyKey = `socialecho_post_history`
+        const historyData = localStorage.getItem(historyKey)
+        if (historyData) {
+          const history = JSON.parse(historyData)
+          const todayPost = history.find((p: any) => p.date === today)
+          if (todayPost) {
+            setCurrentPostId(todayPost.id)
+          }
+        }
       } catch (error) {
         console.error('Failed to load saved draft:', error)
       }
