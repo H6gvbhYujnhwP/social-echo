@@ -19,11 +19,15 @@ async function main() {
       emailVerified: new Date(),
       profile: {
         create: {
+          businessName: 'Sweetbyte',
+          website: 'https://www.sweetbyte.co.uk',
           industry: 'IT Services and Support',
-          company: 'Sweetbyte',
+          productsServices: 'Managed IT services, cloud backup, cybersecurity, IT support',
           targetAudience: 'Small and medium businesses in the UK',
+          usp: 'Proactive IT support that prevents problems before they happen',
+          tone: 'Professional',
           keywords: 'backups, security, IT support, cloud services',
-          tone: 'Professional'
+          rotation: 'serious'
         }
       },
       subscription: {
