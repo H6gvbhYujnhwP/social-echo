@@ -1,57 +1,61 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
-/* USERS & AUTH */
-
+// User authentication
 model User {
-  id              String   @id @default(cuid())
-  email           String   @unique
-  passwordHash    String?
-  name            String?
-  twoFactorSecret String?   // TOTP secret (base32)
-  emailVerified   DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  profile         Profile?
-  subscription    Subscription?
-  posts           PostHistory[]
-  feedback        Feedback[]
-  resetTokens     PasswordResetToken[]
-  plannerDays     PlannerDay[]
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  password      String    // bcrypt hashed
+  emailVerified DateTime?
+  
+  // 2FA
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+  
+  // Relations
+  profile              Profile?
+  subscription         Subscription?
+  postHistory          PostHistory[]
+  feedback             Feedback[]
+  plannerDays          PlannerDay[]
+  passwordResetTokens  PasswordResetToken[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
+// User business profile (matches localStorage UserProfile)
 model Profile {
   id               String   @id @default(cuid())
   userId           String   @unique
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  businessName     String?
-  website          String?
-  industry         String?
-  productsServices String?
-  targetAudience   String?
-  usp              String?
-  tone             String?   // "Professional" | "Friendly" | etc.
-  keywords         String?   // comma-separated
-  rotation         String?   // "serious" | "quirky" | mixed
-
-  // Learning signals (lightweight running tallies)
-  downvotedTones   String?   // comma-separated list
-  preferredTerms   String?   // comma-separated list auto-enriched
   
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  // Core profile fields (matching localStorage exactly)
+  business_name     String
+  website           String
+  industry          String
+  tone              String   // 'professional' | 'casual' | 'funny' | 'bold'
+  products_services String
+  target_audience   String
+  usp               String   // Unique Selling Point
+  keywords          String[] // Array of keywords
+  rotation          String   // 'serious' | 'quirky'
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
+// Password reset tokens
 model PasswordResetToken {
   id        String   @id @default(cuid())
   userId    String
@@ -59,65 +63,102 @@ model PasswordResetToken {
   token     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
+  
+  @@index([userId])
 }
 
-/* SUBSCRIPTIONS & USAGE */
-
+// Subscriptions & usage limits
 model Subscription {
-  id               String    @id @default(cuid())
-  userId           String    @unique
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan             String    @default("starter") // "starter" | "pro" | "enterprise"
-  status           String    @default("active")  // "active" | "canceled" | "trialing" | "incomplete"
-  usageCount       Int       @default(0)         // new drafts used this cycle
-  usageLimit       Int?      @default(8)         // 8 for starter, null for unlimited
-  currentPeriodEnd DateTime?                     // Stripe period end (later)
-  stripeCustomerId String?                       // later
-  stripeSubId      String?                       // later
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-}
-
-/* CONTENT & LEARNING */
-
-model PlannerDay {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  weekday   Int      // 0..6 (0 = Sunday)
-  postType  String   // "auto" | "informational" | "advice" | "selling" | "news"
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  plan       String   @default("starter") // "starter" | "pro" | "enterprise"
+  status     String   @default("active")  // "active" | "canceled" | "trialing"
+  
+  // Usage tracking
+  usageCount Int      @default(0)  // Posts generated this month
+  usageLimit Int      @default(8)  // 8 for starter, higher for pro/enterprise
+  
+  // Billing period
+  currentPeriodStart DateTime @default(now())
+  currentPeriodEnd   DateTime
+  
+  // Stripe integration (for future)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@unique([userId, weekday])
+  
+  @@index([userId])
 }
 
-model PostHistory {
-  id        String     @id @default(cuid())
-  userId    String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postType  String     // selling | informational | advice | news
-  tone      String?    // tone used for this post
-  draft     Json       // { headline_options[], post_text, hashtags[], visual_prompt, best_time_uk }
-  createdAt DateTime   @default(now())
+// Content planner schedule (matches localStorage Planner)
+model PlannerDay {
+  id       String  @id @default(cuid())
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  feedback  Feedback[]
+  day      String  // 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'
+  type     String  // 'selling' | 'informational' | 'advice' | 'news'
+  enabled  Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, day])
+  @@index([userId])
+}
+
+// Post generation history (matches localStorage PostHistory)
+model PostHistory {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  date     String   // YYYY-MM-DD
+  postType String   // 'selling' | 'informational' | 'advice' | 'news'
+  tone     String   // 'professional' | 'casual' | 'funny' | 'bold'
+  
+  // Generated content
+  headlineOptions String[] // Array of headline options
+  postText        String   @db.Text
+  hashtags        String[] // Array of hashtags
+  visualPrompt    String   @db.Text
+  
+  // Metadata
+  isRegeneration Boolean  @default(false)
+  
+  // Relations
+  feedback Feedback?
+  
+  createdAt DateTime @default(now())
   
   @@index([userId])
   @@index([createdAt])
 }
 
+// Feedback on posts (matches localStorage PostFeedback)
 model Feedback {
-  id        String      @id @default(cuid())
-  userId    String
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId    String
-  post      PostHistory @relation(fields: [postId], references: [id], onDelete: Cascade)
-  rating    String      // "up" | "down"
-  note      String?
-  createdAt DateTime    @default(now())
-
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  postId   String   @unique
+  post     PostHistory @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  feedback String   // 'up' | 'down'
+  note     String?  @db.Text
+  
+  // Context at time of feedback
+  postType String   // 'selling' | 'informational' | 'advice' | 'news'
+  tone     String   // 'professional' | 'casual' | 'funny' | 'bold'
+  keywords String[] // Keywords from profile at time of feedback
+  hashtags String[] // Hashtags from the post
+  
+  createdAt DateTime @default(now())
+  
   @@index([userId])
   @@index([postId])
-  @@index([createdAt])
 }

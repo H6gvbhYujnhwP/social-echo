@@ -8,11 +8,23 @@ import { z } from 'zod'
 export const runtime = 'nodejs'
 
 const PlannerDaySchema = z.object({
-  weekday: z.number().min(0).max(6),
-  postType: z.enum(['auto', 'informational', 'advice', 'selling', 'news']),
+  day: z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']),
+  type: z.enum(['informational', 'advice', 'selling', 'news']),
+  enabled: z.boolean()
 })
 
 const PlannerUpdateSchema = z.array(PlannerDaySchema)
+
+// Default planner schedule
+const DEFAULT_SCHEDULE = [
+  { day: 'mon', type: 'informational', enabled: true },
+  { day: 'tue', type: 'advice', enabled: true },
+  { day: 'wed', type: 'informational', enabled: true },
+  { day: 'thu', type: 'advice', enabled: true },
+  { day: 'fri', type: 'selling', enabled: true },
+  { day: 'sat', type: 'advice', enabled: true },
+  { day: 'sun', type: 'informational', enabled: true }
+] as const
 
 // Get planner schedule
 export async function GET(request: NextRequest) {
@@ -31,30 +43,36 @@ export async function GET(request: NextRequest) {
     // Get all planner days for user
     const plannerDays = await prisma.plannerDay.findMany({
       where: { userId },
-      orderBy: { weekday: 'asc' }
+      orderBy: { day: 'asc' }
     })
     
     // Ensure all 7 days exist
     const allDays = []
-    for (let weekday = 0; weekday < 7; weekday++) {
-      const existing = plannerDays.find(d => d.weekday === weekday)
+    const dayOrder = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+    
+    for (const dayName of dayOrder) {
+      const existing = plannerDays.find(d => d.day === dayName)
       if (existing) {
         allDays.push({
-          weekday: existing.weekday,
-          postType: existing.postType
+          day: existing.day,
+          type: existing.type,
+          enabled: existing.enabled
         })
       } else {
         // Create default day
+        const defaultDay = DEFAULT_SCHEDULE.find(d => d.day === dayName)!
         const newDay = await prisma.plannerDay.create({
           data: {
             userId,
-            weekday,
-            postType: 'auto'
+            day: dayName,
+            type: defaultDay.type,
+            enabled: defaultDay.enabled
           }
         })
         allDays.push({
-          weekday: newDay.weekday,
-          postType: newDay.postType
+          day: newDay.day,
+          type: newDay.type,
+          enabled: newDay.enabled
         })
       }
     }
@@ -87,26 +105,26 @@ export async function POST(request: NextRequest) {
     const validated = PlannerUpdateSchema.parse(body)
     
     // Update each day
-    const updates = validated.map(day =>
-      prisma.plannerDay.upsert({
+    for (const dayUpdate of validated) {
+      await prisma.plannerDay.upsert({
         where: {
-          userId_weekday: {
+          userId_day: {
             userId,
-            weekday: day.weekday
+            day: dayUpdate.day
           }
         },
         update: {
-          postType: day.postType
+          type: dayUpdate.type,
+          enabled: dayUpdate.enabled
         },
         create: {
           userId,
-          weekday: day.weekday,
-          postType: day.postType
+          day: dayUpdate.day,
+          type: dayUpdate.type,
+          enabled: dayUpdate.enabled
         }
       })
-    )
-    
-    await prisma.$transaction(updates)
+    }
     
     return NextResponse.json({ success: true })
     

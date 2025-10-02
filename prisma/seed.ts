@@ -19,14 +19,14 @@ async function main() {
       emailVerified: new Date(),
       profile: {
         create: {
-          businessName: 'Sweetbyte',
+          business_name: 'Sweetbyte',
           website: 'https://www.sweetbyte.co.uk',
           industry: 'IT Services and Support',
-          productsServices: 'Managed IT services, cloud backup, cybersecurity, IT support',
-          targetAudience: 'Small and medium businesses in the UK',
+          tone: 'professional',
+          products_services: 'Managed IT services, cloud backup, cybersecurity, IT support',
+          target_audience: 'Small and medium businesses in the UK',
           usp: 'Proactive IT support that prevents problems before they happen',
-          tone: 'Professional',
-          keywords: 'backups, security, IT support, cloud services',
+          keywords: ['backups', 'security', 'IT support', 'cloud services'],
           rotation: 'serious'
         }
       },
@@ -48,32 +48,34 @@ async function main() {
 
   console.log('✅ Created user:', user.email)
 
-  // Create planner schedule (7 days)
+  // Create planner schedule (7 days) - matching localStorage default
   const plannerSchedule = [
-    { dayOfWeek: 0, postType: 'advice' },      // Sunday
-    { dayOfWeek: 1, postType: 'informational' }, // Monday
-    { dayOfWeek: 2, postType: 'selling' },     // Tuesday
-    { dayOfWeek: 3, postType: 'informational' }, // Wednesday
-    { dayOfWeek: 4, postType: 'advice' },      // Thursday
-    { dayOfWeek: 5, postType: 'news' },        // Friday
-    { dayOfWeek: 6, postType: 'informational' }  // Saturday
+    { day: 'mon', type: 'informational', enabled: true },
+    { day: 'tue', type: 'advice', enabled: true },
+    { day: 'wed', type: 'informational', enabled: true },
+    { day: 'thu', type: 'advice', enabled: true },
+    { day: 'fri', type: 'selling', enabled: true },
+    { day: 'sat', type: 'advice', enabled: true },
+    { day: 'sun', type: 'informational', enabled: true }
   ]
 
-  for (const day of plannerSchedule) {
+  for (const dayPlan of plannerSchedule) {
     await prisma.plannerDay.upsert({
       where: {
-        userId_dayOfWeek: {
+        userId_day: {
           userId: user.id,
-          dayOfWeek: day.dayOfWeek
+          day: dayPlan.day
         }
       },
       update: {
-        postType: day.postType
+        type: dayPlan.type,
+        enabled: dayPlan.enabled
       },
       create: {
         userId: user.id,
-        dayOfWeek: day.dayOfWeek,
-        postType: day.postType
+        day: dayPlan.day,
+        type: dayPlan.type,
+        enabled: dayPlan.enabled
       }
     })
   }
@@ -81,15 +83,22 @@ async function main() {
   console.log('✅ Created planner schedule (7 days)')
 
   // Create sample post history
+  const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
+  
   const samplePost = await prisma.postHistory.create({
     data: {
       userId: user.id,
+      date: today,
       postType: 'advice',
-      headline: '5 IT Security Mistakes That Could Cost Your Business Everything',
+      tone: 'professional',
+      headlineOptions: [
+        '5 IT Security Mistakes That Could Cost Your Business Everything',
+        'Is Your Business Ready for a Cyber Attack? Here\'s How to Prepare',
+        'The IT Support Checklist Every SME Should Follow'
+      ],
       postText: 'Most small businesses think they\'re too small to be targeted by cybercriminals. That\'s exactly what makes them perfect targets.\n\nHere are 5 critical IT security mistakes we see every week:\n\n1. No backup strategy - "It won\'t happen to us"\n2. Weak passwords - Still using "Password123"?\n3. No employee training - Your team is your first line of defense\n4. Outdated software - Those updates exist for a reason\n5. No incident response plan - Hoping for the best isn\'t a strategy\n\nThe good news? All of these are fixable with the right IT partner.\n\nWhat\'s your biggest IT security concern right now?',
       hashtags: ['CyberSecurity', 'ITSupport', 'BusinessTips', 'SME', 'DataProtection', 'CloudBackup'],
       visualPrompt: 'Professional illustration showing a shield protecting a small business office from digital threats, with icons representing backups, passwords, and security updates',
-      bestTimeUk: '09:00',
       isRegeneration: false
     }
   })
@@ -101,8 +110,12 @@ async function main() {
     data: {
       userId: user.id,
       postId: samplePost.id,
-      rating: 'up',
-      note: null
+      feedback: 'up',
+      note: null,
+      postType: samplePost.postType,
+      tone: samplePost.tone,
+      keywords: ['backups', 'security', 'IT support', 'cloud services'],
+      hashtags: samplePost.hashtags
     }
   })
 

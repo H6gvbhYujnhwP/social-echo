@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
         if (!toneStats[tone]) {
           toneStats[tone] = { up: 0, down: 0 }
         }
-        if (f.rating === 'up') {
+        if (f.feedback === 'up') {
           toneStats[tone].up++
         } else {
           toneStats[tone].down++
@@ -155,13 +155,8 @@ export async function POST(request: NextRequest) {
       effectiveHashtagCount = avgHashtags
     }
     
-    // Apply downvoted tones from profile
-    if (profile?.downvotedTones) {
-      const downvoted = profile.downvotedTones.split(',').filter(t => t.trim())
-      if (downvoted.includes(validatedRequest.tone)) {
-        additionalInstructions.push(`Avoid ${validatedRequest.tone} tone - user has downvoted this style before.`)
-      }
-    }
+    // Learning is now based on feedback analysis above
+    // No need to check profile.downvotedTones as it doesn't exist in new schema
     
     // Build the prompt
     const systemPrompt = `You are SOCIAL ECHO, a marketing copy expert for SMEs. You write crisp, tactical, story-first LinkedIn posts that read like Chris Donnelly: direct, practical, and engaging for busy professionals.
@@ -265,12 +260,18 @@ Generate approximately ${effectiveHashtagCount} relevant hashtags.`
     }
     
     // Save to database
+    const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
     const postHistory = await prisma.postHistory.create({
       data: {
         userId,
+        date: today,
         postType: validatedRequest.post_type,
         tone: effectiveTone,
-        draft: result as any
+        headlineOptions: result.headline_options || [],
+        postText: result.post_text || '',
+        hashtags: result.hashtags || [],
+        visualPrompt: result.visual_prompt || '',
+        isRegeneration: force || false
       }
     })
     

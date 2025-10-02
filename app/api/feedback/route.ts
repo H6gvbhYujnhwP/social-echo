@@ -43,74 +43,40 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Create feedback
-    const feedback = await prisma.feedback.create({
-      data: {
-        userId,
-        postId: validated.postId,
-        rating: validated.rating,
-        note: validated.note || null
-      }
-    })
-    
-    // Update profile learning signals
+    // Get profile for keywords
     const profile = await prisma.profile.findUnique({
       where: { userId }
     })
     
-    if (profile && validated.rating === 'down') {
-      // Add tone to downvoted tones if post has tone
-      if (post.tone) {
-        const downvotedTones = profile.downvotedTones
-          ? profile.downvotedTones.split(',').filter(t => t.trim())
-          : []
-        
-        if (!downvotedTones.includes(post.tone)) {
-          downvotedTones.push(post.tone)
-        }
-        
-        await prisma.profile.update({
-          where: { userId },
-          data: {
-            downvotedTones: downvotedTones.join(',')
-          }
-        })
-      }
-      
-      // Extract terms from note
-      if (validated.note) {
-        const terms = validated.note
-          .toLowerCase()
-          .split(/\W+/)
-          .filter(t => t.length > 3)
-          .slice(0, 5) // Take up to 5 terms
-        
-        if (terms.length > 0) {
-          const preferredTerms = profile.preferredTerms
-            ? profile.preferredTerms.split(',').filter(t => t.trim())
-            : []
-          
-          terms.forEach(term => {
-            if (!preferredTerms.includes(term)) {
-              preferredTerms.push(term)
-            }
-          })
-          
-          await prisma.profile.update({
-            where: { userId },
-            data: {
-              preferredTerms: preferredTerms.slice(-20).join(',') // Keep last 20 terms
-            }
-          })
-        }
-      }
+    if (!profile) {
+      return NextResponse.json(
+        { error: 'Profile not found' },
+        { status: 404 }
+      )
     }
+    
+    // Create feedback with all required fields
+    const feedback = await prisma.feedback.create({
+      data: {
+        userId,
+        postId: validated.postId,
+        feedback: validated.rating, // 'up' or 'down'
+        note: validated.note || null,
+        postType: post.postType,
+        tone: post.tone,
+        keywords: profile.keywords,
+        hashtags: post.hashtags
+      }
+    })
+    
+    // Learning signals are now calculated dynamically from feedback data
+    // No need to update Profile table
     
     return NextResponse.json({
       success: true,
       feedback: {
         id: feedback.id,
-        rating: feedback.rating
+        rating: feedback.feedback // 'up' or 'down'
       }
     })
     
@@ -156,8 +122,8 @@ export async function GET(request: NextRequest) {
     
     // Calculate stats
     const totalFeedback = allFeedback.length
-    const upvotes = allFeedback.filter(f => f.rating === 'up').length
-    const downvotes = allFeedback.filter(f => f.rating === 'down').length
+    const upvotes = allFeedback.filter(f => f.feedback === 'up').length
+    const downvotes = allFeedback.filter(f => f.feedback === 'down').length
     
     // Group by post type
     const byPostType: Record<string, { up: number; down: number }> = {}
@@ -166,7 +132,7 @@ export async function GET(request: NextRequest) {
       if (!byPostType[postType]) {
         byPostType[postType] = { up: 0, down: 0 }
       }
-      if (f.rating === 'up') {
+      if (f.feedback === 'up') {
         byPostType[postType].up++
       } else {
         byPostType[postType].down++
@@ -180,7 +146,7 @@ export async function GET(request: NextRequest) {
       if (!byTone[tone]) {
         byTone[tone] = { up: 0, down: 0 }
       }
-      if (f.rating === 'up') {
+      if (f.feedback === 'up') {
         byTone[tone].up++
       } else {
         byTone[tone].down++

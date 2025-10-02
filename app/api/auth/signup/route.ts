@@ -38,14 +38,15 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.create({
       data: {
         email: validated.email.toLowerCase(),
-        passwordHash,
-        name: validated.name,
+        password: passwordHash,
+        name: validated.name || 'User',
         subscription: {
           create: {
             plan: 'starter',
             status: 'active',
             usageLimit: 8,
-            usageCount: 0
+            usageCount: 0,
+            currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
           }
         }
       },
