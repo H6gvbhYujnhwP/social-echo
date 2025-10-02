@@ -9,6 +9,7 @@ import { Select } from './ui/Select'
 import { TagsInput } from './TagsInput'
 import { KeywordSuggestions } from './KeywordSuggestions'
 import { UserProfile, setProfile } from '../lib/localstore'
+import { HelpCircle } from 'lucide-react'
 
 // URL validation helper - more forgiving
 const cleanUrl = (v: string) => v.trim()
@@ -31,9 +32,37 @@ const toneOptions = [
   { value: 'bold', label: 'Bold' },
 ]
 
+// Target audience options for multi-select
+const targetAudienceOptions = [
+  { value: 'SME Owners', label: 'SME Owners', description: 'Small-medium business owners and entrepreneurs' },
+  { value: 'C-Suite Executives', label: 'C-Suite Executives', description: 'CEOs, CFOs, CTOs, and senior leadership' },
+  { value: 'Marketing Professionals', label: 'Marketing Professionals', description: 'Marketing managers, directors, and specialists' },
+  { value: 'HR Professionals', label: 'HR Professionals', description: 'HR managers, recruiters, and people ops' },
+  { value: 'Finance Professionals', label: 'Finance Professionals', description: 'Accountants, financial advisors, CFOs' },
+  { value: 'Tech Professionals', label: 'Tech Professionals', description: 'Developers, IT managers, tech leads' },
+  { value: 'Sales Professionals', label: 'Sales Professionals', description: 'Sales reps, BDMs, account executives' },
+  { value: 'Consultants', label: 'Consultants', description: 'Business consultants and advisors' },
+  { value: 'Freelancers', label: 'Freelancers', description: 'Independent contractors and solopreneurs' },
+  { value: 'Startups', label: 'Startups', description: 'Early-stage companies and founders' },
+  { value: 'Legal Professionals', label: 'Legal Professionals', description: 'Lawyers, solicitors, legal advisors' },
+  { value: 'Healthcare Professionals', label: 'Healthcare Professionals', description: 'Doctors, nurses, healthcare administrators' },
+  { value: 'Retail Businesses', label: 'Retail Businesses', description: 'Retail store owners and managers' },
+  { value: 'Hospitality Businesses', label: 'Hospitality Businesses', description: 'Hotels, restaurants, cafes, bars' },
+  { value: 'Real Estate Professionals', label: 'Real Estate Professionals', description: 'Estate agents, property developers' },
+  { value: 'Education Professionals', label: 'Education Professionals', description: 'Teachers, trainers, education administrators' },
+]
+
 interface TrainFormProps {
   initialProfile?: UserProfile
 }
+
+// Helper component for field descriptions
+const FieldHelp = ({ text }: { text: string }) => (
+  <div className="flex items-start space-x-2 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+    <HelpCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+    <p className="text-sm text-blue-900">{text}</p>
+  </div>
+)
 
 export function TrainForm({ initialProfile }: TrainFormProps) {
   const router = useRouter()
@@ -49,6 +78,7 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
       rotation: 'serious',
     }
   )
+  const [selectedAudiences, setSelectedAudiences] = useState<string[]>([])
   const [errors, setErrors] = useState<Partial<Record<keyof UserProfile, string>>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -68,13 +98,9 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
     if (!formData.products_services.trim()) {
       newErrors.products_services = 'Products/Services description is required'
     }
-    if (!formData.target_audience.trim()) {
+    if (!formData.target_audience.trim() && selectedAudiences.length === 0) {
       newErrors.target_audience = 'Target audience description is required'
     }
-    // Keywords are optional but recommended
-    // if (formData.keywords.length === 0) {
-    //   newErrors.keywords = 'At least one keyword is recommended'
-    // }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -90,9 +116,15 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
     setIsSubmitting(true)
     
     try {
+      // Combine selected audiences with custom text
+      const audienceText = selectedAudiences.length > 0
+        ? `${selectedAudiences.join(', ')}${formData.target_audience ? '. ' + formData.target_audience : ''}`
+        : formData.target_audience
+
       setProfile({
         ...formData,
         website: cleanUrl(formData.website),
+        target_audience: audienceText,
       })
     } catch (err) {
       console.error('save failed', err)
@@ -111,63 +143,137 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
     }
   }
 
+  const toggleAudience = (value: string) => {
+    setSelectedAudiences(prev => 
+      prev.includes(value)
+        ? prev.filter(a => a !== value)
+        : [...prev, value]
+    )
+    // Clear error when user selects an audience
+    if (errors.target_audience) {
+      setErrors(prev => ({ ...prev, target_audience: undefined }))
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <Input
-        label="Business Name"
-        value={formData.business_name}
-        onChange={(e) => updateField('business_name', e.target.value)}
-        error={errors.business_name}
-        placeholder="e.g., Smith & Associates"
-        required
-      />
+    <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Business Name */}
+      <div>
+        <Input
+          label="Business Name"
+          value={formData.business_name}
+          onChange={(e) => updateField('business_name', e.target.value)}
+          error={errors.business_name}
+          placeholder="e.g., Smith & Associates, Acme Solutions Ltd"
+          required
+        />
+        <FieldHelp text="Your official business name as it appears on LinkedIn. This helps personalize your posts and build brand recognition." />
+      </div>
 
-      <Input
-        label="Company Website"
-        value={formData.website}
-        onChange={(e) => updateField('website', e.target.value)}
-        error={errors.website}
-        placeholder="e.g., www.yourcompany.com"
-        type="url"
-      />
+      {/* Website */}
+      <div>
+        <Input
+          label="Company Website"
+          value={formData.website}
+          onChange={(e) => updateField('website', e.target.value)}
+          error={errors.website}
+          placeholder="e.g., www.yourcompany.com or yourcompany.co.uk"
+          type="url"
+        />
+        <FieldHelp text="Your company website URL (optional). This helps the AI understand your business better by analyzing your online presence and services." />
+      </div>
 
-      <Input
-        label="Industry/Sector"
-        value={formData.industry}
-        onChange={(e) => updateField('industry', e.target.value)}
-        error={errors.industry}
-        placeholder="e.g., Financial Services"
-        required
-      />
+      {/* Industry */}
+      <div>
+        <Input
+          label="Industry/Sector"
+          value={formData.industry}
+          onChange={(e) => updateField('industry', e.target.value)}
+          error={errors.industry}
+          placeholder="e.g., Financial Services, Legal Services, Digital Marketing, Healthcare"
+          required
+        />
+        <FieldHelp text="Your primary industry or sector. Be specific (e.g., 'Corporate Law' instead of just 'Legal'). This ensures content is relevant to your field." />
+      </div>
 
-      <Select
-        label="Tone"
-        value={formData.tone}
-        onChange={(e) => updateField('tone', e.target.value as UserProfile['tone'])}
-        options={toneOptions}
-        required
-      />
+      {/* Tone */}
+      <div>
+        <Select
+          label="Tone"
+          value={formData.tone}
+          onChange={(e) => updateField('tone', e.target.value as UserProfile['tone'])}
+          options={toneOptions}
+          required
+        />
+        <FieldHelp text="How you want to sound in your posts. Professional = formal and authoritative. Casual = friendly and approachable. Funny = light-hearted with humor. Bold = direct and opinionated." />
+      </div>
 
-      <Textarea
-        label="Products/Services"
-        value={formData.products_services}
-        onChange={(e) => updateField('products_services', e.target.value)}
-        error={errors.products_services}
-        placeholder="Describe what your business offers..."
-        rows={4}
-        required
-      />
+      {/* Products/Services */}
+      <div>
+        <Textarea
+          label="Products/Services"
+          value={formData.products_services}
+          onChange={(e) => updateField('products_services', e.target.value)}
+          error={errors.products_services}
+          placeholder="e.g., We provide AI-powered automation solutions for SMEs, helping businesses streamline operations, reduce admin time, and improve efficiency through smart tools and consulting."
+          rows={4}
+          required
+        />
+        <FieldHelp text="Describe what you offer in detail. Include key services, products, unique selling points, and benefits. The more specific you are, the better your posts will resonate with potential clients." />
+      </div>
 
-      <Textarea
-        label="Target Audience"
-        value={formData.target_audience}
-        onChange={(e) => updateField('target_audience', e.target.value)}
-        error={errors.target_audience}
-        placeholder="Describe your ideal customers..."
-        rows={4}
-        required
-      />
+      {/* Target Audience - Multi-Select */}
+      <div>
+        <label className="block text-sm font-medium text-white mb-3">
+          Target Audience <span className="text-red-400">*</span>
+        </label>
+        <p className="text-sm text-gray-300 mb-4">
+          Select all that apply (you can choose multiple):
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          {targetAudienceOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => toggleAudience(option.value)}
+              className={`p-4 rounded-lg border-2 transition-all text-left ${
+                selectedAudiences.includes(option.value)
+                  ? 'border-purple-500 bg-purple-500/20 shadow-lg'
+                  : 'border-white/20 bg-white/5 hover:border-white/40'
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="font-semibold text-white">{option.label}</p>
+                  <p className="text-xs text-gray-300 mt-1">{option.description}</p>
+                </div>
+                {selectedAudiences.includes(option.value) && (
+                  <div className="ml-2 flex-shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+        
+        {/* Custom Audience Text */}
+        <Textarea
+          label="Additional Audience Details (Optional)"
+          value={formData.target_audience}
+          onChange={(e) => updateField('target_audience', e.target.value)}
+          error={errors.target_audience}
+          placeholder="e.g., Specifically targeting mid-sized law firms in London with 10-50 employees who struggle with manual processes and are looking to adopt AI automation..."
+          rows={3}
+        />
+        <FieldHelp text="Who are your ideal clients? Select from the options above and/or add specific details: demographics, company size, pain points, goals. The more specific, the better your content will resonate." />
+      </div>
 
+      {/* Keywords */}
       <div className="space-y-3">
         <KeywordSuggestions
           businessName={formData.business_name}
@@ -183,51 +289,57 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
           label="Keywords"
           value={formData.keywords}
           onChange={(keywords) => updateField('keywords', keywords)}
-          placeholder="Enter keywords and press Enter"
+          placeholder="e.g., automation, AI, efficiency, productivity (press Enter after each)"
         />
-        {errors.keywords && (
-          <p className="text-sm text-red-600">{errors.keywords}</p>
-        )}
+        <FieldHelp text="Keywords that represent your business, services, and industry. These will be naturally woven into your posts (not as hashtags). Examples: 'automation', 'compliance', 'growth', 'digital transformation'." />
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-white">
-          Rotation
+      {/* Rotation */}
+      <div>
+        <label className="block text-sm font-medium text-white mb-3">
+          Content Rotation
         </label>
-        <div className="flex items-center space-x-4">
-          <label className="flex items-center text-white">
+        <div className="flex items-center space-x-4 mb-3">
+          <label className="flex items-center text-white cursor-pointer">
             <input
               type="radio"
               name="rotation"
               value="serious"
               checked={formData.rotation === 'serious'}
               onChange={(e) => updateField('rotation', e.target.value as UserProfile['rotation'])}
-              className="mr-2"
+              className="mr-2 w-4 h-4"
             />
             Serious
           </label>
-          <label className="flex items-center text-white">
+          <label className="flex items-center text-white cursor-pointer">
             <input
               type="radio"
               name="rotation"
               value="quirky"
               checked={formData.rotation === 'quirky'}
               onChange={(e) => updateField('rotation', e.target.value as UserProfile['rotation'])}
-              className="mr-2"
+              className="mr-2 w-4 h-4"
             />
             Quirky
           </label>
         </div>
+        <FieldHelp text="Serious = Professional business stories about growth, challenges, and solutions. Quirky = Light-hearted, funny business stories with relatable moments. You can change this anytime in your profile." />
       </div>
 
-      <Button
-        type="submit"
-        className="w-full"
-        size="lg"
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? 'Saving...' : 'Save & Continue'}
-      </Button>
+      {/* Submit Button */}
+      <div className="pt-6 border-t border-white/10">
+        <Button
+          type="submit"
+          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+          size="lg"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Saving Your Profile...' : 'Save & Start Creating Content'}
+        </Button>
+        <p className="text-center text-sm text-gray-400 mt-4">
+          You can update these details anytime from your dashboard
+        </p>
+      </div>
     </form>
   )
 }
