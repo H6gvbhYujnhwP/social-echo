@@ -1,19 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import { generateText, assertOpenAIKey } from '../../../lib/openai'
 import { 
   TextGenerationRequestSchema, 
   parseTextGenerationResponse,
   type TextGenerationResponse 
 } from '../../../lib/contract'
-import { analyzeFeedback, generatePromptAdjustments } from '../../../lib/learning-engine'
-import { type UserProfile } from '../../../lib/localstore'
 
 // Force Node.js runtime (OpenAI SDK doesn't work well in Edge)
 export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    
+    const userId = (session.user as any).id
+    
     // Assert API key is available
     assertOpenAIKey()
     
@@ -29,7 +42,7 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Extract force parameter
+    // Extract force parameter (regeneration doesn't count against usage)
     const force = body.force || false
     
     // Validate request with better error handling
@@ -55,25 +68,100 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Analyze user feedback and generate learning insights
-    const userProfile: UserProfile = {
-      business_name: validatedRequest.business_name,
-      website: '', // Not passed in API request
-      industry: validatedRequest.industry,
-      tone: validatedRequest.tone,
-      products_services: validatedRequest.products_services,
-      target_audience: validatedRequest.target_audience,
-      usp: validatedRequest.usp || '',
-      keywords: validatedRequest.keywords ? validatedRequest.keywords.split(',').map(k => k.trim()) : [],
-      rotation: validatedRequest.rotation
+    // Check usage limits (only for new drafts, not regenerations)
+    if (!force) {
+      const subscription = await prisma.subscription.findUnique({
+        where: { userId }
+      })
+      
+      if (!subscription) {
+        return NextResponse.json(
+          { error: 'No subscription found' },
+          { status: 403 }
+        )
+      }
+      
+      // Check if starter plan has reached limit
+      if (subscription.plan === 'starter') {
+        const limit = subscription.usageLimit || 8
+        if (subscription.usageCount >= limit) {
+          return NextResponse.json(
+            { 
+              error: 'Usage limit reached',
+              message: `You've used all ${limit} posts for this month. Upgrade to Pro for unlimited posts.`,
+              usageCount: subscription.usageCount,
+              usageLimit: limit
+            },
+            { status: 403 }
+          )
+        }
+      }
     }
     
-    const learningInsights = analyzeFeedback(userProfile)
-    const promptAdjustments = generatePromptAdjustments(learningInsights)
+    // Get user profile for learning
+    const profile = await prisma.profile.findUnique({
+      where: { userId }
+    })
     
-    // Apply learning adjustments
-    const effectiveTone = promptAdjustments.toneOverride || validatedRequest.tone
-    const effectiveHashtagCount = promptAdjustments.hashtagCount || 8
+    // Analyze feedback from database for learning
+    const feedback = await prisma.feedback.findMany({
+      where: { userId },
+      include: { post: true },
+      orderBy: { createdAt: 'desc' },
+      take: 50 // Last 50 feedback items
+    })
+    
+    // Calculate learning adjustments
+    let effectiveTone: string = validatedRequest.tone
+    let effectiveHashtagCount = 8
+    const additionalInstructions: string[] = []
+    
+    if (feedback.length >= 5) {
+      // Tone preference learning
+      const toneStats: Record<string, { up: number; down: number }> = {}
+      feedback.forEach(f => {
+        const tone = f.post.tone || 'unknown'
+        if (!toneStats[tone]) {
+          toneStats[tone] = { up: 0, down: 0 }
+        }
+        if (f.rating === 'up') {
+          toneStats[tone].up++
+        } else {
+          toneStats[tone].down++
+        }
+      })
+      
+      // Find best performing tone
+      let bestTone: string = validatedRequest.tone
+      let bestScore = -1
+      Object.entries(toneStats).forEach(([tone, stats]) => {
+        const total = stats.up + stats.down
+        if (total >= 3) {
+          const score = stats.up / total
+          if (score > bestScore && score >= 0.6) {
+            bestScore = score
+            bestTone = tone as string
+          }
+        }
+      })
+      
+      if (bestTone !== validatedRequest.tone && bestScore >= 0.6) {
+        effectiveTone = bestTone
+        additionalInstructions.push(`User has shown preference for ${bestTone} tone in past feedback (${Math.round(bestScore * 100)}% positive).`)
+      }
+      
+      // Hashtag preference (simplified - could analyze edits in future)
+      const avgHashtags = 8 // Default, could be learned from post edits
+      effectiveHashtagCount = avgHashtags
+    }
+    
+    // Apply downvoted tones from profile
+    if (profile?.downvotedTones) {
+      const downvoted = profile.downvotedTones.split(',').filter(t => t.trim())
+      if (downvoted.includes(validatedRequest.tone)) {
+        additionalInstructions.push(`Avoid ${validatedRequest.tone} tone - user has downvoted this style before.`)
+      }
+    }
     
     // Build the prompt
     const systemPrompt = `You are SOCIAL ECHO, a marketing copy expert for SMEs. You write crisp, tactical, story-first LinkedIn posts that read like Chris Donnelly: direct, practical, and engaging for busy professionals.
@@ -87,27 +175,11 @@ Always return STRICT JSON only; no markdown, no preamble.`
         case 'informational':
           return 'Hook → Context → 3 takeaways → Question'
         case 'advice':
-          return 'Hook → Checklist (3-5 items) → Quick-win → Question'
+          return 'Hook → Problem → Solution → Actionable tip → Engagement question'
         case 'news':
-          return 'News headline → Summary (2-3 lines) → Analysis/Why it matters → Reflection/Question'
+          return 'Hook → News summary → Impact analysis → Your take → Question'
         default:
           return 'Hook → Body → CTA'
-      }
-    }
-
-    // Define hashtag focus based on post type
-    const getHashtagFocus = (postType: string) => {
-      switch (postType) {
-        case 'selling':
-          return 'Use conversion-focused hashtags like #BusinessGrowth #SMESuccess #DigitalTransformation'
-        case 'informational':
-          return 'Use educational hashtags like #BusinessTips #Leadership #Strategy'
-        case 'advice':
-          return 'Use actionable hashtags like #BusinessAdvice #Productivity #SmallBusinessTips'
-        case 'news':
-          return 'Use timely hashtags like #BreakingNews #IndustryNews #CurrentEvents plus sector-specific tags'
-        default:
-          return 'Use relevant industry and topic hashtags'
       }
     }
 
@@ -119,7 +191,7 @@ Always return STRICT JSON only; no markdown, no preamble.`
 
     const userPrompt = `Business Name: ${validatedRequest.business_name}
 Industry: ${validatedRequest.industry}
-Tone: ${effectiveTone} (obey this voice consistently)${promptAdjustments.toneOverride ? ' [LEARNED PREFERENCE]' : ''}
+Tone: ${effectiveTone} (obey this voice consistently)${effectiveTone !== validatedRequest.tone ? ' [LEARNED PREFERENCE]' : ''}
 Products/Services: ${validatedRequest.products_services}
 Target Audience: ${validatedRequest.target_audience}
 USP (Unique Selling Point): ${validatedRequest.usp || 'Not provided'}
@@ -127,9 +199,9 @@ Keywords (weave naturally, not hashtag spam): ${validatedRequest.keywords || 'ge
 Post Type: ${validatedRequest.post_type}
 Seed: ${seed}
 
-${promptAdjustments.additionalInstructions.length > 0 ? `
+${additionalInstructions.length > 0 ? `
 LEARNING INSIGHTS (from user feedback):
-${promptAdjustments.additionalInstructions.map(i => `- ${i}`).join('\n')}
+${additionalInstructions.map(i => `- ${i}`).join('\n')}
 ` : ''}
 
 IMPORTANT: When creating ${validatedRequest.post_type} posts (especially "informational" and "selling" types), ALWAYS keep the company's USP in mind:
@@ -144,96 +216,89 @@ Task: Create a ${validatedRequest.platform} post in the style of Chris Donnelly 
 
 Post Structure for ${validatedRequest.post_type} posts: ${getPostStructure(validatedRequest.post_type)}
 
-${validatedRequest.post_type === 'news' ? `
-Special Instructions for News Posts:
-- Select a GLOBAL or LOCAL top headline that is HIGHLY RELEVANT to the ${validatedRequest.industry} sector (NOT news about ${validatedRequest.business_name} itself)
-- The news MUST relate directly to their business context:
-  * Industry: ${validatedRequest.industry}
-  * Products/Services: ${validatedRequest.products_services}
-  * Target Audience: ${validatedRequest.target_audience}
-  * Keywords: ${validatedRequest.keywords || 'general business topics'}
-- Focus on external news that IMPACTS their specific sector: regulatory changes affecting their services, market trends in their niche, economic indicators relevant to their customers, technology/policy changes in their field
-- Examples for a finance SME: "Bank of England raises rates" (affects lending), "New FCA regulations" (compliance), "SME loan defaults rise 15%" (market trend)
-- Examples for a tech SME: "New AI regulations announced", "GDPR fines increase 40%", "Cloud computing costs drop 20%"
-- DO NOT create news about the customer's business - focus on external industry news that directly affects their sector and services
-- Summarize the news in 2-3 simple lines
-- Add analysis or commentary showing why this specific news matters to SMEs like ${validatedRequest.business_name} in the ${validatedRequest.industry} industry
-- Keep tone professional, timely, and relevant
-- If no truly relevant breaking news is found, fallback to "Industry Insight" style using recent trends or observations specific to their sector
-- Ensure the news is recent (within the last few days or weeks) and directly applicable to their business context
-` : ''}
-
-Steps:
-1) Provide 3 headline/title options (hooks) that fit the ${validatedRequest.post_type} structure.
-2) Write the full ${validatedRequest.platform} post draft following the ${validatedRequest.post_type} structure with double spacing between sentences.
-3) Add hashtags at the foot of the post (approximately ${effectiveHashtagCount}). ${getHashtagFocus(validatedRequest.post_type)}.
-4) Suggest 1 strong image concept that pairs with the ${validatedRequest.post_type} post.
-   CRITICAL: The visual concept MUST accurately match the post content:
-   - If the post mentions a specific person by name (e.g., "Sarah"), the visual MUST describe that exact person with correct gender and context
-   - If the post describes a woman, the visual must explicitly say "woman" or "female professional"
-   - If the post describes a man, the visual must explicitly say "man" or "male professional"
-   - Include specific details from the post: profession (e.g., "legal firm owner"), setting (e.g., "law office"), scenario (e.g., "reviewing contracts")
-   - Match the emotional arc: if post shows before/after, visual should show transformation
-   - Keep it catchy and social media-friendly while being accurate
-5) Suggest the best time to post based on ${validatedRequest.target_audience} and ${validatedRequest.industry} (UK timezone).
-
-Return JSON:
+Return STRICT JSON in this format:
 {
-  "headline_options": ["...", "...", "..."],
-  "post_text": "...",
-  "hashtags": ["...", "..."],
-  "visual_prompt": "...",
+  "headline_options": ["Option 1", "Option 2", "Option 3"],
+  "post_text": "The main post content...",
+  "hashtags": ["Hashtag1", "Hashtag2", ...],
+  "visual_prompt": "Detailed image generation prompt",
   "best_time_uk": "HH:MM"
-}`
+}
 
-    // Call OpenAI with error handling
+Generate approximately ${effectiveHashtagCount} relevant hashtags.`
+
+    console.log('[generate-text] Generating content...')
+    
+    // Call OpenAI
     let rawResponse: string
     try {
-      const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`
-      rawResponse = await generateText(combinedPrompt)
+      const fullPrompt = `${systemPrompt}\n\n${userPrompt}`
+      rawResponse = await generateText(fullPrompt)
+      console.log('[generate-text] OpenAI response received')
     } catch (openaiError: any) {
-      console.error('[generate-text] OpenAI API error:', openaiError?.message, openaiError?.stack)
+      console.error('[generate-text] OpenAI error:', openaiError)
       return NextResponse.json(
         { 
           error: 'Failed to generate content from AI',
-          details: openaiError?.message || 'Unknown OpenAI error'
+          details: openaiError.message 
         },
         { status: 502 }
       )
     }
     
-    // Parse and validate response
-    let parsed: TextGenerationResponse
+    // Parse response
+    let result: TextGenerationResponse
     try {
-      parsed = parseTextGenerationResponse(rawResponse)
+      result = parseTextGenerationResponse(rawResponse)
+      console.log('[generate-text] Response parsed successfully')
     } catch (parseError: any) {
-      console.error('[generate-text] Response parsing error:', parseError?.message)
-      console.error('[generate-text] Raw response:', rawResponse?.substring(0, 500))
+      console.error('[generate-text] Parse error:', parseError)
+      console.error('[generate-text] Raw response:', rawResponse)
       return NextResponse.json(
         { 
           error: 'Failed to parse AI response',
-          details: parseError?.message || 'Invalid response format'
+          details: parseError.message,
+          raw: rawResponse.substring(0, 500)
         },
         { status: 502 }
       )
     }
     
-    // Return with metadata
-    return NextResponse.json({
-      ...parsed,
-      meta: {
-        seed: seed || null,
-        force: force
+    // Save to database
+    const postHistory = await prisma.postHistory.create({
+      data: {
+        userId,
+        postType: validatedRequest.post_type,
+        tone: effectiveTone,
+        draft: result as any
       }
     })
     
+    console.log('[generate-text] Post saved to database:', postHistory.id)
+    
+    // Increment usage count (only for new drafts)
+    if (!force) {
+      await prisma.subscription.update({
+        where: { userId },
+        data: {
+          usageCount: { increment: 1 }
+        }
+      })
+      console.log('[generate-text] Usage count incremented')
+    }
+    
+    // Return result with post ID for feedback
+    return NextResponse.json({
+      ...result,
+      postId: postHistory.id
+    })
+    
   } catch (error: any) {
-    // Catch-all error handler
-    console.error('[generate-text] Unexpected error:', error?.message, error?.stack)
+    console.error('[generate-text] Unexpected error:', error)
     return NextResponse.json(
       { 
         error: 'Internal server error',
-        details: error?.message || 'Unknown error'
+        details: error.message 
       },
       { status: 500 }
     )

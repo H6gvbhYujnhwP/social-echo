@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { ThumbsUp, ThumbsDown, MessageSquare, Check } from 'lucide-react'
 import { Button } from './ui/Button'
-import { savePostFeedback } from '../lib/localstore'
 
 interface FeedbackButtonsProps {
   postId: string
@@ -15,6 +14,8 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
   const [showNoteInput, setShowNoteInput] = useState(false)
   const [note, setNote] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleFeedback = (feedback: 'up' | 'down') => {
     setSelectedFeedback(feedback)
@@ -28,10 +29,26 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
     }
   }
 
-  const submitFeedback = (feedback: 'up' | 'down', feedbackNote: string | null) => {
-    const success = savePostFeedback(postId, feedback, feedbackNote)
+  const submitFeedback = async (feedback: 'up' | 'down', feedbackNote: string | null) => {
+    setLoading(true)
+    setError('')
     
-    if (success) {
+    try {
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          postId,
+          rating: feedback,
+          note: feedbackNote
+        })
+      })
+      
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to save feedback')
+      }
+      
       setSubmitted(true)
       onFeedbackSubmitted?.()
       
@@ -39,6 +56,10 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
       setTimeout(() => {
         setShowNoteInput(false)
       }, 3000)
+    } catch (err: any) {
+      setError(err.message || 'Failed to save feedback')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -75,6 +96,7 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
             onClick={() => handleFeedback('up')}
             variant="outline"
             size="sm"
+            disabled={loading}
             className={`flex items-center gap-1.5 ${
               selectedFeedback === 'up'
                 ? 'bg-green-50 border-green-300 text-green-700'
@@ -88,6 +110,7 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
             onClick={() => handleFeedback('down')}
             variant="outline"
             size="sm"
+            disabled={loading}
             className={`flex items-center gap-1.5 ${
               selectedFeedback === 'down'
                 ? 'bg-red-50 border-red-300 text-red-700'
@@ -97,6 +120,13 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
             <ThumbsDown className="w-4 h-4" />
             <span>Needs Work</span>
           </Button>
+        </div>
+      )}
+
+      {/* Error message */}
+      {error && (
+        <div className="p-2 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
 
@@ -115,6 +145,7 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
                 placeholder="e.g., Too formal, add cash flow stats, remove hashtags..."
                 className="w-full p-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 rows={3}
+                disabled={loading}
               />
             </div>
           </div>
@@ -124,15 +155,17 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
               onClick={handleSkipNote}
               variant="outline"
               size="sm"
+              disabled={loading}
             >
               Skip
             </Button>
             <Button
               onClick={handleSubmitNote}
               size="sm"
+              disabled={loading}
               className="bg-purple-600 hover:bg-purple-700 text-white"
             >
-              Submit Feedback
+              {loading ? 'Saving...' : 'Submit Feedback'}
             </Button>
           </div>
         </div>

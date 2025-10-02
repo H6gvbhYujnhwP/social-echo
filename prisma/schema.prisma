@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+/* USERS & AUTH */
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String?
+  name            String?
+  twoFactorSecret String?   // TOTP secret (base32)
+  emailVerified   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  profile         Profile?
+  subscription    Subscription?
+  posts           PostHistory[]
+  feedback        Feedback[]
+  resetTokens     PasswordResetToken[]
+  plannerDays     PlannerDay[]
+}
+
+model Profile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessName     String?
+  website          String?
+  industry         String?
+  productsServices String?
+  targetAudience   String?
+  usp              String?
+  tone             String?   // "Professional" | "Friendly" | etc.
+  keywords         String?   // comma-separated
+  rotation         String?   // "serious" | "quirky" | mixed
+
+  // Learning signals (lightweight running tallies)
+  downvotedTones   String?   // comma-separated list
+  preferredTerms   String?   // comma-separated list auto-enriched
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+/* SUBSCRIPTIONS & USAGE */
+
+model Subscription {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan             String    @default("starter") // "starter" | "pro" | "enterprise"
+  status           String    @default("active")  // "active" | "canceled" | "trialing" | "incomplete"
+  usageCount       Int       @default(0)         // new drafts used this cycle
+  usageLimit       Int?      @default(8)         // 8 for starter, null for unlimited
+  currentPeriodEnd DateTime?                     // Stripe period end (later)
+  stripeCustomerId String?                       // later
+  stripeSubId      String?                       // later
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+/* CONTENT & LEARNING */
+
+model PlannerDay {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekday   Int      // 0..6 (0 = Sunday)
+  postType  String   // "auto" | "informational" | "advice" | "selling" | "news"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, weekday])
+}
+
+model PostHistory {
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postType  String     // selling | informational | advice | news
+  tone      String?    // tone used for this post
+  draft     Json       // { headline_options[], post_text, hashtags[], visual_prompt, best_time_uk }
+  createdAt DateTime   @default(now())
+  
+  feedback  Feedback[]
+  
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Feedback {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      PostHistory @relation(fields: [postId], references: [id], onDelete: Cascade)
+  rating    String      // "up" | "down"
+  note      String?
+  createdAt DateTime    @default(now())
+
+  @@index([userId])
+  @@index([postId])
+  @@index([createdAt])
+}

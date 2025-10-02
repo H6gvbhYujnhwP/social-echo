@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import '../styles/globals.css'
+import { Providers } from '@/components/Providers'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://socialecho.ai'),
@@ -70,6 +71,7 @@ export default function RootLayout({
         <link rel="canonical" href="https://socialecho.ai" />
       </head>
       <body className="min-h-screen bg-background text-foreground">
+        <Providers>
         <header className="border-b border-gray-200 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
@@ -89,6 +91,7 @@ export default function RootLayout({
         <main className="flex-1">
           {children}
         </main>
+        </Providers>
       </body>
     </html>
   )
