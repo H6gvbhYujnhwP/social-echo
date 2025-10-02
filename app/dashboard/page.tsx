@@ -47,46 +47,59 @@ export default function DashboardPage() {
     return `social-echo-draft-${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
   }
 
-  // On mount: Load profile, planner, and today's draft if it exists
-  // DO NOT call generation here
+  // On mount: Load profile, planner, and today's post from database
   useEffect(() => {
     if (status === 'loading' || !session) return
     
-    const existingProfile = getProfile()
-    if (!existingProfile) {
-      router.push('/train')
-      return
-    }
-    
-    setProfile(existingProfile)
-    setPlanner(getOrCreatePlanner())
-    
-    // Load today's saved draft from localStorage
-    const todayKey = getTodayKey()
-    const savedDraft = localStorage.getItem(todayKey)
-    if (savedDraft) {
+    const loadData = async () => {
       try {
-        const parsed = JSON.parse(savedDraft)
-        setTodayDraft(parsed)
-        
-        // Find the postId from post history for today
-        const today = new Date().toISOString().split('T')[0]
-        const historyKey = `socialecho_post_history`
-        const historyData = localStorage.getItem(historyKey)
-        if (historyData) {
-          const history = JSON.parse(historyData)
-          const todayPost = history.find((p: any) => p.date === today)
-          if (todayPost) {
-            setCurrentPostId(todayPost.id)
-          }
+        // Load profile from database
+        const profileResponse = await fetch('/api/profile')
+        if (!profileResponse.ok) {
+          // No profile - redirect to train
+          router.push('/train')
+          return
         }
+        const profileData = await profileResponse.json()
+        setProfile(profileData)
+        
+        // Load planner from database
+        const plannerResponse = await fetch('/api/planner')
+        if (plannerResponse.ok) {
+          const plannerData = await plannerResponse.json()
+          setPlanner({ version: 1, days: plannerData.days })
+        } else {
+          // Fallback to localStorage planner
+          setPlanner(getOrCreatePlanner())
+        }
+        
+        // Load today's post from database
+        const today = new Date().toISOString().split('T')[0]
+        const postResponse = await fetch(`/api/posts?date=${today}`)
+        if (postResponse.ok) {
+          const postData = await postResponse.json()
+          setTodayDraft(postData)
+          setCurrentPostId(postData.id)
+        }
+        // If no post for today, that's OK - user hasn't generated yet
+        
       } catch (error) {
-        console.error('Failed to load saved draft:', error)
+        console.error('Failed to load data:', error)
+        // Fallback to localStorage
+        const existingProfile = getProfile()
+        if (!existingProfile) {
+          router.push('/train')
+          return
+        }
+        setProfile(existingProfile)
+        setPlanner(getOrCreatePlanner())
+      } finally {
+        setIsLoading(false)
       }
     }
     
-    setIsLoading(false)
-  }, [router])
+    loadData()
+  }, [status, session, router])
 
   const handleProfileUpdate = (updatedProfile: UserProfile) => {
     setProfile(updatedProfile)
@@ -151,14 +164,20 @@ export default function DashboardPage() {
 
       const data = await response.json()
       
-      // Save as today's draft
+      // Save as today's draft (API already saved to database)
       setTodayDraft(data)
+      
+      // Get the post ID from the response (API returns it as postId)
+      if (data.postId) {
+        setCurrentPostId(data.postId)
+      }
+      
+      // Also save to localStorage for backward compatibility (temporary)
       const todayKey = getTodayKey()
       localStorage.setItem(todayKey, JSON.stringify(data))
       
-      // Save to post history and get postId
-      const postId = savePostHistory({
-        date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+      savePostHistory({
+        date: new Date().toISOString().split('T')[0],
         postType: effectivePostType === 'auto' ? 'informational' : effectivePostType,
         tone: (options?.tone as UserProfile['tone']) || profile.tone,
         headlineOptions: data.headline_options,
@@ -166,7 +185,6 @@ export default function DashboardPage() {
         hashtags: data.hashtags,
         visualPrompt: data.visual_prompt
       })
-      setCurrentPostId(postId)
       
       // Close modal if open (already closed by handleCustomiseApply)
       setShowCustomiseModal(false)

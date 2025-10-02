@@ -42,7 +42,25 @@ export default function PlannerPage() {
   const [showSaveToast, setShowSaveToast] = useState(false)
 
   useEffect(() => {
-    setLocalPlanner(getOrCreatePlanner())
+    // Load planner from database
+    const loadPlanner = async () => {
+      try {
+        const response = await fetch('/api/planner')
+        if (response.ok) {
+          const data = await response.json()
+          setLocalPlanner({ version: 1, days: data.days })
+        } else {
+          // Fallback to localStorage
+          setLocalPlanner(getOrCreatePlanner())
+        }
+      } catch (error) {
+        console.error('Failed to load planner:', error)
+        // Fallback to localStorage
+        setLocalPlanner(getOrCreatePlanner())
+      }
+    }
+    
+    loadPlanner()
   }, [])
 
   const updateDay = (dayKey: PlannerDay['day'], updates: Partial<PlannerDay>) => {
@@ -57,16 +75,36 @@ export default function PlannerPage() {
     setLocalPlanner(updatedPlanner)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!planner) return
     
-    setPlanner(planner)
-    setShowSaveToast(true)
-    
-    // Redirect to dashboard after a brief delay to show the toast
-    setTimeout(() => {
-      router.push('/dashboard')
-    }, 1000)
+    try {
+      // Save to database via API
+      const response = await fetch('/api/planner', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(planner.days)
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to save planner')
+      }
+      
+      // Also save to localStorage for backward compatibility
+      setPlanner(planner)
+      
+      setShowSaveToast(true)
+      
+      // Redirect to dashboard after a brief delay to show the toast
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 1000)
+    } catch (error) {
+      console.error('Failed to save planner:', error)
+      alert('Failed to save planner. Please try again.')
+    }
   }
 
   const handleReset = () => {
