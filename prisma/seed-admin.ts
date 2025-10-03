@@ -13,18 +13,18 @@ const prisma = new PrismaClient()
 
 // Default AI configuration (inline to avoid import issues)
 const DEFAULT_AI_GLOBALS = {
-  aiModel: 'gpt-4.1-mini',
+  textModel: 'gpt-4.1-mini',
   temperature: 0.7,
-  defaultHashtagCount: 5,
-  enableSellingPosts: true,
-  enableInformationalPosts: true,
-  enableAdvicePosts: true,
-  enableNewsPosts: true,
-  enableHeadlines: true,
-  enableVisualPrompts: true,
-  enableHashtags: true,
-  learningWeightPositive: 1.2,
-  learningWeightNegative: 0.8
+  hashtagCountDefault: 8,
+  allowedPostTypes: ['selling', 'informational', 'advice', 'news'],
+  ukPostingTimeHint: true,
+  includeHeadlineOptions: true,
+  includeVisualPrompt: true,
+  includeHashtags: true,
+  weightPreferredTerms: 0.6,
+  weightDownvotedTones: 0.5,
+  enableNewsMode: true,
+  newsFallbackToInsight: true,
 }
 
 async function main() {
@@ -33,11 +33,16 @@ async function main() {
   // 1. Initialize AI configuration
   console.log('📝 Creating default AI configuration...')
   
-  const existingConfig = await prisma.adminConfig.findFirst()
+  const existingConfig = await prisma.adminConfig.findUnique({
+    where: { key: 'ai_globals' }
+  })
   
   if (!existingConfig) {
     await prisma.adminConfig.create({
-      data: DEFAULT_AI_GLOBALS
+      data: {
+        key: 'ai_globals',
+        json: DEFAULT_AI_GLOBALS as any
+      }
     })
     console.log('✅ AI configuration created')
   } else {
