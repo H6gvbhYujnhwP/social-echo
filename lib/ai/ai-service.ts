@@ -7,7 +7,7 @@
  */
 
 import { prisma } from '../prisma'
-import { AiGlobalConfig, DEFAULT_AI_GLOBALS, PostType } from './ai-config.js'
+import { AiGlobalConfig, DEFAULT_AI_GLOBALS, PostType } from './ai-config'
 import OpenAI from 'openai'
 
 // In-memory cache for config (5-minute TTL)
