@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import crypto from 'crypto'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { generateText, assertOpenAIKey } from '../../../lib/openai'
+import { assertOpenAIKey } from '@/lib/openai'
 import { 
   TextGenerationRequestSchema, 
-  parseTextGenerationResponse,
   type TextGenerationResponse 
-} from '../../../lib/contract'
+} from '@/lib/contract'
+import { buildAndGenerateDraft, type LearningSignals, type ProfileData } from '@/lib/ai/ai-service'
 
 // Force Node.js runtime (OpenAI SDK doesn't work well in Edge)
 export const runtime = 'nodejs'
@@ -98,12 +97,19 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Get user profile for learning
+    // Get user profile
     const profile = await prisma.profile.findUnique({
       where: { userId }
     })
     
-    // Analyze feedback from database for learning
+    if (!profile) {
+      return NextResponse.json(
+        { error: 'Profile not found. Please complete your profile first.' },
+        { status: 400 }
+      )
+    }
+    
+    // Analyze feedback from database for learning signals
     const feedback = await prisma.feedback.findMany({
       where: { userId },
       include: { post: true },
@@ -111,10 +117,8 @@ export async function POST(request: NextRequest) {
       take: 50 // Last 50 feedback items
     })
     
-    // Calculate learning adjustments
-    let effectiveTone: string = validatedRequest.tone
-    let effectiveHashtagCount = 8
-    const additionalInstructions: string[] = []
+    // Calculate learning signals
+    const learningSignals: LearningSignals = {}
     
     if (feedback.length >= 5) {
       // Tone preference learning
@@ -131,129 +135,94 @@ export async function POST(request: NextRequest) {
         }
       })
       
-      // Find best performing tone
-      let bestTone: string = validatedRequest.tone
-      let bestScore = -1
+      // Find downvoted tones (< 40% positive)
+      const downvotedTones: string[] = []
       Object.entries(toneStats).forEach(([tone, stats]) => {
         const total = stats.up + stats.down
         if (total >= 3) {
           const score = stats.up / total
-          if (score > bestScore && score >= 0.6) {
-            bestScore = score
-            bestTone = tone as string
+          if (score < 0.4) {
+            downvotedTones.push(tone)
           }
         }
       })
       
-      if (bestTone !== validatedRequest.tone && bestScore >= 0.6) {
-        effectiveTone = bestTone
-        additionalInstructions.push(`User has shown preference for ${bestTone} tone in past feedback (${Math.round(bestScore * 100)}% positive).`)
+      if (downvotedTones.length > 0) {
+        learningSignals.downvotedTones = downvotedTones
       }
       
-      // Hashtag preference (simplified - could analyze edits in future)
-      const avgHashtags = 8 // Default, could be learned from post edits
-      effectiveHashtagCount = avgHashtags
-    }
-    
-    // Learning is now based on feedback analysis above
-    // No need to check profile.downvotedTones as it doesn't exist in new schema
-    
-    // Build the prompt
-    const systemPrompt = `You are SOCIAL ECHO, a marketing copy expert for SMEs. You write crisp, tactical, story-first LinkedIn posts that read like Chris Donnelly: direct, practical, and engaging for busy professionals.
-Always return STRICT JSON only; no markdown, no preamble.`
-
-    // Define post structure based on type
-    const getPostStructure = (postType: string) => {
-      switch (postType) {
-        case 'selling':
-          return 'Hook → Pain → Benefit → Mini proof → CTA'
-        case 'informational':
-          return 'Hook → Context → 3 takeaways → Question'
-        case 'advice':
-          return 'Hook → Problem → Solution → Actionable tip → Engagement question'
-        case 'news':
-          return 'Hook → News summary → Impact analysis → Your take → Question'
-        default:
-          return 'Hook → Body → CTA'
+      // Hashtag preference learning
+      const hashtagCounts = feedback
+        .filter(f => f.feedback === 'up')
+        .map(f => f.hashtags.length)
+      
+      if (hashtagCounts.length >= 3) {
+        const avgHashtags = Math.round(
+          hashtagCounts.reduce((sum, count) => sum + count, 0) / hashtagCounts.length
+        )
+        learningSignals.preferredHashtagCount = avgHashtags
+      }
+      
+      // Preferred terms from positive feedback
+      const preferredKeywords = new Set<string>()
+      feedback
+        .filter(f => f.feedback === 'up')
+        .forEach(f => {
+          f.keywords.forEach(kw => preferredKeywords.add(kw))
+        })
+      
+      if (preferredKeywords.size > 0) {
+        learningSignals.preferredTerms = Array.from(preferredKeywords).slice(0, 10)
       }
     }
-
-    // Generate random seed for variation if force is true
-    let seed = ''
-    if (force) {
-      seed = crypto.randomBytes(8).toString('hex')
-    }
-
-    const userPrompt = `Business Name: ${validatedRequest.business_name}
-Industry: ${validatedRequest.industry}
-Tone: ${effectiveTone} (obey this voice consistently)${effectiveTone !== validatedRequest.tone ? ' [LEARNED PREFERENCE]' : ''}
-Products/Services: ${validatedRequest.products_services}
-Target Audience: ${validatedRequest.target_audience}
-USP (Unique Selling Point): ${validatedRequest.usp || 'Not provided'}
-Keywords (weave naturally, not hashtag spam): ${validatedRequest.keywords || 'general business topics'}
-Post Type: ${validatedRequest.post_type}
-Seed: ${seed}
-
-${additionalInstructions.length > 0 ? `
-LEARNING INSIGHTS (from user feedback):
-${additionalInstructions.map(i => `- ${i}`).join('\n')}
-` : ''}
-
-IMPORTANT: When creating ${validatedRequest.post_type} posts (especially "informational" and "selling" types), ALWAYS keep the company's USP in mind:
-- For SELLING posts: Subtly weave in the USP to differentiate from competitors and highlight unique value
-- For INFORMATIONAL posts: Position insights in a way that demonstrates the company's unique expertise and approach
-- For ADVICE posts: Frame recommendations that align with the company's unique methodology or philosophy
-- For NEWS posts: Analyze how industry news specifically impacts or validates the company's unique positioning
-
-The USP should inform the perspective and angle of every post, making it clear why THIS company is uniquely qualified to discuss the topic.
-
-Task: Create a ${validatedRequest.platform} post in the style of Chris Donnelly — direct, tactical, problem-led, story-first.
-
-Post Structure for ${validatedRequest.post_type} posts: ${getPostStructure(validatedRequest.post_type)}
-
-Return STRICT JSON in this format:
-{
-  "headline_options": ["Option 1", "Option 2", "Option 3"],
-  "post_text": "The main post content...",
-  "hashtags": ["Hashtag1", "Hashtag2", ...],
-  "visual_prompt": "Detailed image generation prompt",
-  "best_time_uk": "HH:MM"
-}
-
-Generate approximately ${effectiveHashtagCount} relevant hashtags.`
-
-    console.log('[generate-text] Generating content...')
     
-    // Call OpenAI
-    let rawResponse: string
-    try {
-      const fullPrompt = `${systemPrompt}\n\n${userPrompt}`
-      rawResponse = await generateText(fullPrompt)
-      console.log('[generate-text] OpenAI response received')
-    } catch (openaiError: any) {
-      console.error('[generate-text] OpenAI error:', openaiError)
-      return NextResponse.json(
-        { 
-          error: 'Failed to generate content from AI',
-          details: openaiError.message 
-        },
-        { status: 502 }
-      )
+    // Prepare profile data for AI service
+    const profileData: ProfileData = {
+      business_name: profile.business_name,
+      industry: profile.industry,
+      tone: profile.tone,
+      products_services: profile.products_services,
+      target_audience: profile.target_audience,
+      usp: profile.usp,
+      keywords: profile.keywords,
+      website: profile.website,
+      rotation: profile.rotation
     }
     
-    // Parse response
-    let result: TextGenerationResponse
+    console.log('[generate-text] Calling centralized AI service...')
+    
+    // Call centralized AI service
+    let draft
     try {
-      result = parseTextGenerationResponse(rawResponse)
-      console.log('[generate-text] Response parsed successfully')
-    } catch (parseError: any) {
-      console.error('[generate-text] Parse error:', parseError)
-      console.error('[generate-text] Raw response:', rawResponse)
+      draft = await buildAndGenerateDraft({
+        userId,
+        postType: validatedRequest.post_type,
+        profile: profileData,
+        learningSignals,
+        twists: {
+          toneOverride: validatedRequest.tone !== profile.tone ? validatedRequest.tone : undefined,
+          extraKeywords: validatedRequest.keywords ? validatedRequest.keywords.split(',').map(k => k.trim()) : undefined
+        }
+      })
+      console.log('[generate-text] Draft generated successfully')
+    } catch (aiError: any) {
+      console.error('[generate-text] AI service error:', aiError)
+      
+      // Check if it's a config error (post type not allowed)
+      if (aiError.message.includes('not enabled')) {
+        return NextResponse.json(
+          { 
+            error: 'Post type not available',
+            message: aiError.message
+          },
+          { status: 400 }
+        )
+      }
+      
       return NextResponse.json(
         { 
-          error: 'Failed to parse AI response',
-          details: parseError.message,
-          raw: rawResponse.substring(0, 500)
+          error: 'Failed to generate content',
+          details: aiError.message 
         },
         { status: 502 }
       )
@@ -266,11 +235,11 @@ Generate approximately ${effectiveHashtagCount} relevant hashtags.`
         userId,
         date: today,
         postType: validatedRequest.post_type,
-        tone: effectiveTone,
-        headlineOptions: result.headline_options || [],
-        postText: result.post_text || '',
-        hashtags: result.hashtags || [],
-        visualPrompt: result.visual_prompt || '',
+        tone: validatedRequest.tone,
+        headlineOptions: draft.headline_options || [],
+        postText: draft.post_text || '',
+        hashtags: draft.hashtags || [],
+        visualPrompt: draft.visual_prompt || '',
         isRegeneration: force || false
       }
     })
@@ -290,7 +259,11 @@ Generate approximately ${effectiveHashtagCount} relevant hashtags.`
     
     // Return result with post ID for feedback
     return NextResponse.json({
-      ...result,
+      headline_options: draft.headline_options,
+      post_text: draft.post_text,
+      hashtags: draft.hashtags,
+      visual_prompt: draft.visual_prompt,
+      best_time_uk: draft.best_time_uk,
       postId: postHistory.id
     })
     

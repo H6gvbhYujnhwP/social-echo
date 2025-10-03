@@ -10,6 +10,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User roles for RBAC
+enum UserRole {
+  USER
+  ADMIN
+  MASTER_ADMIN
+}
+
 // User authentication
 model User {
   id            String    @id @default(cuid())
@@ -17,6 +24,7 @@ model User {
   name          String
   password      String    // bcrypt hashed
   emailVerified DateTime?
+  role          UserRole  @default(USER)
   
   // 2FA
   twoFactorEnabled Boolean @default(false)
@@ -161,4 +169,31 @@ model Feedback {
   
   @@index([userId])
   @@index([postId])
+}
+
+// Admin configuration storage
+model AdminConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique  // e.g., 'ai_globals'
+  json      Json                // Configuration object
+  updatedBy String?             // User ID who last updated
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([key])
+}
+
+// Admin configuration change history
+model AdminConfigHistory {
+  id        String   @id @default(cuid())
+  key       String              // Config key (e.g., 'ai_globals')
+  json      Json                // Configuration snapshot
+  updatedBy String              // User ID who made the change
+  reason    String?  @db.Text   // Optional reason for change
+  
+  createdAt DateTime @default(now())
+  
+  @@index([key])
+  @@index([createdAt])
 }

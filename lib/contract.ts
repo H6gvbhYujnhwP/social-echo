@@ -19,6 +19,7 @@ export const TextGenerationResponseSchema = z.object({
   hashtags: z.array(z.string()).min(6).max(8),
   visual_prompt: z.string(),
   best_time_uk: z.string().regex(/^\d{2}:\d{2}$/),
+  postId: z.string().optional(), // Post ID for feedback
 })
 
 export const ImageGenerationRequestSchema = z.object({
