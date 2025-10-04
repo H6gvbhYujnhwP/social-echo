@@ -250,7 +250,7 @@ export default function HomePage() {
                 Stop paying £2,000+ per month for agencies — get daily posts for £49.
               </p>
               <button 
-                onClick={handleSignUp}
+                onClick={() => handleSignUp('SocialEcho_Starter')}
                 className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-8 py-3 rounded-full text-lg font-semibold shadow-xl transform hover:scale-105 transition-all duration-200 mb-6"
               >
                 Start Your Free Trial
@@ -301,7 +301,7 @@ export default function HomePage() {
               </p>
               
               <motion.button
-                onClick={handleSignUp}
+                onClick={() => handleSignUp('SocialEcho_Starter')}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-10 py-4 rounded-full text-xl font-semibold shadow-xl transform transition-all duration-200"
