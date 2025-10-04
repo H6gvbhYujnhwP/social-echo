@@ -150,13 +150,117 @@ export default function AdminUsersPage() {
 
   async function deleteUser(id: string) {
     try {
-      const res = await fetch(`/api/admin/users/${id}/delete`, { method: 'POST' });
+      const res = await fetch(`/api/admin/users/${id}/delete`, { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'hard' })
+      });
       const json = await res.json();
       
       if (res.ok) {
         setMessage({ type: 'success', text: 'User deleted permanently' });
         fetchPage(page);
         setDetail(null);
+      } else {
+        setMessage({ type: 'error', text: json.error });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error' });
+    }
+  }
+
+  async function resetPassword(id: string) {
+    try {
+      const res = await fetch(`/api/admin/users/${id}/reset-password`, { method: 'POST' });
+      const json = await res.json();
+      
+      if (res.ok && json.resetUrl) {
+        // Copy to clipboard
+        navigator.clipboard.writeText(json.resetUrl);
+        setMessage({ type: 'success', text: 'Reset link copied to clipboard!' });
+      } else {
+        setMessage({ type: 'error', text: json.error });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error' });
+    }
+  }
+
+  async function changeEmail(id: string) {
+    const newEmail = prompt('Enter new email address:');
+    if (!newEmail) return;
+    
+    try {
+      const res = await fetch(`/api/admin/users/${id}/email`, { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newEmail })
+      });
+      const json = await res.json();
+      
+      if (res.ok) {
+        setMessage({ type: 'success', text: 'Email updated successfully' });
+        fetchPage(page);
+        if (detail?.id === id) setDetail(null);
+      } else {
+        setMessage({ type: 'error', text: json.error });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error' });
+    }
+  }
+
+  async function resetUsage(id: string) {
+    if (!confirm('Reset usage count to 0?')) return;
+    
+    try {
+      const res = await fetch(`/api/admin/users/${id}/reset-usage`, { method: 'POST' });
+      const json = await res.json();
+      
+      if (res.ok) {
+        setMessage({ type: 'success', text: 'Usage count reset to 0' });
+        fetchPage(page);
+      } else {
+        setMessage({ type: 'error', text: json.error });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error' });
+    }
+  }
+
+  async function updateNotes(id: string) {
+    const notes = prompt('Enter admin notes:', detail?.notes || '');
+    if (notes === null) return;
+    
+    try {
+      const res = await fetch(`/api/admin/users/${id}/notes`, { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes })
+      });
+      const json = await res.json();
+      
+      if (res.ok) {
+        setMessage({ type: 'success', text: 'Notes updated' });
+        fetchPage(page);
+      } else {
+        setMessage({ type: 'error', text: json.error });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error' });
+    }
+  }
+
+  async function viewPosts(id: string) {
+    try {
+      const res = await fetch(`/api/admin/users/${id}/posts`);
+      const json = await res.json();
+      
+      if (res.ok) {
+        const postsText = json.posts.map((p: any) => 
+          `[${new Date(p.createdAt).toLocaleDateString()}] ${p.postType} - ${p.tone}\n${p.postText.substring(0, 100)}...`
+        ).join('\n\n');
+        alert(`User's Posts (${json.posts.length}):\n\n${postsText || 'No posts yet'}`);
       } else {
         setMessage({ type: 'error', text: json.error });
       }
@@ -380,37 +484,70 @@ export default function AdminUsersPage() {
 
               <Separator />
               
-              <div className="flex flex-wrap gap-2">
-                {detail.isSuspended ? (
-                  <Button onClick={() => unsuspendUser(detail.id)}>
-                    Unsuspend User
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  <h4 className="w-full text-sm font-semibold text-gray-700 mb-1">Account Actions</h4>
+                  {detail.isSuspended ? (
+                    <Button onClick={() => unsuspendUser(detail.id)}>
+                      Unsuspend User
+                    </Button>
+                  ) : (
+                    <Button variant="destructive" onClick={() => suspendUser(detail.id)}>
+                      Suspend User
+                    </Button>
+                  )}
+                  
+                  <Button variant="outline" onClick={() => resetPassword(detail.id)}>
+                    Reset Password
                   </Button>
-                ) : (
-                  <Button variant="destructive" onClick={() => suspendUser(detail.id)}>
-                    Suspend User
+                  
+                  <Button variant="outline" onClick={() => changeEmail(detail.id)}>
+                    Change Email
                   </Button>
+                  
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => {
+                      if (confirm(`Are you sure you want to permanently delete ${detail.email}? This action cannot be undone.`)) {
+                        deleteUser(detail.id);
+                      }
+                    }}
+                  >
+                    Delete User
+                  </Button>
+                </div>
+
+                {detail.subscription && (
+                  <div className="flex flex-wrap gap-2">
+                    <h4 className="w-full text-sm font-semibold text-gray-700 mb-1">Subscription Actions</h4>
+                    {detail.subscription.stripeCustomerId && (
+                      <Button variant="outline" onClick={() => openPortal(detail.id)}>
+                        Open Billing Portal
+                      </Button>
+                    )}
+                    
+                    <Button variant="outline" onClick={() => resetUsage(detail.id)}>
+                      Reset Usage Count
+                    </Button>
+                  </div>
                 )}
-                
-                {detail.subscription?.stripeCustomerId && (
-                  <Button variant="outline" onClick={() => openPortal(detail.id)}>
-                    Open Billing Portal
+
+                <div className="flex flex-wrap gap-2">
+                  <h4 className="w-full text-sm font-semibold text-gray-700 mb-1">Information</h4>
+                  <Button variant="outline" onClick={() => viewPosts(detail.id)}>
+                    View Posts
                   </Button>
-                )}
-                
-                <Button 
-                  variant="destructive" 
-                  onClick={() => {
-                    if (confirm(`Are you sure you want to permanently delete ${detail.email}? This action cannot be undone.`)) {
-                      deleteUser(detail.id);
-                    }
-                  }}
-                >
-                  Delete User
-                </Button>
-                
-                <Button variant="outline" onClick={() => setDetail(null)}>
-                  Close
-                </Button>
+                  
+                  <Button variant="outline" onClick={() => updateNotes(detail.id)}>
+                    Edit Notes
+                  </Button>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button variant="outline" onClick={() => setDetail(null)}>
+                    Close
+                  </Button>
+                </div>
               </div>
             </div>
           )}
