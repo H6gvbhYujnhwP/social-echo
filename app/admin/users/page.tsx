@@ -148,6 +148,23 @@ export default function AdminUsersPage() {
     }
   }
 
+  async function deleteUser(id: string) {
+    try {
+      const res = await fetch(`/api/admin/users/${id}/delete`, { method: 'POST' });
+      const json = await res.json();
+      
+      if (res.ok) {
+        setMessage({ type: 'success', text: 'User deleted permanently' });
+        fetchPage(page);
+        setDetail(null);
+      } else {
+        setMessage({ type: 'error', text: json.error });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error' });
+    }
+  }
+
   return (
     <div className="p-6 space-y-4 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
@@ -379,6 +396,17 @@ export default function AdminUsersPage() {
                     Open Billing Portal
                   </Button>
                 )}
+                
+                <Button 
+                  variant="destructive" 
+                  onClick={() => {
+                    if (confirm(`Are you sure you want to permanently delete ${detail.email}? This action cannot be undone.`)) {
+                      deleteUser(detail.id);
+                    }
+                  }}
+                >
+                  Delete User
+                </Button>
                 
                 <Button variant="outline" onClick={() => setDetail(null)}>
                   Close
