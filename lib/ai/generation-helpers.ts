@@ -33,49 +33,9 @@ export async function getDailyBucket(
   let bucketIndex = daysSinceEpoch % buckets.length
   let chosenBucket = buckets[bucketIndex]
 
-  // Check diversity window if user ID is provided
-  if (userId && diversityWindowDays > 0) {
-    try {
-      // Get recent posts within diversity window
-      const windowStart = new Date()
-      windowStart.setDate(windowStart.getDate() - diversityWindowDays)
-
-      const recentPosts = await prisma.postHistory.findMany({
-        where: {
-          userId,
-          createdAt: {
-            gte: windowStart
-          }
-        },
-        orderBy: {
-          createdAt: 'desc'
-        },
-        take: 10,
-        select: {
-          metadata: true
-        }
-      })
-
-      // Extract buckets from recent posts
-      const recentBuckets = recentPosts
-        .map(post => {
-          if (post.metadata && typeof post.metadata === 'object') {
-            return (post.metadata as any).bucket
-          }
-          return null
-        })
-        .filter(Boolean)
-
-      // If the most recent post used the same bucket, try the next one
-      if (recentBuckets.length > 0 && recentBuckets[0] === chosenBucket) {
-        bucketIndex = (bucketIndex + 1) % buckets.length
-        chosenBucket = buckets[bucketIndex]
-      }
-    } catch (error) {
-      console.error('[generation-helpers] Error checking diversity window:', error)
-      // Continue with original bucket if error
-    }
-  }
+  // Diversity checking disabled for now (requires metadata field in PostHistory)
+  // Can be re-enabled after adding metadata field to Prisma schema
+  // For now, simple day-based rotation provides sufficient variety
 
   return chosenBucket
 }
@@ -139,14 +99,14 @@ export function buildSystemPrompt(
 }
 
 /**
- * Store bucket information in post metadata for diversity tracking
+ * Get bucket information for logging/debugging
  * 
  * @param bucket - The bucket used for this generation
- * @returns Metadata object to store with post
+ * @returns Object with bucket info
  */
-export function createPostMetadata(bucket: string): Record<string, any> {
+export function getBucketInfo(bucket: string): { bucket: string; timestamp: string } {
   return {
     bucket,
-    generatedAt: new Date().toISOString()
+    timestamp: new Date().toISOString()
   }
 }

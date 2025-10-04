@@ -86,19 +86,26 @@ async function main() {
     // Merge new fields into existing config if they're missing
     const currentConfig = existingConfig.json as any
     let updated = false
+    const missingFields: string[] = []
     
     if (!currentConfig.masterPromptTemplate) {
+      console.log('  → Adding masterPromptTemplate')
       currentConfig.masterPromptTemplate = DEFAULT_AI_GLOBALS.masterPromptTemplate
+      missingFields.push('masterPromptTemplate')
       updated = true
     }
     
     if (!currentConfig.rotation) {
+      console.log('  → Adding rotation')
       currentConfig.rotation = DEFAULT_AI_GLOBALS.rotation
+      missingFields.push('rotation')
       updated = true
     }
     
     if (!currentConfig.randomness) {
+      console.log('  → Adding randomness')
       currentConfig.randomness = DEFAULT_AI_GLOBALS.randomness
+      missingFields.push('randomness')
       updated = true
     }
     
@@ -107,7 +114,7 @@ async function main() {
         where: { key: 'ai_globals' },
         data: { json: currentConfig }
       })
-      console.log('✅ AI configuration updated with new fields')
+      console.log(`✅ AI configuration updated with new fields: ${missingFields.join(', ')}`)
     } else {
       console.log('ℹ️  AI configuration already exists and is up to date')
     }
