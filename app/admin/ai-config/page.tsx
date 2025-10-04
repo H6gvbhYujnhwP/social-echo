@@ -55,8 +55,51 @@ export default function AiConfigPage() {
       }
       
       const data = await res.json()
-      setConfig(data.config)
-      setOriginalConfig(data.config)
+      const loadedConfig = data.config
+      
+      // Add default values for new fields if they're missing
+      if (!loadedConfig.masterPromptTemplate) {
+        loadedConfig.masterPromptTemplate = `Task: Create a LinkedIn post in the style of Chris Donnelly — direct, tactical, problem-led, story-first.
+
+Steps:
+1. Provide 3 headline/title options (hooks).
+2. Write the full LinkedIn post draft with double spacing between sentences, ending in a reflection or question.
+3. Add hashtags at the foot of the post (6–8, mixing broad SME finance reach and niche targeting).
+4. Suggest 1 strong image concept that pairs with the post.
+5. Suggest the best time to post that day (UK time).
+
+Content rotation: Alternate between:
+- A serious SME finance post (cashflow, staff, late payments, interest rates, growth, resilience).
+- A funny/quirky finance industry story (weird leases, unusual loans, absurd expenses, strange finance deals).
+
+Output format:
+- Headline options
+- LinkedIn post draft
+- Hashtags
+- Visual concept
+- Best time to post today`
+      }
+      
+      if (!loadedConfig.rotation) {
+        loadedConfig.rotation = {
+          enabled: true,
+          mode: 'daily',
+          buckets: ['serious_sme_finance', 'funny_finance_story'],
+          timezone: 'Europe/London',
+          diversityWindowDays: 7
+        }
+      }
+      
+      if (!loadedConfig.randomness) {
+        loadedConfig.randomness = {
+          enabled: true,
+          temperatureMin: 0.6,
+          temperatureMax: 0.9
+        }
+      }
+      
+      setConfig(loadedConfig)
+      setOriginalConfig(loadedConfig)
     } catch (err: any) {
       setError(err.message)
     } finally {
