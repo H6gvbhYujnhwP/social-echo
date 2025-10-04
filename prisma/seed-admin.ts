@@ -25,6 +25,43 @@ const DEFAULT_AI_GLOBALS = {
   weightDownvotedTones: 0.5,
   enableNewsMode: true,
   newsFallbackToInsight: true,
+  
+  // Master Prompt Template
+  masterPromptTemplate: `Task: Create a LinkedIn post in the style of Chris Donnelly — direct, tactical, problem-led, story-first.
+
+Steps:
+1. Provide 3 headline/title options (hooks).
+2. Write the full LinkedIn post draft with double spacing between sentences, ending in a reflection or question.
+3. Add hashtags at the foot of the post (6–8, mixing broad SME finance reach and niche targeting).
+4. Suggest 1 strong image concept that pairs with the post.
+5. Suggest the best time to post that day (UK time).
+
+Content rotation: Alternate between:
+- A serious SME finance post (cashflow, staff, late payments, interest rates, growth, resilience).
+- A funny/quirky finance industry story (weird leases, unusual loans, absurd expenses, strange finance deals).
+
+Output format:
+- Headline options
+- LinkedIn post draft
+- Hashtags
+- Visual concept
+- Best time to post today`,
+  
+  // Daily Topic Rotation
+  rotation: {
+    enabled: true,
+    mode: 'daily',
+    buckets: ['serious_sme_finance', 'funny_finance_story'],
+    timezone: 'Europe/London',
+    diversityWindowDays: 7
+  },
+  
+  // Randomness (Temperature Jitter)
+  randomness: {
+    enabled: true,
+    temperatureMin: 0.6,
+    temperatureMax: 0.9
+  }
 }
 
 async function main() {
@@ -46,7 +83,34 @@ async function main() {
     })
     console.log('✅ AI configuration created')
   } else {
-    console.log('ℹ️  AI configuration already exists')
+    // Merge new fields into existing config if they're missing
+    const currentConfig = existingConfig.json as any
+    let updated = false
+    
+    if (!currentConfig.masterPromptTemplate) {
+      currentConfig.masterPromptTemplate = DEFAULT_AI_GLOBALS.masterPromptTemplate
+      updated = true
+    }
+    
+    if (!currentConfig.rotation) {
+      currentConfig.rotation = DEFAULT_AI_GLOBALS.rotation
+      updated = true
+    }
+    
+    if (!currentConfig.randomness) {
+      currentConfig.randomness = DEFAULT_AI_GLOBALS.randomness
+      updated = true
+    }
+    
+    if (updated) {
+      await prisma.adminConfig.update({
+        where: { key: 'ai_globals' },
+        data: { json: currentConfig }
+      })
+      console.log('✅ AI configuration updated with new fields')
+    } else {
+      console.log('ℹ️  AI configuration already exists and is up to date')
+    }
   }
   
   // 2. Create master admin user (optional - only if MASTER_ADMIN_EMAIL is set)

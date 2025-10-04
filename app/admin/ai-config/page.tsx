@@ -320,6 +320,205 @@ export default function AiConfigPage() {
           
           <hr className="border-gray-200" />
           
+          {/* Master Prompt Template */}
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Master Prompt Template</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              The long-form instruction prompt used to generate LinkedIn post drafts. This is prepended to all generation requests.
+            </p>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Prompt Template
+              </label>
+              <textarea
+                value={config.masterPromptTemplate}
+                onChange={(e) => setConfig({ ...config, masterPromptTemplate: e.target.value })}
+                placeholder="Enter the master prompt template..."
+                rows={15}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Use this to define the style, format, and instructions for content generation.
+              </p>
+            </div>
+          </div>
+          
+          <hr className="border-gray-200" />
+          
+          {/* Daily Topic Rotation */}
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Daily Topic Rotation</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Automatically alternate between different content buckets to reduce repetition and increase variety.
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={config.rotation.enabled}
+                    onChange={(e) => setConfig({
+                      ...config,
+                      rotation: { ...config.rotation, enabled: e.target.checked }
+                    })}
+                    className="mr-2"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Enable Daily Rotation</span>
+                </label>
+              </div>
+              
+              {config.rotation.enabled && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Content Buckets (one per line)
+                    </label>
+                    <textarea
+                      value={config.rotation.buckets.join('\n')}
+                      onChange={(e) => setConfig({
+                        ...config,
+                        rotation: {
+                          ...config.rotation,
+                          buckets: e.target.value.split('\n').filter(b => b.trim())
+                        }
+                      })}
+                      placeholder="serious_sme_finance&#10;funny_finance_story"
+                      rows={4}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Each bucket represents a content theme. The system will rotate through them daily.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Timezone
+                    </label>
+                    <input
+                      type="text"
+                      value={config.rotation.timezone}
+                      onChange={(e) => setConfig({
+                        ...config,
+                        rotation: { ...config.rotation, timezone: e.target.value }
+                      })}
+                      placeholder="Europe/London"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      IANA timezone identifier (e.g., Europe/London, America/New_York)
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Diversity Window (days)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="30"
+                      value={config.rotation.diversityWindowDays}
+                      onChange={(e) => setConfig({
+                        ...config,
+                        rotation: { ...config.rotation, diversityWindowDays: parseInt(e.target.value) }
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Number of days to check for recent bucket usage to avoid back-to-back repeats
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+          
+          <hr className="border-gray-200" />
+          
+          {/* Randomness (Temperature Jitter) */}
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Randomness (Temperature Jitter)</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Add variation to the AI temperature on each generation to reduce repetitive patterns.
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={config.randomness.enabled}
+                    onChange={(e) => setConfig({
+                      ...config,
+                      randomness: { ...config.randomness, enabled: e.target.checked }
+                    })}
+                    className="mr-2"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Enable Temperature Jitter</span>
+                </label>
+              </div>
+              
+              {config.randomness.enabled && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Minimum Temperature: {config.randomness.temperatureMin.toFixed(2)}
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="2"
+                      step="0.1"
+                      value={config.randomness.temperatureMin}
+                      onChange={(e) => setConfig({
+                        ...config,
+                        randomness: { ...config.randomness, temperatureMin: parseFloat(e.target.value) }
+                      })}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Lower bound for temperature variation (0.0 = very consistent)
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Maximum Temperature: {config.randomness.temperatureMax.toFixed(2)}
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="2"
+                      step="0.1"
+                      value={config.randomness.temperatureMax}
+                      onChange={(e) => setConfig({
+                        ...config,
+                        randomness: { ...config.randomness, temperatureMax: parseFloat(e.target.value) }
+                      })}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Upper bound for temperature variation (2.0 = very creative)
+                    </p>
+                  </div>
+                  
+                  {config.randomness.temperatureMin > config.randomness.temperatureMax && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm text-red-700">
+                        ⚠️ Minimum temperature must be less than or equal to maximum temperature
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+          
+          <hr className="border-gray-200" />
+          
           {/* Change Reason */}
           {hasChanges && (
             <div>
