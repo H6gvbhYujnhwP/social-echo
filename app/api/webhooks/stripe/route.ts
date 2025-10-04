@@ -3,6 +3,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/billing/stripe';
 import { prisma } from '@/lib/prisma';
 import { PLANS } from '@/lib/billing/plans';
+import { 
+  sendPaymentSuccessEmail, 
+  sendPaymentFailedEmail, 
+  sendSubscriptionCancelledEmail,
+  sendSubscriptionUpgradedEmail 
+} from '@/lib/email/service';
 
 export const runtime = 'nodejs'; // ensure Node (so we can read raw body)
 
@@ -47,7 +53,7 @@ export async function POST(req: NextRequest) {
 
       const mapped = mapPlanFromPriceId(priceId);
 
-      await prisma.subscription.upsert({
+      const subscription = await prisma.subscription.upsert({
         where: { userId: user.id },
         create: {
           userId: user.id,
@@ -64,6 +70,13 @@ export async function POST(req: NextRequest) {
           stripeSubscriptionId: subId ?? undefined,
         },
       });
+      
+      // Send payment success email
+      const planName = subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1);
+      const amount = s.amount_total ? `$${(s.amount_total / 100).toFixed(2)}` : 'N/A';
+      sendPaymentSuccessEmail(user.email, user.name, planName, amount).catch(err =>
+        console.error('[webhook] Failed to send payment success email:', err)
+      );
       break;
     }
 
@@ -75,19 +88,32 @@ export async function POST(req: NextRequest) {
       const mapped = mapPlanFromPriceId(priceId);
 
       const userSub = await prisma.subscription.findFirst({ 
-        where: { stripeCustomerId: customerId } 
+        where: { stripeCustomerId: customerId },
+        include: { user: true }
       });
       if (userSub) {
+        const oldPlan = userSub.plan;
+        const newPlan = (mapped?.planLabel || userSub.plan).toLowerCase();
+        
         await prisma.subscription.update({
           where: { id: userSub.id },
           data: {
-            plan: (mapped?.planLabel || userSub.plan).toLowerCase(),
+            plan: newPlan,
             status: sub.status,
             usageLimit: mapped?.usageLimit ?? userSub.usageLimit,
             currentPeriodStart: new Date(sub.current_period_start * 1000),
             currentPeriodEnd: new Date(sub.current_period_end * 1000),
           },
         });
+        
+        // Send upgrade email if plan changed
+        if (event.type === 'customer.subscription.updated' && oldPlan !== newPlan) {
+          const oldPlanName = oldPlan.charAt(0).toUpperCase() + oldPlan.slice(1);
+          const newPlanName = newPlan.charAt(0).toUpperCase() + newPlan.slice(1);
+          sendSubscriptionUpgradedEmail(userSub.user.email, userSub.user.name, oldPlanName, newPlanName).catch(err =>
+            console.error('[webhook] Failed to send upgrade email:', err)
+          );
+        }
       }
       break;
     }
@@ -96,13 +122,21 @@ export async function POST(req: NextRequest) {
       const sub = event.data.object as any;
       const customerId = String(sub.customer);
       const userSub = await prisma.subscription.findFirst({ 
-        where: { stripeCustomerId: customerId } 
+        where: { stripeCustomerId: customerId },
+        include: { user: true }
       });
       if (userSub) {
         await prisma.subscription.update({
           where: { id: userSub.id },
           data: { status: 'canceled' },
         });
+        
+        // Send cancellation email
+        const planName = userSub.plan.charAt(0).toUpperCase() + userSub.plan.slice(1);
+        const endDate = new Date(sub.current_period_end * 1000).toLocaleDateString();
+        sendSubscriptionCancelledEmail(userSub.user.email, userSub.user.name, planName, endDate).catch(err =>
+          console.error('[webhook] Failed to send cancellation email:', err)
+        );
       }
       break;
     }
@@ -111,13 +145,20 @@ export async function POST(req: NextRequest) {
       const inv = event.data.object as any;
       const customerId = String(inv.customer);
       const userSub = await prisma.subscription.findFirst({ 
-        where: { stripeCustomerId: customerId } 
+        where: { stripeCustomerId: customerId },
+        include: { user: true }
       });
       if (userSub) {
         await prisma.subscription.update({
           where: { id: userSub.id },
           data: { status: 'past_due' },
         });
+        
+        // Send payment failed email
+        const planName = userSub.plan.charAt(0).toUpperCase() + userSub.plan.slice(1);
+        sendPaymentFailedEmail(userSub.user.email, userSub.user.name, planName).catch(err =>
+          console.error('[webhook] Failed to send payment failed email:', err)
+        );
       }
       break;
     }

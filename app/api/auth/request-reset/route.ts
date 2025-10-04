@@ -38,31 +38,12 @@ export async function POST(request: NextRequest) {
       }
     })
     
-    // Send email (using Resend)
-    if (process.env.RESEND_API_KEY) {
-      try {
-        const { Resend } = await import('resend')
-        const resend = new Resend(process.env.RESEND_API_KEY)
-        
-        const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`
-        
-        await resend.emails.send({
-          from: 'SOCIAL ECHO <noreply@socialecho.ai>',
-          to: user.email,
-          subject: 'Reset your password',
-          html: `
-            <h2>Reset your password</h2>
-            <p>You requested to reset your password. Click the link below to continue:</p>
-            <p><a href="${resetUrl}">${resetUrl}</a></p>
-            <p>This link will expire in 1 hour.</p>
-            <p>If you didn't request this, you can safely ignore this email.</p>
-          `
-        })
-      } catch (emailError) {
-        console.error('[request-reset] Email error:', emailError)
-        // Don't fail the request if email fails
-      }
-    }
+    // Send password reset email
+    const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
+    const { sendPasswordResetEmail } = await import('@/lib/email/service');
+    sendPasswordResetEmail(user.email, user.name, resetUrl).catch(err =>
+      console.error('[request-reset] Failed to send email:', err)
+    );
     
     return NextResponse.json({ success: true })
     

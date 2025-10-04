@@ -6,9 +6,10 @@ export async function POST(_: Request, { params }: { params: { id: string }}) {
   try {
     const actor = await getAdminActorOrThrow();
     
-    await prisma.user.update({ 
+    const user = await prisma.user.update({ 
       where: { id: params.id }, 
-      data: { isSuspended: true }
+      data: { isSuspended: true },
+      select: { email: true, name: true }
     });
     
     await prisma.auditLog.create({ 
@@ -18,6 +19,12 @@ export async function POST(_: Request, { params }: { params: { id: string }}) {
         targetId: params.id 
       }
     });
+    
+    // Send suspension notification email
+    const { sendAccountSuspendedEmail } = await import('@/lib/email/service');
+    sendAccountSuspendedEmail(user.email, user.name).catch(err =>
+      console.error('[suspend] Failed to send email:', err)
+    );
     
     return NextResponse.json({ ok: true, message: 'User suspended successfully' });
   } catch (error: any) {

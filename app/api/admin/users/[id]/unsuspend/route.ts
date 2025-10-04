@@ -6,9 +6,10 @@ export async function POST(_: Request, { params }: { params: { id: string }}) {
   try {
     const actor = await getAdminActorOrThrow();
     
-    await prisma.user.update({ 
+    const user = await prisma.user.update({ 
       where: { id: params.id }, 
-      data: { isSuspended: false }
+      data: { isSuspended: false },
+      select: { email: true, name: true }
     });
     
     await prisma.auditLog.create({ 
@@ -18,6 +19,12 @@ export async function POST(_: Request, { params }: { params: { id: string }}) {
         targetId: params.id 
       }
     });
+    
+    // Send reactivation notification email
+    const { sendAccountReactivatedEmail } = await import('@/lib/email/service');
+    sendAccountReactivatedEmail(user.email, user.name).catch(err =>
+      console.error('[unsuspend] Failed to send email:', err)
+    );
     
     return NextResponse.json({ ok: true, message: 'User unsuspended successfully' });
   } catch (error: any) {

@@ -258,13 +258,26 @@ export async function POST(request: NextRequest) {
     
     // Increment usage count (only for new drafts)
     if (!force) {
-      await prisma.subscription.update({
+      const updatedSub = await prisma.subscription.update({
         where: { userId },
         data: {
           usageCount: { increment: 1 }
         }
       })
       console.log('[generate-text] Usage count incremented')
+      
+      // Send warning email at 80% and 100% usage
+      const usagePercentage = (updatedSub.usageCount / updatedSub.usageLimit) * 100;
+      if (usagePercentage >= 80 && usagePercentage < 100) {
+        // Send warning at 80%
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (user) {
+          const { sendUsageLimitWarningEmail } = await import('@/lib/email/service');
+          sendUsageLimitWarningEmail(user.email, user.name, updatedSub.usageCount, updatedSub.usageLimit).catch(err =>
+            console.error('[generate-text] Failed to send usage warning email:', err)
+          );
+        }
+      }
     }
     
     // Return result with post ID for feedback

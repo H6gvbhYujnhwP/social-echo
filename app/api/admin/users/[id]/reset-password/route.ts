@@ -37,6 +37,12 @@ export async function POST(req: Request, { params }: { params: { id: string }}) 
       }
     });
 
+    // Note: Email sending is handled separately by admin
+    // This is an admin-initiated reset, so the link is returned to admin
+    // If you want to send email directly to user, uncomment below:
+    // import { sendPasswordResetEmail } from '@/lib/email/service';
+    // sendPasswordResetEmail(user.email, user.name, resetUrl).catch(console.error);
+
     return NextResponse.json({ 
       ok: true, 
       resetUrl,

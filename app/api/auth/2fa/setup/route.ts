@@ -99,10 +99,17 @@ export async function POST(request: NextRequest) {
     }
     
     // Save secret to user
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { id: userId },
-      data: { twoFactorSecret: secret }
+      data: { twoFactorSecret: secret },
+      select: { email: true, name: true }
     })
+    
+    // Send 2FA enabled confirmation email
+    const { send2FAEnabledEmail } = await import('@/lib/email/service');
+    send2FAEnabledEmail(user.email, user.name).catch(err =>
+      console.error('[2fa-setup] Failed to send email:', err)
+    );
     
     return NextResponse.json({ success: true })
     

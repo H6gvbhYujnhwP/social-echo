@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import * as bcrypt from 'bcrypt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { sendWelcomeEmail } from '@/lib/email/service'
 
 // Force Node.js runtime
 export const runtime = 'nodejs'
@@ -54,6 +55,11 @@ export async function POST(request: NextRequest) {
         subscription: true
       }
     })
+    
+    // Send welcome email (non-blocking)
+    sendWelcomeEmail(user.email, user.name).catch(err => 
+      console.error('Failed to send welcome email:', err)
+    );
     
     return NextResponse.json({
       success: true,
