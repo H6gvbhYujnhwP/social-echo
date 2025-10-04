@@ -9,7 +9,7 @@ export interface EmailTemplate {
 // Welcome email for new account creation
 export function welcomeEmail(userName: string, email: string): EmailTemplate {
   return {
-    subject: 'Welcome to Social Echo! 🎉',
+    subject: 'Welcome to Your New Social Media Guru! 🎉',
     html: `
       <!DOCTYPE html>
       <html>
@@ -20,59 +20,153 @@ export function welcomeEmail(userName: string, email: string): EmailTemplate {
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
             .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
             .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
-            .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+            .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+            .tip-box { background: #f0f4ff; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .tip-title { font-weight: bold; color: #667eea; margin-bottom: 8px; }
+            .step-number { display: inline-block; background: #667eea; color: white; width: 28px; height: 28px; border-radius: 50%; text-align: center; line-height: 28px; font-weight: bold; margin-right: 10px; }
             .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+            h3 { color: #667eea; margin-top: 25px; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1>Welcome to Social Echo!</h1>
+              <h1>🎉 Welcome to Social Echo!</h1>
+              <p style="font-size: 18px; margin: 10px 0 0 0;">Your New Social Media Guru</p>
             </div>
             <div class="content">
               <p>Hi ${userName},</p>
-              <p>Thank you for joining Social Echo! We're excited to help you create amazing social media content with AI-powered tools.</p>
-              <p>Your account has been successfully created with the email: <strong>${email}</strong></p>
-              <h3>What's Next?</h3>
-              <ul>
-                <li>Complete your business profile to get personalized content</li>
-                <li>Generate your first social media post</li>
-                <li>Explore our AI-powered content planner</li>
-                <li>Upgrade to Pro for unlimited posts</li>
-              </ul>
-              <a href="${process.env.NEXTAUTH_URL}/train" class="button">Get Started</a>
-              <p>If you have any questions, feel free to reach out to our support team.</p>
-              <p>Best regards,<br>The Social Echo Team</p>
+              <p>Welcome aboard! We're thrilled to be your new social media guru. Say goodbye to writer's block and hello to engaging, on-brand content that resonates with your audience.</p>
+              <p>Your account is ready: <strong>${email}</strong></p>
+              
+              <h3>🚀 Get Started in 3 Simple Steps</h3>
+              
+              <p><span class="step-number">1</span><strong>Train Your AI</strong></p>
+              <p style="margin-left: 38px;">Head to the training page and tell us about your business. The more details you provide, the better your content will be!</p>
+              
+              <p><span class="step-number">2</span><strong>Generate Your First Post</strong></p>
+              <p style="margin-left: 38px;">Choose your post type and tone, then watch the magic happen. You'll get multiple headline options, engaging copy, hashtags, and even image prompts!</p>
+              
+              <p><span class="step-number">3</span><strong>Give Feedback</strong></p>
+              <p style="margin-left: 38px;">Thumbs up or down on each post. Your AI learns from your preferences and gets smarter with every interaction.</p>
+              
+              <div style="text-align: center;">
+                <a href="${process.env.NEXTAUTH_URL}/train" class="button">Start Training Your AI →</a>
+              </div>
+              
+              <h3>💡 Pro Tips for Best Results</h3>
+              
+              <div class="tip-box">
+                <div class="tip-title">✓ Be Specific in Your Profile</div>
+                Include your unique selling points, target audience, and brand voice. The AI uses this to create content that sounds authentically YOU.
+              </div>
+              
+              <div class="tip-box">
+                <div class="tip-title">✓ Use the Feedback System</div>
+                Every thumbs up or down teaches your AI what you like. After 5-10 posts with feedback, you'll notice significantly better results.
+              </div>
+              
+              <div class="tip-box">
+                <div class="tip-title">✓ Try Different Tones</div>
+                Experiment with Professional, Casual, Funny, and Bold tones to see what resonates best with your audience.
+              </div>
+              
+              <div class="tip-box">
+                <div class="tip-title">✓ Plan Ahead with the Content Planner</div>
+                Use our planner to schedule your content strategy for the week. Consistency is key to social media success!
+              </div>
+              
+              <div class="tip-box">
+                <div class="tip-title">✓ Regenerate When Needed</div>
+                Not happy with a post? Hit regenerate! It doesn't count against your monthly limit, so experiment freely.
+              </div>
+              
+              <h3>🎯 What You Can Do</h3>
+              <p><strong>✓</strong> Generate selling posts that drive conversions<br>
+              <strong>✓</strong> Create informational content that educates<br>
+              <strong>✓</strong> Share advice that positions you as an expert<br>
+              <strong>✓</strong> Post news and updates that keep followers engaged<br>
+              <strong>✓</strong> Plan your content calendar strategically<br>
+              <strong>✓</strong> Get AI-powered image prompts for visuals</p>
+              
+              <h3>📈 Ready to Level Up?</h3>
+              <p>Your Starter plan includes 8 posts per month. Need more? Upgrade to Pro for unlimited posts, priority AI processing, and advanced features.</p>
+              
+              <p style="margin-top: 30px;">We're here to help you succeed. If you have any questions or need guidance, just reply to this email!</p>
+              
+              <p style="margin-top: 25px;"><strong>Here's to your social media success! 🚀</strong></p>
+              
+              <p>Your Social Echo Team<br>
+              <em>Your AI-Powered Social Media Guru</em></p>
             </div>
             <div class="footer">
               <p>© 2025 Social Echo. All rights reserved.</p>
+              <p style="margin-top: 10px;">Need help? Reply to this email or visit our <a href="${process.env.NEXTAUTH_URL}/help" style="color: #667eea;">Help Center</a></p>
             </div>
           </div>
         </body>
       </html>
     `,
-    text: `Welcome to Social Echo!
+    text: `🎉 Welcome to Social Echo - Your New Social Media Guru!
 
 Hi ${userName},
 
-Thank you for joining Social Echo! We're excited to help you create amazing social media content with AI-powered tools.
+Welcome aboard! We're thrilled to be your new social media guru. Say goodbye to writer's block and hello to engaging, on-brand content that resonates with your audience.
 
-Your account has been successfully created with the email: ${email}
+Your account is ready: ${email}
 
-What's Next?
-- Complete your business profile to get personalized content
-- Generate your first social media post
-- Explore our AI-powered content planner
-- Upgrade to Pro for unlimited posts
+🚀 GET STARTED IN 3 SIMPLE STEPS
 
-Get started: ${process.env.NEXTAUTH_URL}/train
+1. Train Your AI
+Head to the training page and tell us about your business. The more details you provide, the better your content will be!
 
-If you have any questions, feel free to reach out to our support team.
+2. Generate Your First Post
+Choose your post type and tone, then watch the magic happen. You'll get multiple headline options, engaging copy, hashtags, and even image prompts!
 
-Best regards,
-The Social Echo Team
+3. Give Feedback
+Thumbs up or down on each post. Your AI learns from your preferences and gets smarter with every interaction.
 
-© 2025 Social Echo. All rights reserved.`
+Start Training Your AI: ${process.env.NEXTAUTH_URL}/train
+
+💡 PRO TIPS FOR BEST RESULTS
+
+✓ Be Specific in Your Profile
+Include your unique selling points, target audience, and brand voice. The AI uses this to create content that sounds authentically YOU.
+
+✓ Use the Feedback System
+Every thumbs up or down teaches your AI what you like. After 5-10 posts with feedback, you'll notice significantly better results.
+
+✓ Try Different Tones
+Experiment with Professional, Casual, Funny, and Bold tones to see what resonates best with your audience.
+
+✓ Plan Ahead with the Content Planner
+Use our planner to schedule your content strategy for the week. Consistency is key to social media success!
+
+✓ Regenerate When Needed
+Not happy with a post? Hit regenerate! It doesn't count against your monthly limit, so experiment freely.
+
+🎯 WHAT YOU CAN DO
+
+✓ Generate selling posts that drive conversions
+✓ Create informational content that educates
+✓ Share advice that positions you as an expert
+✓ Post news and updates that keep followers engaged
+✓ Plan your content calendar strategically
+✓ Get AI-powered image prompts for visuals
+
+📈 READY TO LEVEL UP?
+
+Your Starter plan includes 8 posts per month. Need more? Upgrade to Pro for unlimited posts, priority AI processing, and advanced features.
+
+We're here to help you succeed. If you have any questions or need guidance, just reply to this email!
+
+Here's to your social media success! 🚀
+
+Your Social Echo Team
+Your AI-Powered Social Media Guru
+
+© 2025 Social Echo. All rights reserved.
+Need help? Reply to this email or visit ${process.env.NEXTAUTH_URL}/help`
   };
 }
 
