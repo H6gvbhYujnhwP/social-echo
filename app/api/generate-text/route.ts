@@ -75,25 +75,35 @@ export async function POST(request: NextRequest) {
       
       if (!subscription) {
         return NextResponse.json(
-          { error: 'No subscription found' },
-          { status: 403 }
+          { error: 'Subscription required. Please subscribe to a plan.' },
+          { status: 402 }
         )
       }
       
-      // Check if starter plan has reached limit
-      if (subscription.plan === 'starter') {
-        const limit = subscription.usageLimit || 8
-        if (subscription.usageCount >= limit) {
-          return NextResponse.json(
-            { 
-              error: 'Usage limit reached',
-              message: `You've used all ${limit} posts for this month. Upgrade to Pro for unlimited posts.`,
-              usageCount: subscription.usageCount,
-              usageLimit: limit
-            },
-            { status: 403 }
-          )
-        }
+      // Check subscription status
+      if (!['active', 'trialing', 'past_due'].includes(subscription.status)) {
+        return NextResponse.json(
+          { 
+            error: 'Subscription inactive',
+            message: 'Your subscription is not active. Please update your payment method.',
+            status: subscription.status
+          },
+          { status: 402 }
+        )
+      }
+      
+      // Check usage limit
+      if (subscription.usageCount >= subscription.usageLimit) {
+        return NextResponse.json(
+          { 
+            error: 'Usage limit reached',
+            message: `You've used all ${subscription.usageLimit} posts for this month. Upgrade your plan for more posts.`,
+            usageCount: subscription.usageCount,
+            usageLimit: subscription.usageLimit,
+            plan: subscription.plan
+          },
+          { status: 402 }
+        )
       }
     }
     
