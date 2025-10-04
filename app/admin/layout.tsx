@@ -53,7 +53,7 @@ export default function AdminLayout({
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-6">
               <Link href="/admin" className="flex items-center hover:opacity-80 transition-opacity">
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">SE</span>
@@ -63,6 +63,40 @@ export default function AdminLayout({
               <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
                 MASTER ADMIN
               </span>
+              
+              {/* Navigation Menu */}
+              <nav className="flex items-center space-x-4 ml-8">
+                <Link 
+                  href="/admin" 
+                  className={`text-sm font-medium transition-colors ${
+                    pathname === '/admin' 
+                      ? 'text-blue-600' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  href="/admin/ai-config" 
+                  className={`text-sm font-medium transition-colors ${
+                    pathname === '/admin/ai-config' 
+                      ? 'text-blue-600' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  AI Configuration
+                </Link>
+                <Link 
+                  href="/admin/users" 
+                  className={`text-sm font-medium transition-colors ${
+                    pathname === '/admin/users' 
+                      ? 'text-blue-600' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  User Management
+                </Link>
+              </nav>
             </div>
             
             <div className="flex items-center space-x-4">

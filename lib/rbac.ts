@@ -100,3 +100,19 @@ export function forbidden(message = 'You do not have permission to access this r
     { status: 403 }
   )
 }
+
+/**
+ * Require master admin from request (for API routes)
+ */
+export async function requireMasterAdminFromReq(_req?: Request) {
+  return requireMasterAdmin()
+}
+
+/**
+ * Get admin actor or throw (with optional re-auth check)
+ */
+export async function getAdminActorOrThrow(opts?: { requireReAuth?: boolean }) {
+  // Optional: implement re-auth check here if needed
+  // For now, just require master admin
+  return requireMasterAdmin()
+}

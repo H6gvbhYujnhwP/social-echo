@@ -30,6 +30,11 @@ model User {
   twoFactorEnabled Boolean @default(false)
   twoFactorSecret  String?
   
+  // Admin management fields
+  lastLogin    DateTime?
+  isSuspended  Boolean  @default(false)
+  notes        String?
+  
   // Relations
   profile              Profile?
   subscription         Subscription?
@@ -195,5 +200,20 @@ model AdminConfigHistory {
   createdAt DateTime @default(now())
   
   @@index([key])
+  @@index([createdAt])
+}
+
+// Audit log for admin actions
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String              // User ID who performed the action
+  action    String              // Action type (e.g., 'SUSPEND', 'UNSUSPEND', 'PLAN_CHANGE')
+  targetId  String?             // Target user ID (if applicable)
+  meta      Json?               // Additional metadata
+  
+  createdAt DateTime @default(now())
+  
+  @@index([actorId])
+  @@index([targetId])
   @@index([createdAt])
 }
