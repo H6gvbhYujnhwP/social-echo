@@ -24,7 +24,8 @@ export default function SignInPage() {
         email,
         password,
         totpCode: totpCode || undefined,
-        redirect: false
+        redirect: false,
+        callbackUrl: '/dashboard'
       })
 
       if (result?.error) {
@@ -34,8 +35,20 @@ export default function SignInPage() {
         } else {
           setError(result.error)
         }
-      } else {
-        router.push('/dashboard')
+      } else if (result?.ok) {
+        // Sign in successful - check role and redirect accordingly
+        const response = await fetch('/api/auth/session')
+        const session = await response.json()
+        
+        const userRole = session?.user?.role
+        
+        if (userRole === 'MASTER_ADMIN') {
+          // MASTER_ADMIN should use admin signin, but redirect to admin anyway
+          router.push('/admin')
+        } else {
+          // Regular users go to dashboard
+          router.push('/dashboard')
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to sign in')

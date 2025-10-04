@@ -92,28 +92,38 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async redirect({ url, baseUrl }) {
-      // If signing in from admin signin page, redirect to admin
-      if (url.includes('/admin/signin') || url.includes('/admin73636/signin')) {
-        // Check if there's a callbackUrl in the URL
-        try {
-          const urlObj = new URL(url, baseUrl)
-          const callbackUrl = urlObj.searchParams.get('callbackUrl')
-          if (callbackUrl) {
+      // Parse the URL to check for callbackUrl
+      try {
+        const urlObj = new URL(url, baseUrl)
+        const callbackUrl = urlObj.searchParams.get('callbackUrl')
+        
+        // If there's a callbackUrl, use it
+        if (callbackUrl) {
+          // Ensure it's a relative URL for security
+          if (callbackUrl.startsWith('/')) {
             return `${baseUrl}${callbackUrl}`
           }
-        } catch (e) {
-          // If URL parsing fails, just redirect to admin
         }
+      } catch (e) {
+        // URL parsing failed, continue with default logic
+      }
+      
+      // If signing in from admin signin page, default to admin
+      if (url.includes('/admin/signin') || url.includes('/admin73636/signin')) {
         return `${baseUrl}/admin`
       }
       
-      // Default: allow the redirect if it's to the same base URL
+      // Allow redirects to the same base URL
       if (url.startsWith(baseUrl)) {
         return url
       }
+      
+      // Allow relative URLs
       if (url.startsWith('/')) {
         return `${baseUrl}${url}`
       }
+      
+      // Default fallback
       return baseUrl
     }
   },

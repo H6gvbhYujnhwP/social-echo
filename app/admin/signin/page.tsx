@@ -36,11 +36,14 @@ export default function AdminSignInPage() {
     setLoading(true)
 
     try {
+      const callbackUrl = searchParams.get('callbackUrl') || '/admin'
+      
       const result = await signIn('credentials', {
         email,
         password,
         totpCode: totpCode || undefined,
-        redirect: false
+        redirect: false,
+        callbackUrl: callbackUrl
       })
 
       if (result?.error) {
@@ -51,9 +54,22 @@ export default function AdminSignInPage() {
           setError(result.error)
         }
       } else if (result?.ok) {
-        // Sign in successful, redirect will happen via useEffect
-        const callbackUrl = searchParams.get('callbackUrl') || '/admin'
-        router.push(callbackUrl)
+        // Sign in successful - check role and redirect accordingly
+        // The session will be updated, so we can fetch it
+        const response = await fetch('/api/auth/session')
+        const session = await response.json()
+        
+        const userRole = session?.user?.role
+        
+        if (userRole === 'MASTER_ADMIN') {
+          // MASTER_ADMIN goes to admin dashboard
+          router.push(callbackUrl)
+        } else {
+          // Non-admins should not be able to sign in here
+          setError('Access denied: Master Admin credentials required')
+          // Sign them out
+          await fetch('/api/auth/signout', { method: 'POST' })
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to sign in')
