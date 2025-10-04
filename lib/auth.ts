@@ -90,6 +90,31 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).plan = token.plan as string
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      // If signing in from admin signin page, redirect to admin
+      if (url.includes('/admin/signin') || url.includes('/admin73636/signin')) {
+        // Check if there's a callbackUrl in the URL
+        try {
+          const urlObj = new URL(url, baseUrl)
+          const callbackUrl = urlObj.searchParams.get('callbackUrl')
+          if (callbackUrl) {
+            return `${baseUrl}${callbackUrl}`
+          }
+        } catch (e) {
+          // If URL parsing fails, just redirect to admin
+        }
+        return `${baseUrl}/admin`
+      }
+      
+      // Default: allow the redirect if it's to the same base URL
+      if (url.startsWith(baseUrl)) {
+        return url
+      }
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`
+      }
+      return baseUrl
     }
   },
   secret: process.env.NEXTAUTH_SECRET,
