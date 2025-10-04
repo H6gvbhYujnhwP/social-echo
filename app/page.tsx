@@ -11,8 +11,8 @@ import { GlassCard } from '../components/ui/GlassCard'
 export default function HomePage() {
   const router = useRouter()
 
-  const handleSignUp = () => {
-    router.push('/signup')
+  const handleSignUp = (plan: string) => {
+    router.push(`/signup?plan=${plan}`)
   }
 
   const handleContactClick = () => {
@@ -92,7 +92,7 @@ export default function HomePage() {
                   "Ideal for freelancers and solopreneurs"
                 ]}
                 buttonText="Get Started →"
-                onButtonClick={handleSignUp}
+                onButtonClick={() => handleSignUp('SocialEcho_Starter')}
                 gradient="purple"
                 delay={0.8}
               />
@@ -109,7 +109,7 @@ export default function HomePage() {
                   "Perfect for SMEs who want daily visibility"
                 ]}
                 buttonText="Get Started →"
-                onButtonClick={handleSignUp}
+                onButtonClick={() => handleSignUp('SocialEcho_Pro')}
                 gradient="blue"
                 delay={1.0}
               />
@@ -144,7 +144,7 @@ export default function HomePage() {
                     <li>✓ Email support</li>
                   </ul>
                   <button 
-                    onClick={handleContactClick}
+                    onClick={() => handleSignUp('SocialEcho_AgencyStarter')}
                     className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
                   >
                     Get Started
@@ -166,7 +166,7 @@ export default function HomePage() {
                     <li>✓ Export-ready content (CSV, PDF)</li>
                   </ul>
                   <button 
-                    onClick={handleContactClick}
+                    onClick={() => handleSignUp('SocialEcho_AgencyGrowth')}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
                   >
                     Get Started
@@ -186,7 +186,7 @@ export default function HomePage() {
                     <li>✓ Quarterly strategy call</li>
                   </ul>
                   <button 
-                    onClick={handleContactClick}
+                    onClick={() => handleSignUp('SocialEcho_AgencyScale')}
                     className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
                   >
                     Get Started

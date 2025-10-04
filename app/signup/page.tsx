@@ -1,11 +1,15 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
+import { signIn } from 'next-auth/react'
 
 export default function SignUpPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const plan = searchParams.get('plan') // Get plan from URL
+  
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
@@ -18,6 +22,7 @@ export default function SignUpPage() {
     setLoading(true)
 
     try {
+      // Step 1: Create account
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -30,11 +35,43 @@ export default function SignUpPage() {
         throw new Error(data.error || 'Failed to create account')
       }
 
-      // Redirect to sign in
-      router.push('/signin?registered=true')
+      // Step 2: Auto sign-in
+      const signInResult = await signIn('credentials', {
+        email,
+        password,
+        redirect: false
+      })
+
+      if (signInResult?.error) {
+        throw new Error('Account created but sign-in failed. Please sign in manually.')
+      }
+
+      // Step 3: Redirect based on plan
+      if (plan) {
+        // If plan is selected, redirect to Stripe Checkout
+        const checkoutRes = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ planKey: plan })
+        })
+
+        const checkoutData = await checkoutRes.json()
+
+        if (!checkoutRes.ok || checkoutData.error) {
+          throw new Error(checkoutData.error || 'Failed to create checkout session')
+        }
+
+        // Redirect to Stripe Checkout
+        if (checkoutData.url) {
+          window.location.href = checkoutData.url
+          return
+        }
+      }
+
+      // No plan selected, redirect to dashboard
+      router.push('/dashboard')
     } catch (err: any) {
       setError(err.message || 'Failed to create account')
-    } finally {
       setLoading(false)
     }
   }
@@ -45,6 +82,16 @@ export default function SignUpPage() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-blue-600 mb-2">SOCIAL ECHO</h1>
           <p className="text-gray-600">Create your account</p>
+          {plan && (
+            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm font-semibold text-blue-800">
+                Selected Plan: {plan.replace('SocialEcho_', '').replace('_', ' ')}
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                You'll be redirected to payment after signup
+              </p>
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -105,7 +152,10 @@ export default function SignUpPage() {
             className="w-full"
             disabled={loading}
           >
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading 
+              ? (plan ? 'Creating account & redirecting to payment...' : 'Creating account...') 
+              : (plan ? 'Create Account & Continue to Payment' : 'Create Account')
+            }
           </Button>
         </form>
 
