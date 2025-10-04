@@ -18,6 +18,7 @@ type UserRow = {
   isSuspended: boolean;
   createdAt: string;
   lastLogin?: string | null;
+  notes?: string | null;
   subscription?: {
     plan: string;
     status: string;

@@ -16,7 +16,7 @@ export async function GET(req: Request, { params }: { params: { id: string }}) {
         postType: true,
         tone: true,
         postText: true,
-        imagePrompt: true,
+        visualPrompt: true,
         createdAt: true
       }
     });

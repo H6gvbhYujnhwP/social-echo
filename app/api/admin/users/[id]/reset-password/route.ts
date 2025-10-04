@@ -15,13 +15,13 @@ export async function POST(req: Request, { params }: { params: { id: string }}) 
 
     // Generate reset token
     const token = crypto.randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     await prisma.passwordResetToken.create({
       data: {
         userId: user.id,
         token,
-        expires
+        expiresAt
       }
     });
 
