@@ -69,15 +69,85 @@ export function ImagePanel({ visualPrompt, industry, tone }: ImagePanelProps) {
     }
   }
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!generatedImage) return
 
-    const link = document.createElement('a')
-    link.href = generatedImage
-    link.download = 'social-echo.png'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    // Detect if user is on mobile
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+    if (isMobile) {
+      // For mobile: Open image in new tab so user can long-press and save
+      // This is more reliable than trying to force download on mobile
+      const newWindow = window.open()
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <head>
+              <title>Social Echo Image</title>
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <style>
+                body {
+                  margin: 0;
+                  padding: 20px;
+                  background: #000;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  min-height: 100vh;
+                }
+                img {
+                  max-width: 100%;
+                  height: auto;
+                  border-radius: 8px;
+                }
+                p {
+                  color: #fff;
+                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                  text-align: center;
+                  margin-top: 20px;
+                  font-size: 14px;
+                }
+              </style>
+            </head>
+            <body>
+              <img src="${generatedImage}" alt="Social Echo Image" />
+              <p>Long-press the image and select "Save Image" or "Download Image"</p>
+            </body>
+          </html>
+        `)
+        newWindow.document.close()
+      }
+    } else {
+      // For desktop: Try to download directly
+      try {
+        // Convert base64 to blob for better compatibility
+        const base64Data = generatedImage.split(',')[1]
+        const byteCharacters = atob(base64Data)
+        const byteNumbers = new Array(byteCharacters.length)
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i)
+        }
+        const byteArray = new Uint8Array(byteNumbers)
+        const blob = new Blob([byteArray], { type: 'image/png' })
+        
+        // Create download link
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `social-echo-${Date.now()}.png`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        // Clean up
+        setTimeout(() => URL.revokeObjectURL(url), 100)
+      } catch (error) {
+        console.error('Download failed:', error)
+        // Fallback: open in new tab
+        window.open(generatedImage, '_blank')
+      }
+    }
   }
 
   return (
