@@ -178,6 +178,7 @@ export async function buildAndGenerateDraft(opts: {
   let responseText: string
   
   if (config.textModel === 'claude-4.1-opus') {
+    console.log('[ai-service] Using Claude 4.1 Opus for text and DALL·E 3 for image')
     console.log('[ai-service] Calling Anthropic with model:', config.textModel)
     
     const anthropic = new Anthropic({
@@ -212,6 +213,7 @@ export async function buildAndGenerateDraft(opts: {
       throw new Error(`Anthropic API error: ${error.message}`)
     }
   } else {
+    console.log('[ai-service] Using', config.textModel, 'for text and DALL·E 3 for image')
     console.log('[ai-service] Calling OpenAI with model:', config.textModel)
     
     const openai = new OpenAI({
