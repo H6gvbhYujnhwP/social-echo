@@ -119,7 +119,7 @@ import { z } from 'zod'
 
 export const AiGlobalConfigSchema = z.object({
   textModel: z.string().min(1),
-  temperature: z.number().min(0).max(1),
+  temperature: z.number().min(0).max(2),
   hashtagCountDefault: z.number().int().min(3).max(12),
   allowedPostTypes: z.array(z.enum(['selling', 'informational', 'advice', 'news'])),
   ukPostingTimeHint: z.boolean(),

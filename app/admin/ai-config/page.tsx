@@ -229,14 +229,14 @@ Output format:
                 <input
                   type="range"
                   min="0"
-                  max="1"
+                  max="2"
                   step="0.1"
                   value={config.temperature}
                   onChange={(e) => setConfig({ ...config, temperature: parseFloat(e.target.value) })}
                   className="w-full"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Lower = more consistent, Higher = more creative
+                  Lower = more consistent, Higher = more creative (range 0–2)
                 </p>
               </div>
             </div>
