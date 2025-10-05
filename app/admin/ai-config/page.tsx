@@ -214,8 +214,10 @@ Output format:
                   onChange={(e) => setConfig({ ...config, textModel: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="gpt-4.1-mini">GPT-4.1 Mini (Fast, Cost-effective)</option>
                   <option value="gpt-4.1-nano">GPT-4.1 Nano (Fastest, Budget)</option>
+                  <option value="gpt-4.1-mini">GPT-4.1 Mini (Fast, Cost-effective)</option>
+                  <option value="gpt-4o-mini">GPT-4o Mini (Balanced Speed + Creativity)</option>
+                  <option value="gpt-4o">GPT-4o (Creative, Rich Language)</option>
                   <option value="gemini-2.5-flash">Gemini 2.5 Flash (Alternative)</option>
                 </select>
               </div>
