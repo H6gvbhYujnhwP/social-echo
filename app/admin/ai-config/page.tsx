@@ -218,6 +218,7 @@ Output format:
                   <option value="gpt-4.1-mini">GPT-4.1 Mini (Fast, Cost-effective)</option>
                   <option value="gpt-4o-mini">GPT-4o Mini (Balanced Speed + Creativity)</option>
                   <option value="gpt-4o">GPT-4o (Creative, Rich Language)</option>
+                  <option value="claude-4.1-opus">Claude 4.1 Opus (Smartest & Balanced)</option>
                   <option value="gemini-2.5-flash">Gemini 2.5 Flash (Alternative)</option>
                 </select>
               </div>

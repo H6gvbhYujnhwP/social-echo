@@ -3,12 +3,13 @@
  * 
  * Single entry point for all AI generation logic.
  * Loads configuration from database, applies learning signals,
- * builds prompts, and calls OpenAI.
+ * builds prompts, and calls OpenAI or Anthropic.
  */
 
 import { prisma } from '../prisma'
 import { AiGlobalConfig, DEFAULT_AI_GLOBALS, PostType } from './ai-config'
 import OpenAI from 'openai'
+import Anthropic from '@anthropic-ai/sdk'
 
 // In-memory cache for config (5-minute TTL)
 let configCache: { config: AiGlobalConfig; timestamp: number } | null = null
@@ -173,25 +174,68 @@ export async function buildAndGenerateDraft(opts: {
     note: opts.twists?.note
   })
   
-  console.log('[ai-service] Calling OpenAI with model:', config.textModel)
+  // 8. Call AI model (OpenAI or Anthropic based on config)
+  let responseText: string
   
-  // 8. Call OpenAI
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-  })
-  
-  const completion = await openai.chat.completions.create({
-    model: config.textModel,
-    temperature: config.temperature,
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt }
-    ]
-  })
-  
-  const responseText = completion.choices[0]?.message?.content
-  if (!responseText) {
-    throw new Error('No response from OpenAI')
+  if (config.textModel === 'claude-4.1-opus') {
+    console.log('[ai-service] Calling Anthropic with model:', config.textModel)
+    
+    const anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY
+    })
+    
+    try {
+      const message = await anthropic.messages.create({
+        model: 'claude-4.1-opus',
+        max_tokens: 1000,
+        temperature: config.temperature,
+        messages: [
+          {
+            role: 'user',
+            content: `${systemPrompt}\n\n${userPrompt}`
+          }
+        ]
+      })
+      
+      const content = message.content[0]
+      if (content.type === 'text') {
+        responseText = content.text
+      } else {
+        throw new Error('Unexpected response type from Anthropic')
+      }
+      
+      if (!responseText) {
+        throw new Error('No response from Anthropic')
+      }
+    } catch (error: any) {
+      console.error('[ai-service] Anthropic API error:', error)
+      throw new Error(`Anthropic API error: ${error.message}`)
+    }
+  } else {
+    console.log('[ai-service] Calling OpenAI with model:', config.textModel)
+    
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    })
+    
+    try {
+      const completion = await openai.chat.completions.create({
+        model: config.textModel,
+        temperature: config.temperature,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ]
+      })
+      
+      responseText = completion.choices[0]?.message?.content || ''
+      if (!responseText) {
+        throw new Error('No response from OpenAI')
+      }
+    } catch (error: any) {
+      console.error('[ai-service] OpenAI API error:', error)
+      throw new Error(`OpenAI API error: ${error.message}`)
+    }
   }
   
   // 9. Parse JSON response
