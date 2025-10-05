@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import '../styles/globals.css'
 import { Providers } from '@/components/Providers'
 import { Header } from '@/components/Header'
+import { ImpersonationBanner } from '@/components/ImpersonationBanner'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://socialecho.ai'),
@@ -73,6 +74,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-background text-foreground">
         <Providers>
+          <ImpersonationBanner />
           <Header />
           <main className="flex-1">
             {children}
