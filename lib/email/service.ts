@@ -2,11 +2,18 @@
 import { resend, EMAIL_CONFIG, isEmailEnabled } from './resend';
 import * as templates from './templates';
 
+export interface AgencyBranding {
+  name: string;
+  logoUrl?: string | null;
+  primaryColor?: string | null;
+}
+
 export interface SendEmailOptions {
   to: string;
   subject: string;
   html: string;
   text: string;
+  agencyBranding?: AgencyBranding;
 }
 
 // Generic email sending function
@@ -17,15 +24,28 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
   }
 
   try {
+    // Import branding helpers
+    const { applyAgencyBranding, applyAgencyBrandingText } = await import('./branding');
+
+    // Determine the From name based on agency branding
+    let fromName = 'Social Echo';
+    if (options.agencyBranding) {
+      fromName = `${options.agencyBranding.name} via Social Echo`;
+    }
+
+    // Apply agency branding to email content
+    const brandedHtml = applyAgencyBranding(options.html, options.agencyBranding);
+    const brandedText = applyAgencyBrandingText(options.text, options.agencyBranding);
+
     await resend!.emails.send({
-      from: EMAIL_CONFIG.from,
+      from: `${fromName} <${EMAIL_CONFIG.from.split('<')[1].replace('>', '')}>`,
       to: options.to,
       subject: options.subject,
-      html: options.html,
-      text: options.text,
+      html: brandedHtml,
+      text: brandedText,
       replyTo: EMAIL_CONFIG.replyTo,
     });
-    console.log(`Email sent successfully to ${options.to}: ${options.subject}`);
+    console.log(`Email sent successfully to ${options.to}: ${options.subject}${options.agencyBranding ? ` (branded as ${options.agencyBranding.name})` : ''}`);
     return true;
   } catch (error) {
     console.error('Failed to send email:', error);

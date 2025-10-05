@@ -87,7 +87,12 @@ export async function POST(
         to: client.email,
         subject: emailTemplate.subject,
         html: emailTemplate.html,
-        text: emailTemplate.text
+        text: emailTemplate.text,
+        agencyBranding: {
+          name: agency.name,
+          logoUrl: agency.logoUrl,
+          primaryColor: agency.primaryColor
+        }
       })
     } catch (error) {
       console.error('[agency/clients/reset-password] Failed to send email:', error)

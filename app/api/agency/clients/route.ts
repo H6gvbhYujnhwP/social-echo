@@ -123,7 +123,12 @@ export async function POST(request: NextRequest) {
         to: cleanEmail,
         subject: emailTemplate.subject,
         html: emailTemplate.html,
-        text: emailTemplate.text
+        text: emailTemplate.text,
+        agencyBranding: {
+          name: agency.name,
+          logoUrl: agency.logoUrl,
+          primaryColor: agency.primaryColor
+        }
       })
     } catch (error) {
       console.error('[agency/clients] Failed to send welcome email:', error)

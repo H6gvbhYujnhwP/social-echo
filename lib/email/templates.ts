@@ -877,3 +877,256 @@ The Social Echo Team
 © 2025 Social Echo. All rights reserved.`
   };
 }
+
+
+// Agency admin: Client added notification
+export function agencyClientAddedEmail(agencyName: string, clientEmail: string, clientCount: number, monthlyTotal: number): EmailTemplate {
+  return {
+    subject: `New Client Added: ${clientEmail}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
+            .info-box { background: #f0f4ff; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>✅ Client Added</h1>
+            </div>
+            <div class="content">
+              <p>Hi ${agencyName} team,</p>
+              <p>A new client has been successfully added to your agency account:</p>
+              
+              <div class="info-box">
+                <strong>Client Email:</strong> ${clientEmail}<br>
+                <strong>Total Active Clients:</strong> ${clientCount}<br>
+                <strong>Next Monthly Bill:</strong> £${monthlyTotal.toFixed(2)}
+              </div>
+              
+              <p>The client has been sent a welcome email with their temporary password.</p>
+              
+              <p><strong>Note:</strong> Social Echo bills your agency directly. Your clients are billed by you. No Stripe invoices are sent to your clients.</p>
+            </div>
+            <div class="footer">
+              <p>Best regards,<br>The Social Echo Team</p>
+              <p style="font-size: 12px; color: #999;">© 2025 Social Echo. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `✅ Client Added
+
+Hi ${agencyName} team,
+
+A new client has been successfully added to your agency account:
+
+Client Email: ${clientEmail}
+Total Active Clients: ${clientCount}
+Next Monthly Bill: £${monthlyTotal.toFixed(2)}
+
+The client has been sent a welcome email with their temporary password.
+
+Note: Social Echo bills your agency directly. Your clients are billed by you. No Stripe invoices are sent to your clients.
+
+Best regards,
+The Social Echo Team
+
+© 2025 Social Echo. All rights reserved.`
+  };
+}
+
+// Agency admin: Client paused notification
+export function agencyClientPausedEmail(agencyName: string, clientEmail: string, clientCount: number, monthlyTotal: number): EmailTemplate {
+  return {
+    subject: `Client Paused: ${clientEmail}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
+            .info-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>⏸️ Client Paused</h1>
+            </div>
+            <div class="content">
+              <p>Hi ${agencyName} team,</p>
+              <p>A client has been paused and removed from billing:</p>
+              
+              <div class="info-box">
+                <strong>Client Email:</strong> ${clientEmail}<br>
+                <strong>Total Active Clients:</strong> ${clientCount}<br>
+                <strong>Next Monthly Bill:</strong> £${monthlyTotal.toFixed(2)}
+              </div>
+              
+              <p>The client's account is suspended and they cannot log in. You can resume them at any time from your agency dashboard.</p>
+            </div>
+            <div class="footer">
+              <p>Best regards,<br>The Social Echo Team</p>
+              <p style="font-size: 12px; color: #999;">© 2025 Social Echo. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `⏸️ Client Paused
+
+Hi ${agencyName} team,
+
+A client has been paused and removed from billing:
+
+Client Email: ${clientEmail}
+Total Active Clients: ${clientCount}
+Next Monthly Bill: £${monthlyTotal.toFixed(2)}
+
+The client's account is suspended and they cannot log in. You can resume them at any time from your agency dashboard.
+
+Best regards,
+The Social Echo Team
+
+© 2025 Social Echo. All rights reserved.`
+  };
+}
+
+// Agency admin: Client deleted notification
+export function agencyClientDeletedEmail(agencyName: string, clientEmail: string, clientCount: number, monthlyTotal: number): EmailTemplate {
+  return {
+    subject: `Client Deleted: ${clientEmail}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
+            .info-box { background: #fee; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🗑️ Client Deleted</h1>
+            </div>
+            <div class="content">
+              <p>Hi ${agencyName} team,</p>
+              <p>A client has been permanently deleted:</p>
+              
+              <div class="info-box">
+                <strong>Client Email:</strong> ${clientEmail}<br>
+                <strong>Total Active Clients:</strong> ${clientCount}<br>
+                <strong>Next Monthly Bill:</strong> £${monthlyTotal.toFixed(2)}
+              </div>
+              
+              <p><strong>Warning:</strong> This action is permanent. All client data, posts, and history have been deleted and cannot be recovered.</p>
+            </div>
+            <div class="footer">
+              <p>Best regards,<br>The Social Echo Team</p>
+              <p style="font-size: 12px; color: #999;">© 2025 Social Echo. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `🗑️ Client Deleted
+
+Hi ${agencyName} team,
+
+A client has been permanently deleted:
+
+Client Email: ${clientEmail}
+Total Active Clients: ${clientCount}
+Next Monthly Bill: £${monthlyTotal.toFixed(2)}
+
+Warning: This action is permanent. All client data, posts, and history have been deleted and cannot be recovered.
+
+Best regards,
+The Social Echo Team
+
+© 2025 Social Echo. All rights reserved.`
+  };
+}
+
+// Agency admin: Client resumed notification
+export function agencyClientResumedEmail(agencyName: string, clientEmail: string, clientCount: number, monthlyTotal: number): EmailTemplate {
+  return {
+    subject: `Client Resumed: ${clientEmail}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
+            .info-box { background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>▶️ Client Resumed</h1>
+            </div>
+            <div class="content">
+              <p>Hi ${agencyName} team,</p>
+              <p>A client has been resumed and added back to billing:</p>
+              
+              <div class="info-box">
+                <strong>Client Email:</strong> ${clientEmail}<br>
+                <strong>Total Active Clients:</strong> ${clientCount}<br>
+                <strong>Next Monthly Bill:</strong> £${monthlyTotal.toFixed(2)}
+              </div>
+              
+              <p>The client's account is now active and they can log in again.</p>
+            </div>
+            <div class="footer">
+              <p>Best regards,<br>The Social Echo Team</p>
+              <p style="font-size: 12px; color: #999;">© 2025 Social Echo. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `▶️ Client Resumed
+
+Hi ${agencyName} team,
+
+A client has been resumed and added back to billing:
+
+Client Email: ${clientEmail}
+Total Active Clients: ${clientCount}
+Next Monthly Bill: £${monthlyTotal.toFixed(2)}
+
+The client's account is now active and they can log in again.
+
+Best regards,
+The Social Echo Team
+
+© 2025 Social Echo. All rights reserved.`
+  };
+}
