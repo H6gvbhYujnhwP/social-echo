@@ -37,9 +37,12 @@ export async function getCurrentUser() {
  */
 export function hasRole(userRole: UserRole, requiredRole: UserRole): boolean {
   const roleHierarchy: Record<UserRole, number> = {
-    USER: 1,
-    ADMIN: 2,
-    MASTER_ADMIN: 3
+    CUSTOMER: 0,        // Agency client (lowest)
+    USER: 1,            // Regular individual user
+    AGENCY_STAFF: 2,    // Agency team member
+    AGENCY_ADMIN: 3,    // Agency owner/admin
+    ADMIN: 4,           // Legacy admin role
+    MASTER_ADMIN: 5     // Full system access (highest)
   }
   
   return roleHierarchy[userRole] >= roleHierarchy[requiredRole]

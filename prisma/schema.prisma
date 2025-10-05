@@ -12,9 +12,12 @@ datasource db {
 
 // User roles for RBAC
 enum UserRole {
-  USER
-  ADMIN
-  MASTER_ADMIN
+  USER           // Regular individual user
+  ADMIN          // Legacy admin role
+  MASTER_ADMIN   // Full system access
+  AGENCY_ADMIN   // Agency owner/admin
+  AGENCY_STAFF   // Agency team member
+  CUSTOMER       // Agency's client
 }
 
 // User authentication
@@ -35,6 +38,11 @@ model User {
   isSuspended  Boolean  @default(false)
   notes        String?
   
+  // Agency relationships
+  agencyId             String?  // If user is CUSTOMER, this links to their agency
+  agency               Agency?  @relation("AgencyCustomers", fields: [agencyId], references: [id], onDelete: SetNull)
+  ownedAgency          Agency?  @relation("AgencyOwner")
+  
   // Relations
   profile              Profile?
   subscription         Subscription?
@@ -45,6 +53,8 @@ model User {
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  @@index([agencyId])
 }
 
 // User business profile (matches localStorage UserProfile)
@@ -207,7 +217,7 @@ model AdminConfigHistory {
 model AuditLog {
   id        String   @id @default(cuid())
   actorId   String              // User ID who performed the action
-  action    String              // Action type (e.g., 'SUSPEND', 'UNSUSPEND', 'PLAN_CHANGE')
+  action    String              // Action type (e.g., 'SUSPEND', 'UNSUSPEND', 'PLAN_CHANGE', 'IMPERSONATE_START', 'IMPERSONATE_END')
   targetId  String?             // Target user ID (if applicable)
   meta      Json?               // Additional metadata
   
@@ -216,4 +226,41 @@ model AuditLog {
   @@index([actorId])
   @@index([targetId])
   @@index([createdAt])
+}
+
+// Agency (white-label reseller)
+model Agency {
+  id        String   @id @default(cuid())
+  
+  // Owner relationship
+  ownerId   String   @unique
+  owner     User     @relation("AgencyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  
+  // Agency details
+  name      String
+  slug      String   @unique  // For branded login (e.g., 'acmeco')
+  
+  // White-label branding
+  logoUrl         String?
+  primaryColor    String?  @default("#3B82F6")  // Hex color
+  subdomain       String?  @unique  // Optional (e.g., 'acmeco' for acmeco.socialecho.ai)
+  customDomain    String?  @unique  // Optional full custom domain
+  
+  // Billing
+  plan                  String   @default("agency_universal")  // Single plan
+  stripeCustomerId      String?  @unique
+  stripeSubscriptionId  String?  @unique
+  activeClientCount     Int      @default(0)  // Synced with Stripe quantity
+  
+  // Status
+  status    String   @default("active")  // "active" | "suspended" | "canceled"
+  
+  // Relations
+  customers User[]   @relation("AgencyCustomers")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([slug])
+  @@index([subdomain])
 }

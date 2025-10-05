@@ -7,7 +7,21 @@ export interface EmailTemplate {
 }
 
 // Welcome email for new account creation
-export function welcomeEmail(userName: string, email: string): EmailTemplate {
+export function welcomeEmail(userName: string, email: string, tempPassword?: string): EmailTemplate {
+  const passwordSection = tempPassword ? `
+    <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;">
+      <strong>🔐 Your Temporary Password:</strong><br>
+      <code style="background: #f5f5f5; padding: 8px 12px; border-radius: 4px; font-size: 16px; display: inline-block; margin-top: 8px;">${tempPassword}</code>
+      <p style="margin: 10px 0 0 0; font-size: 14px;">Please log in and change your password immediately for security.</p>
+    </div>
+  ` : '';
+
+  const passwordTextSection = tempPassword ? `
+🔐 Your Temporary Password: ${tempPassword}
+Please log in and change your password immediately for security.
+
+` : '';
+
   return {
     subject: 'Welcome to Your New Social Media Guru! 🎉',
     html: `
@@ -38,6 +52,7 @@ export function welcomeEmail(userName: string, email: string): EmailTemplate {
               <p>Hi ${userName},</p>
               <p>Welcome aboard! We're thrilled to be your new social media guru. Say goodbye to writer's block and hello to engaging, on-brand content that resonates with your audience.</p>
               <p>Your account is ready: <strong>${email}</strong></p>
+              ${passwordSection}
               
               <h3>🚀 Get Started in 3 Simple Steps</h3>
               
@@ -115,6 +130,7 @@ Welcome aboard! We're thrilled to be your new social media guru. Say goodbye to 
 
 Your account is ready: ${email}
 
+${passwordTextSection}
 🚀 GET STARTED IN 3 SIMPLE STEPS
 
 1. Train Your AI
@@ -788,6 +804,76 @@ Thank you for being part of Social Echo!
 Best regards,
 The Social Echo Team
 
+© 2025 Social Echo. All rights reserved.`
+  };
+}
+
+
+// Two-factor authentication reset email
+export function twoFactorResetEmail(userName: string): EmailTemplate {
+  return {
+    subject: 'Two-Factor Authentication Reset',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
+            .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+            .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🔐 2FA Reset</h1>
+            </div>
+            <div class="content">
+              <p>Hi ${userName},</p>
+              <p>Your two-factor authentication (2FA) has been reset by your administrator.</p>
+              
+              <div class="warning">
+                <strong>⚠️ Security Notice:</strong> Your account is now less secure without 2FA enabled. We strongly recommend setting it up again as soon as possible.
+              </div>
+              
+              <p>To set up 2FA again:</p>
+              <ol>
+                <li>Log in to your account</li>
+                <li>Go to Settings → Security</li>
+                <li>Enable Two-Factor Authentication</li>
+                <li>Scan the QR code with your authenticator app</li>
+              </ol>
+              
+              <a href="${process.env.NEXTAUTH_URL}/settings" class="button">Go to Settings</a>
+              
+              <p>If you didn't request this change or have concerns about your account security, please contact your administrator immediately.</p>
+            </div>
+            <div class="footer">
+              <p>Best regards,<br>The Social Echo Team</p>
+              <p style="font-size: 12px; color: #999;">© 2025 Social Echo. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `🔐 2FA Reset
+Hi ${userName},
+Your two-factor authentication (2FA) has been reset by your administrator.
+⚠️ Security Notice: Your account is now less secure without 2FA enabled. We strongly recommend setting it up again as soon as possible.
+To set up 2FA again:
+1. Log in to your account
+2. Go to Settings → Security
+3. Enable Two-Factor Authentication
+4. Scan the QR code with your authenticator app
+Go to Settings: ${process.env.NEXTAUTH_URL}/settings
+If you didn't request this change or have concerns about your account security, please contact your administrator immediately.
+Best regards,
+The Social Echo Team
 © 2025 Social Echo. All rights reserved.`
   };
 }
