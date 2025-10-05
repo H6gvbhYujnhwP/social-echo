@@ -1,18 +1,67 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
+
+interface AgencyBranding {
+  name: string
+  logoUrl: string | null
+  primaryColor: string | null
+  subdomain: string | null
+}
 
 export default function SignInPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const [branding, setBranding] = useState<AgencyBranding | null>(null)
+  const [loadingBranding, setLoadingBranding] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [totpCode, setTotpCode] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [needs2FA, setNeeds2FA] = useState(false)
+
+  useEffect(() => {
+    async function loadBranding() {
+      try {
+        // Check for agency branding from query parameter
+        const brandParam = searchParams.get('brand')
+        
+        // Check for subdomain (extract from window.location.host)
+        const host = window.location.host
+        const hostParts = host.split('.')
+        let subdomain: string | null = null
+        
+        // If host is like: acme.socialecho.ai or acme.localhost:3000
+        if (hostParts.length >= 3 || (hostParts.length === 2 && host.includes('localhost'))) {
+          const potentialSubdomain = hostParts[0]
+          // Ignore www and common subdomains
+          if (potentialSubdomain && potentialSubdomain !== 'www' && potentialSubdomain !== 'api' && potentialSubdomain !== 'admin') {
+            subdomain = potentialSubdomain
+          }
+        }
+
+        const identifier = brandParam || subdomain
+
+        if (identifier) {
+          const response = await fetch(`/api/branding?identifier=${encodeURIComponent(identifier)}`)
+          if (response.ok) {
+            const data = await response.json()
+            setBranding(data)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load branding:', error)
+      } finally {
+        setLoadingBranding(false)
+      }
+    }
+
+    loadBranding()
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,10 +94,14 @@ export default function SignInPage() {
         if (userRole === 'MASTER_ADMIN') {
           // MASTER_ADMIN should use admin signin, but redirect to admin anyway
           router.push('/admin')
+        } else if (userRole === 'AGENCY_ADMIN' || userRole === 'AGENCY_STAFF') {
+          // Agency users go to agency dashboard
+          router.push('/agency')
         } else {
-          // Regular users go to dashboard
+          // Regular users and customers go to dashboard
           router.push('/dashboard')
         }
+        router.refresh()
       }
     } catch (err: any) {
       setError(err.message || 'Failed to sign in')
@@ -57,12 +110,41 @@ export default function SignInPage() {
     }
   }
 
+  const primaryColor = branding?.primaryColor || '#3B82F6'
+
+  if (loadingBranding) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-blue-600 mb-2">SOCIAL ECHO</h1>
+          {/* Agency Logo or Default Branding */}
+          {branding?.logoUrl ? (
+            <div className="flex justify-center mb-4">
+              <img
+                src={branding.logoUrl}
+                alt={branding.name}
+                className="max-w-[200px] max-h-[80px] object-contain"
+              />
+            </div>
+          ) : (
+            <h1 className="text-3xl font-bold text-blue-600 mb-2">SOCIAL ECHO</h1>
+          )}
           <p className="text-gray-600">Sign in to your account</p>
+          {branding && (
+            <p className="mt-2 text-sm text-gray-500">
+              Powered by <span className="font-semibold">{branding.name}</span>
+            </p>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -76,7 +158,11 @@ export default function SignInPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:border-transparent"
+              style={{ 
+                outlineColor: primaryColor,
+                borderColor: error && !needs2FA ? '#ef4444' : undefined
+              }}
               placeholder="you@company.com"
             />
           </div>
@@ -91,7 +177,11 @@ export default function SignInPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:border-transparent"
+              style={{ 
+                outlineColor: primaryColor,
+                borderColor: error && !needs2FA ? '#ef4444' : undefined
+              }}
               placeholder="••••••••"
             />
           </div>
@@ -107,7 +197,8 @@ export default function SignInPage() {
                 value={totpCode}
                 onChange={(e) => setTotpCode(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:border-transparent"
+                style={{ outlineColor: primaryColor }}
                 placeholder="123456"
                 maxLength={6}
               />
@@ -124,23 +215,57 @@ export default function SignInPage() {
             type="submit"
             className="w-full"
             disabled={loading}
+            style={{ backgroundColor: primaryColor }}
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
 
         <div className="mt-6 text-center space-y-2">
-          <a href="/forgot-password" className="text-sm text-blue-600 hover:underline block">
+          <a 
+            href="/forgot-password" 
+            className="text-sm hover:underline block"
+            style={{ color: primaryColor }}
+          >
             Forgot password?
           </a>
           <p className="text-sm text-gray-600">
             Don't have an account?{' '}
-            <a href="/signup" className="text-blue-600 hover:underline">
+            <a 
+              href="/signup" 
+              className="hover:underline"
+              style={{ color: primaryColor }}
+            >
               Sign up
             </a>
           </p>
         </div>
+
+        {/* Powered by Social Echo footer for branded logins */}
+        {branding && (
+          <div className="mt-8 text-center">
+            <p className="text-xs text-gray-500">
+              Powered by{' '}
+              <a
+                href="https://socialecho.ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-blue-600 hover:text-blue-500"
+              >
+                Social Echo
+              </a>
+            </p>
+          </div>
+        )}
       </div>
+
+      {/* Custom CSS for focus rings */}
+      <style jsx>{`
+        input:focus {
+          outline-color: ${primaryColor};
+          ring-color: ${primaryColor};
+        }
+      `}</style>
     </div>
   )
 }
