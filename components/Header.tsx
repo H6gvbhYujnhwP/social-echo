@@ -61,7 +61,7 @@ export function Header() {
                 </Link>
                 <span className="text-gray-400">•</span>
                 <Link
-                  href="/signup"
+                  href="/pricing"
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                 >
                   Get Started
@@ -135,7 +135,7 @@ export function Header() {
                   Sign In
                 </Link>
                 <Link
-                  href="/signup"
+                  href="/pricing"
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-center"
                   onClick={closeMobileMenu}
                 >

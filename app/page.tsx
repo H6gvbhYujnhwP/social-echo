@@ -11,8 +11,12 @@ import { GlassCard } from '../components/ui/GlassCard'
 export default function HomePage() {
   const router = useRouter()
 
+  const handleGetStarted = () => {
+    router.push('/pricing')
+  }
+
   const handleSignUp = (plan: string) => {
-    router.push(`/signup?plan=${plan}`)
+    router.push(`/pricing?plan=${plan}`)
   }
 
   const handleContactClick = () => {

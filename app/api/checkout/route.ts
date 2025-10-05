@@ -43,14 +43,20 @@ export async function POST(req: Request) {
     });
   }
 
+  // Determine success URL based on plan type
+  const isAgencyPlan = planKey.includes('Agency');
+  const successUrl = isAgencyPlan 
+    ? `${process.env.NEXTAUTH_URL}/agency?welcome=1`
+    : `${process.env.NEXTAUTH_URL}/train?welcome=1`;
+
   // Create Checkout Session
   const checkout = await stripe.checkout.sessions.create({
     mode: 'subscription',
     customer: stripeCustomerId,
     line_items: [{ price: plan.priceId, quantity: 1 }],
     allow_promotion_codes: true,
-    success_url: 'https://www.socialecho.ai/train?welcome=1',
-    cancel_url: 'https://www.socialecho.ai/dashboard?billing=cancel',
+    success_url: successUrl,
+    cancel_url: `${process.env.NEXTAUTH_URL}/pricing?billing=cancel`,
   });
 
   return NextResponse.json({ url: checkout.url });

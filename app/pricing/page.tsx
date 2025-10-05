@@ -1,11 +1,16 @@
 // app/pricing/page.tsx
 'use client';
 
-import { CheckoutButton } from '@/components/BillingButtons';
+import { useRouter } from 'next/navigation';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GradientText } from '@/components/ui/GradientText';
 
 export default function PricingPage() {
+  const router = useRouter();
+
+  const handleSelectPlan = (planKey: string) => {
+    router.push(`/signup?plan=${planKey}`);
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
@@ -51,12 +56,12 @@ export default function PricingPage() {
                   <span>Email support</span>
                 </li>
               </ul>
-              <CheckoutButton 
-                planKey="SocialEcho_Starter"
-                className="w-full"
+              <button
+                onClick={() => handleSelectPlan('SocialEcho_Starter')}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
               >
                 Get Started
-              </CheckoutButton>
+              </button>
             </GlassCard>
 
             {/* Pro */}
@@ -96,12 +101,12 @@ export default function PricingPage() {
                   <span>Priority support</span>
                 </li>
               </ul>
-              <CheckoutButton 
-                planKey="SocialEcho_Pro"
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-500"
+              <button
+                onClick={() => handleSelectPlan('SocialEcho_Pro')}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
               >
-                Upgrade to Pro
-              </CheckoutButton>
+                Get Started
+              </button>
             </GlassCard>
           </div>
         </div>
@@ -140,12 +145,12 @@ export default function PricingPage() {
                   <span>Admin dashboard</span>
                 </li>
               </ul>
-              <CheckoutButton 
-                planKey="SocialEcho_AgencyStarter"
-                className="w-full"
+              <button
+                onClick={() => handleSelectPlan('SocialEcho_AgencyStarter')}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
               >
                 Get Started
-              </CheckoutButton>
+              </button>
               <p className="text-xs text-center mt-3 text-gray-500">
                 Resell at £99/client = £791 margin
               </p>
@@ -182,12 +187,12 @@ export default function PricingPage() {
                   <span>Export-ready content</span>
                 </li>
               </ul>
-              <CheckoutButton 
-                planKey="SocialEcho_AgencyGrowth"
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
+              <button
+                onClick={() => handleSelectPlan('SocialEcho_AgencyGrowth')}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
               >
-                Get Growth
-              </CheckoutButton>
+                Get Started
+              </button>
               <p className="text-xs text-center mt-3 text-gray-500">
                 Resell at £99/client = £2,076 margin (520%)
               </p>
@@ -224,12 +229,12 @@ export default function PricingPage() {
                   <span>Quarterly strategy call</span>
                 </li>
               </ul>
-              <CheckoutButton 
-                planKey="SocialEcho_AgencyScale"
-                className="w-full"
+              <button
+                onClick={() => handleSelectPlan('SocialEcho_AgencyScale')}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
               >
-                Get Scale
-              </CheckoutButton>
+                Get Started
+              </button>
               <p className="text-xs text-center mt-3 text-gray-500">
                 Resell at £99/client = £4,151 margin
               </p>
