@@ -174,76 +174,167 @@ export async function buildAndGenerateDraft(opts: {
     note: opts.twists?.note
   })
   
-  // 8. Call AI model (OpenAI or Anthropic based on config)
-  let responseText: string
+  // 8. Map model label to actual API ID
+  const { getModelId, getModelInfo } = await import('./model-mapping')
+  const { calculateTemperature, calculateMaxTokens, trimPromptIfNeeded, formatDuration } = await import('./generation-utils')
+  const { withRetry, extractErrorCode } = await import('./retry-utils')
   
-  if (config.textModel === 'claude-4.1-opus') {
-    console.log('[ai-service] Using Claude 4.1 Opus for text and DALL·E 3 for image')
-    console.log('[ai-service] Calling Anthropic with model:', config.textModel)
-    
-    const anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY
+  let modelId: string
+  let modelInfo: any
+  
+  try {
+    modelId = getModelId(config.textModel)
+    modelInfo = getModelInfo(config.textModel)
+    console.log('[ai-service] Model mapping:', { label: config.textModel, id: modelId, provider: modelInfo.provider })
+  } catch (error: any) {
+    console.error('[ai-service] Model mapping error:', error.message)
+    throw error // This will be caught by the route handler
+  }
+  
+  // 9. Calculate temperature with jitter
+  const tempInfo = calculateTemperature(config)
+  console.log('[ai-service] Temperature:', {
+    final: tempInfo.finalTemp.toFixed(3),
+    base: tempInfo.baseTemp,
+    jitter: tempInfo.jitterRange,
+    applied: tempInfo.jitterApplied
+  })
+  
+  // 10. Calculate token budget
+  const tokenBudget = calculateMaxTokens({
+    modelMaxTokens: modelInfo.maxTokens,
+    systemPrompt,
+    userPrompt,
+    safetyMargin: 500
+  })
+  
+  console.log('[ai-service] Token budget:', {
+    input: tokenBudget.inputTokens,
+    maxOutput: tokenBudget.maxTokens,
+    budgetUsed: `${tokenBudget.budgetUsed.toFixed(1)}%`,
+    trimRequired: tokenBudget.trimRequired
+  })
+  
+  // 11. Trim prompts if needed
+  let finalSystemPrompt = systemPrompt
+  let finalUserPrompt = userPrompt
+  
+  if (tokenBudget.trimRequired || tokenBudget.budgetUsed > 70) {
+    const trimResult = trimPromptIfNeeded({
+      systemPrompt,
+      userPrompt,
+      maxInputTokens: modelInfo.maxTokens - 1000 // Reserve 1000 for output
     })
     
-    try {
+    if (trimResult.trimmed) {
+      console.log('[ai-service] PROMPT_TRIM_APPLIED:', {
+        original: trimResult.originalLength,
+        new: trimResult.newLength,
+        saved: trimResult.originalLength - trimResult.newLength
+      })
+      finalSystemPrompt = trimResult.systemPrompt
+      finalUserPrompt = trimResult.userPrompt
+    }
+  }
+  
+  // 12. Call AI model with retry logic
+  const generationStartTime = Date.now()
+  console.log('[generate-text] START - userId:', opts.userId, 'postType:', effectivePostType, 'model:', modelId)
+  
+  const result = await withRetry(async (attempt, useFallback) => {
+    // Use fallback model if needed (always use OpenAI's mini model as fallback)
+    let attemptModel = modelId
+    let attemptProvider = modelInfo.provider
+    
+    if (useFallback) {
+      try {
+        const fallbackModelInfo = getModelInfo('gpt-4o-mini')
+        attemptModel = fallbackModelInfo.id
+        attemptProvider = fallbackModelInfo.provider
+      } catch {
+        // If mapping fails, use hardcoded fallback
+        attemptModel = 'gpt-4o-mini'
+        attemptProvider = 'openai'
+      }
+    }
+    
+    const attemptTemp = useFallback ? 0.7 : tempInfo.finalTemp
+    
+    console.log(`[ai-service] Attempt ${attempt + 1} - model: ${attemptModel}, temp: ${attemptTemp.toFixed(3)}, provider: ${attemptProvider}`)
+    
+    if (attemptProvider === 'anthropic') {
+      const anthropic = new Anthropic({
+        apiKey: process.env.ANTHROPIC_API_KEY
+      })
+      
       const message = await anthropic.messages.create({
-        model: 'claude-4.1-opus',
-        max_tokens: 1000,
-        temperature: config.temperature,
+        model: attemptModel,
+        max_tokens: tokenBudget.maxTokens,
+        temperature: attemptTemp,
         messages: [
           {
             role: 'user',
-            content: `${systemPrompt}\n\n${userPrompt}`
+            content: `${finalSystemPrompt}\n\n${finalUserPrompt}`
           }
         ]
       })
       
       const content = message.content[0]
       if (content.type === 'text') {
-        responseText = content.text
+        return content.text
       } else {
         throw new Error('Unexpected response type from Anthropic')
       }
+    } else {
+      // OpenAI
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY
+      })
       
-      if (!responseText) {
-        throw new Error('No response from Anthropic')
-      }
-    } catch (error: any) {
-      console.error('[ai-service] Anthropic API error:', error)
-      throw new Error(`Anthropic API error: ${error.message}`)
-    }
-  } else {
-    console.log('[ai-service] Using', config.textModel, 'for text and DALL·E 3 for image')
-    console.log('[ai-service] Calling OpenAI with model:', config.textModel)
-    
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    })
-    
-    try {
       const completion = await openai.chat.completions.create({
-        model: config.textModel,
-        temperature: config.temperature,
+        model: attemptModel,
+        temperature: attemptTemp,
+        max_tokens: tokenBudget.maxTokens,
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'system', content: finalSystemPrompt },
+          { role: 'user', content: finalUserPrompt }
         ]
       })
       
-      responseText = completion.choices[0]?.message?.content || ''
-      if (!responseText) {
-        throw new Error('No response from OpenAI')
-      }
-    } catch (error: any) {
-      console.error('[ai-service] OpenAI API error:', error)
-      throw new Error(`OpenAI API error: ${error.message}`)
+      return completion.choices[0]?.message?.content || ''
     }
+  }, {
+    maxRetries: 2,
+    timeoutMs: 45000,
+    backoffMultiplier: 2,
+    fallbackModel: 'gpt-4o-mini'
+  })
+  
+  const generationEndTime = Date.now()
+  const durationMs = generationEndTime - generationStartTime
+  
+  // 13. Log generation result
+  console.log('[generate-text] END -', {
+    success: result.success,
+    duration: formatDuration(durationMs),
+    attempts: result.attempts,
+    fallbackUsed: result.fallbackUsed,
+    errorCode: result.error ? extractErrorCode(result.error) : null
+  })
+  
+  // 14. Handle failure
+  if (!result.success || !result.data) {
+    const errorCode = result.error ? extractErrorCode(result.error) : 'UNKNOWN_ERROR'
+    console.error('[ai-service] Generation failed after', result.attempts, 'attempts:', result.error?.message)
+    
+    throw new Error(`AI_GENERATION_FAILED: ${errorCode} - ${result.error?.message || 'Unknown error'}`)
   }
   
-  // 9. Parse JSON response
+  // 15. Parse JSON response
+  const responseText = result.data
   const draft = parseAiResponse(responseText, config)
   
-  console.log('[ai-service] Generation complete')
+  console.log('[ai-service] Generation complete - parsed draft successfully')
   
   return draft
 }

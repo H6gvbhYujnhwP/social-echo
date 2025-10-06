@@ -218,23 +218,99 @@ export async function POST(request: NextRequest) {
     } catch (aiError: any) {
       console.error('[generate-text] AI service error:', aiError)
       
-      // Check if it's a config error (post type not allowed)
-      if (aiError.message.includes('not enabled')) {
+      // Parse error message for better user feedback
+      const errorMessage = aiError.message || 'Unknown error'
+      
+      // Configuration errors (400)
+      if (errorMessage.includes('CONFIG_MODEL_INVALID')) {
         return NextResponse.json(
           { 
-            error: 'Post type not available',
-            message: aiError.message
+            error: 'AI Configuration Error',
+            message: 'The configured AI model is invalid. Please contact support or check the admin configuration.',
+            details: errorMessage
           },
           { status: 400 }
         )
       }
       
+      if (errorMessage.includes('not enabled')) {
+        return NextResponse.json(
+          { 
+            error: 'Post type not available',
+            message: errorMessage
+          },
+          { status: 400 }
+        )
+      }
+      
+      // Authentication errors (401)
+      if (errorMessage.includes('Invalid API key') || errorMessage.includes('INVALID_API_KEY')) {
+        return NextResponse.json(
+          { 
+            error: 'API Configuration Error',
+            message: 'AI service authentication failed. Please contact support.',
+            details: 'Invalid API key'
+          },
+          { status: 500 } // Return 500 since this is a server config issue
+        )
+      }
+      
+      // Timeout errors (504)
+      if (errorMessage.includes('TIMEOUT') || errorMessage.includes('timed out')) {
+        return NextResponse.json(
+          { 
+            error: 'Generation timeout',
+            message: 'The AI service took too long to respond. Please try again.',
+            details: errorMessage
+          },
+          { status: 504 }
+        )
+      }
+      
+      // Rate limit errors (429)
+      if (errorMessage.includes('RATE_LIMIT') || errorMessage.includes('429')) {
+        return NextResponse.json(
+          { 
+            error: 'Rate limit exceeded',
+            message: 'Too many requests. Please wait a moment and try again.',
+            details: errorMessage
+          },
+          { status: 429 }
+        )
+      }
+      
+      // Service unavailable (503)
+      if (errorMessage.includes('SERVICE_UNAVAILABLE') || errorMessage.includes('503')) {
+        return NextResponse.json(
+          { 
+            error: 'AI service unavailable',
+            message: 'The AI service is temporarily unavailable. Please try again in a few moments.',
+            details: errorMessage
+          },
+          { status: 503 }
+        )
+      }
+      
+      // Generic AI generation failure (502)
+      if (errorMessage.includes('AI_GENERATION_FAILED')) {
+        return NextResponse.json(
+          { 
+            error: 'Generation failed',
+            message: 'Failed to generate content after multiple attempts. Please try again.',
+            details: errorMessage
+          },
+          { status: 502 }
+        )
+      }
+      
+      // Unknown error (500)
       return NextResponse.json(
         { 
           error: 'Failed to generate content',
-          details: aiError.message 
+          message: 'An unexpected error occurred. Please try again or contact support.',
+          details: errorMessage 
         },
-        { status: 502 }
+        { status: 500 }
       )
     }
     
