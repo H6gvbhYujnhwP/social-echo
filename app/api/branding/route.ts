@@ -1,6 +1,9 @@
 // GET /api/branding?identifier=acme-agency
 // Returns agency branding for white-label login
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { getAgencyBrandingByIdentifier } from '@/lib/agency-branding-context'
 
