@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { AgencyBillingTab } from '@/components/AgencyBillingTab'
 
 type Client = {
   id: string
@@ -30,6 +31,7 @@ export default function AgencyDashboard() {
   const router = useRouter()
   const [agency, setAgency] = useState<AgencyData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<'clients' | 'billing'>('clients')
   const [showAddClient, setShowAddClient] = useState(false)
   const [showBranding, setShowBranding] = useState(false)
   const [newClientEmail, setNewClientEmail] = useState('')
@@ -254,7 +256,7 @@ export default function AgencyDashboard() {
     )
   }
 
-  const unitPrice = 49 // £49 per client per month
+  const unitPrice = 39 // £39 per client per month
   const monthlyTotal = agency.activeClientCount * unitPrice
 
   return (
@@ -348,11 +350,40 @@ export default function AgencyDashboard() {
           </div>
         )}
 
-        {/* Clients Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Client Management</h2>
+        {/* Tab Navigation */}
+        <div className="bg-white rounded-lg shadow mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="flex -mb-px">
+              <button
+                onClick={() => setActiveTab('clients')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'clients'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Client Management
+              </button>
+              <button
+                onClick={() => setActiveTab('billing')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'billing'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Billing & Subscription
+              </button>
+            </nav>
           </div>
+        </div>
+
+        {/* Clients Table */}
+        {activeTab === 'clients' && (
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Client Management</h2>
+            </div>
           
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -448,6 +479,12 @@ export default function AgencyDashboard() {
             </table>
           </div>
         </div>
+        )}
+
+        {/* Billing Tab */}
+        {activeTab === 'billing' && (
+          <AgencyBillingTab />
+        )}
       </div>
 
       {/* Add Client Modal */}

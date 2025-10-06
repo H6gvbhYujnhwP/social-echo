@@ -6,6 +6,7 @@ import { z } from 'zod'
 
 // Force Node.js runtime
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 const ProfileSchema = z.object({
   business_name: z.string().min(1, 'Business name is required'),
@@ -82,32 +83,80 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validated = ProfileSchema.parse(body)
     
+    // Check for existing profile to enforce immutability
+    const existingProfile = await prisma.profile.findUnique({
+      where: { userId },
+      select: { business_name: true, industry: true }
+    })
+    
+    // If profile exists, prevent changes to business_name and industry
+    let updateData: any = {
+      website: validated.website,
+      tone: validated.tone,
+      products_services: validated.products_services,
+      target_audience: validated.target_audience,
+      usp: validated.usp,
+      keywords: validated.keywords,
+      rotation: validated.rotation
+    }
+    
+    let createData: any = {
+      userId,
+      business_name: validated.business_name,
+      website: validated.website,
+      industry: validated.industry,
+      tone: validated.tone,
+      products_services: validated.products_services,
+      target_audience: validated.target_audience,
+      usp: validated.usp,
+      keywords: validated.keywords,
+      rotation: validated.rotation
+    }
+    
+    // Check if user is trying to change immutable fields
+    if (existingProfile) {
+      const attemptedChanges: string[] = []
+      
+      if (validated.business_name !== existingProfile.business_name) {
+        attemptedChanges.push('business_name')
+      }
+      if (validated.industry !== existingProfile.industry) {
+        attemptedChanges.push('industry')
+      }
+      
+      if (attemptedChanges.length > 0) {
+        // Log the violation
+        await prisma.auditLog.create({
+          data: {
+            actorId: userId,
+            action: 'ACCOUNT_PROTECTED',
+            meta: {
+              message: 'User attempted to change locked business field',
+              fields: attemptedChanges,
+              ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+            }
+          }
+        }).catch(console.error)
+        
+        return NextResponse.json(
+          { 
+            error: 'Company name and industry are locked after initial setup to protect brand and billing integrity',
+            lockedFields: attemptedChanges
+          },
+          { status: 403 }
+        )
+      }
+      
+      // Keep existing immutable values
+      updateData.business_name = existingProfile.business_name
+      updateData.industry = existingProfile.industry
+    }
+    
     // Upsert profile (create if doesn't exist, update if exists)
     const profile = await prisma.profile.upsert({
       where: { userId },
-      update: {
-        business_name: validated.business_name,
-        website: validated.website,
-        industry: validated.industry,
-        tone: validated.tone,
-        products_services: validated.products_services,
-        target_audience: validated.target_audience,
-        usp: validated.usp,
-        keywords: validated.keywords,
-        rotation: validated.rotation
-      },
-      create: {
-        userId,
-        business_name: validated.business_name,
-        website: validated.website,
-        industry: validated.industry,
-        tone: validated.tone,
-        products_services: validated.products_services,
-        target_audience: validated.target_audience,
-        usp: validated.usp,
-        keywords: validated.keywords,
-        rotation: validated.rotation
-      }
+      update: updateData,
+      create: createData
     })
     
     console.log('[profile-post] Profile saved:', profile.id)

@@ -28,20 +28,34 @@ export async function POST(req: NextRequest) {
   try {
     event = stripe.webhooks.constructEvent(raw, sig!, process.env.STRIPE_WEBHOOK_SECRET!);
   } catch (err: any) {
+    console.error('[webhook] Signature verification failed:', err.message);
     return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
+
+  console.log('[webhook] Received event:', event.type, 'ID:', event.id);
 
   switch (event.type) {
     case 'checkout.session.completed': {
       const s = event.data.object as any; // Stripe.Checkout.Session
       const email = s.customer_details?.email || s.customer_email;
-      if (!email) break;
+      console.log('[webhook] Checkout completed for email:', email);
+      
+      if (!email) {
+        console.error('[webhook] No email found in checkout session');
+        break;
+      }
 
       const user = await prisma.user.findUnique({ 
         where: { email }, 
         include: { subscription: true }
       });
-      if (!user) break;
+      
+      if (!user) {
+        console.error('[webhook] User not found for email:', email);
+        break;
+      }
+      
+      console.log('[webhook] Processing subscription for user:', user.id, user.role);
 
       const subId = typeof s.subscription === 'string' ? s.subscription : s.subscription?.id;
       const customerId = typeof s.customer === 'string' ? s.customer : s.customer?.id;
@@ -71,9 +85,13 @@ export async function POST(req: NextRequest) {
         },
       });
       
+      console.log('[webhook] Subscription created/updated:', subscription.id, subscription.plan);
+      
       // Send payment success email
       const planName = subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1);
       const amount = s.amount_total ? `$${(s.amount_total / 100).toFixed(2)}` : 'N/A';
+      console.log('[webhook] Sending payment success email to:', user.email);
+      
       sendPaymentSuccessEmail(user.email, user.name, planName, amount).catch(err =>
         console.error('[webhook] Failed to send payment success email:', err)
       );
@@ -85,15 +103,22 @@ export async function POST(req: NextRequest) {
       const sub = event.data.object as any; // Stripe.Subscription
       const customerId = String(sub.customer);
       const priceId = sub.items?.data?.[0]?.price?.id as string | undefined;
+      const quantity = sub.items?.data?.[0]?.quantity || 1;
+      
+      console.log('[webhook] Subscription event:', event.type, 'Customer:', customerId, 'Quantity:', quantity);
+      
       const mapped = mapPlanFromPriceId(priceId);
 
       const userSub = await prisma.subscription.findFirst({ 
         where: { stripeCustomerId: customerId },
         include: { user: true }
       });
+      
       if (userSub) {
         const oldPlan = userSub.plan;
         const newPlan = (mapped?.planLabel || userSub.plan).toLowerCase();
+        
+        console.log('[webhook] Updating subscription:', userSub.id, 'from', oldPlan, 'to', newPlan);
         
         await prisma.subscription.update({
           where: { id: userSub.id },
@@ -110,10 +135,14 @@ export async function POST(req: NextRequest) {
         if (event.type === 'customer.subscription.updated' && oldPlan !== newPlan) {
           const oldPlanName = oldPlan.charAt(0).toUpperCase() + oldPlan.slice(1);
           const newPlanName = newPlan.charAt(0).toUpperCase() + newPlan.slice(1);
+          console.log('[webhook] Sending upgrade email to:', userSub.user.email);
+          
           sendSubscriptionUpgradedEmail(userSub.user.email, userSub.user.name, oldPlanName, newPlanName).catch(err =>
             console.error('[webhook] Failed to send upgrade email:', err)
           );
         }
+      } else {
+        console.warn('[webhook] No subscription found for customer:', customerId);
       }
       break;
     }
@@ -121,11 +150,17 @@ export async function POST(req: NextRequest) {
     case 'customer.subscription.deleted': {
       const sub = event.data.object as any;
       const customerId = String(sub.customer);
+      
+      console.log('[webhook] Subscription deleted for customer:', customerId);
+      
       const userSub = await prisma.subscription.findFirst({ 
         where: { stripeCustomerId: customerId },
         include: { user: true }
       });
+      
       if (userSub) {
+        console.log('[webhook] Canceling subscription:', userSub.id);
+        
         await prisma.subscription.update({
           where: { id: userSub.id },
           data: { status: 'canceled' },
@@ -134,9 +169,13 @@ export async function POST(req: NextRequest) {
         // Send cancellation email
         const planName = userSub.plan.charAt(0).toUpperCase() + userSub.plan.slice(1);
         const endDate = new Date(sub.current_period_end * 1000).toLocaleDateString();
+        console.log('[webhook] Sending cancellation email to:', userSub.user.email);
+        
         sendSubscriptionCancelledEmail(userSub.user.email, userSub.user.name, planName, endDate).catch(err =>
           console.error('[webhook] Failed to send cancellation email:', err)
         );
+      } else {
+        console.warn('[webhook] No subscription found for deleted customer:', customerId);
       }
       break;
     }
@@ -144,11 +183,17 @@ export async function POST(req: NextRequest) {
     case 'invoice.payment_failed': {
       const inv = event.data.object as any;
       const customerId = String(inv.customer);
+      
+      console.log('[webhook] Payment failed for customer:', customerId, 'Amount:', inv.amount_due);
+      
       const userSub = await prisma.subscription.findFirst({ 
         where: { stripeCustomerId: customerId },
         include: { user: true }
       });
+      
       if (userSub) {
+        console.log('[webhook] Marking subscription as past_due:', userSub.id);
+        
         await prisma.subscription.update({
           where: { id: userSub.id },
           data: { status: 'past_due' },
@@ -156,9 +201,13 @@ export async function POST(req: NextRequest) {
         
         // Send payment failed email
         const planName = userSub.plan.charAt(0).toUpperCase() + userSub.plan.slice(1);
+        console.log('[webhook] Sending payment failed email to:', userSub.user.email);
+        
         sendPaymentFailedEmail(userSub.user.email, userSub.user.name, planName).catch(err =>
           console.error('[webhook] Failed to send payment failed email:', err)
         );
+      } else {
+        console.warn('[webhook] No subscription found for failed payment customer:', customerId);
       }
       break;
     }

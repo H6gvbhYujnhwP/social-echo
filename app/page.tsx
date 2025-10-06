@@ -136,62 +136,25 @@ export default function HomePage() {
               </div>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* Agency Starter */}
-                <GlassCard className="p-6 text-center hover:scale-105 transition-transform duration-200">
-                  <h4 className="text-xl font-bold text-white mb-2">Agency Starter</h4>
-                  <div className="text-3xl font-bold text-purple-400 mb-4">£199/mo</div>
+                {/* Agency - Grow as You Go */}
+                <GlassCard className="p-6 text-center hover:scale-105 transition-transform duration-200 border-2 border-blue-500">
+                  <div className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full inline-block mb-2">
+                    AGENCY PLAN
+                  </div>
+                  <h4 className="text-xl font-bold text-white mb-2">Agency — Grow as You Go</h4>
+                  <div className="text-3xl font-bold text-blue-400 mb-4">£39/client/mo</div>
                   <ul className="text-left text-gray-300 space-y-2 text-sm mb-6">
-                    <li>✓ Up to 10 client accounts</li>
+                    <li>✓ Unlimited client accounts</li>
                     <li>✓ Branded white-label instance</li>
                     <li>✓ Unlimited posts per client</li>
                     <li>✓ Admin dashboard</li>
-                    <li>✓ Email support</li>
+                    <li>✓ Custom domain support</li>
+                    <li>✓ Auto-proration billing</li>
+                    <li>✓ Priority support</li>
                   </ul>
                   <button 
                     onClick={() => handleSignUp('SocialEcho_AgencyStarter')}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
-                  >
-                    Get Started
-                  </button>
-                </GlassCard>
-
-                {/* Agency Growth */}
-                <GlassCard className="p-6 text-center hover:scale-105 transition-transform duration-200 border-2 border-blue-500">
-                  <div className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full inline-block mb-2">
-                    POPULAR
-                  </div>
-                  <h4 className="text-xl font-bold text-white mb-2">Agency Growth</h4>
-                  <div className="text-3xl font-bold text-blue-400 mb-4">£399/mo</div>
-                  <ul className="text-left text-gray-300 space-y-2 text-sm mb-6">
-                    <li>✓ Up to 25 client accounts</li>
-                    <li>✓ Everything in Starter</li>
-                    <li>✓ Custom domain</li>
-                    <li>✓ Priority support</li>
-                    <li>✓ Export-ready content (CSV, PDF)</li>
-                  </ul>
-                  <button 
-                    onClick={() => handleSignUp('SocialEcho_AgencyGrowth')}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
-                  >
-                    Get Started
-                  </button>
-                </GlassCard>
-
-                {/* Agency Scale */}
-                <GlassCard className="p-6 text-center hover:scale-105 transition-transform duration-200">
-                  <h4 className="text-xl font-bold text-white mb-2">Agency Scale</h4>
-                  <div className="text-3xl font-bold text-green-400 mb-4">£799/mo</div>
-                  <ul className="text-left text-gray-300 space-y-2 text-sm mb-6">
-                    <li>✓ Up to 50 client accounts</li>
-                    <li>✓ Everything in Growth</li>
-                    <li>✓ Advanced branding</li>
-                    <li>✓ Team seats</li>
-                    <li>✓ Dedicated support channel</li>
-                    <li>✓ Quarterly strategy call</li>
-                  </ul>
-                  <button 
-                    onClick={() => handleSignUp('SocialEcho_AgencyScale')}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
                   >
                     Get Started
                   </button>
@@ -226,8 +189,8 @@ export default function HomePage() {
                 <div className="grid md:grid-cols-3 gap-6 text-center">
                   <div>
                     <div className="text-gray-400 mb-2">You Pay</div>
-                    <div className="text-3xl font-bold text-white">£399/mo</div>
-                    <div className="text-sm text-gray-400">(25 accounts)</div>
+                    <div className="text-3xl font-bold text-white">£39/mo</div>
+                    <div className="text-sm text-gray-400">per client</div>
                   </div>
                   <div>
                     <div className="text-gray-400 mb-2">You Charge</div>
@@ -236,10 +199,13 @@ export default function HomePage() {
                   </div>
                   <div>
                     <div className="text-gray-400 mb-2">Your Margin</div>
-                    <div className="text-3xl font-bold text-green-400">£2,076/mo</div>
-                    <div className="text-sm text-gray-400">(520% markup)</div>
+                    <div className="text-3xl font-bold text-green-400">£60/mo</div>
+                    <div className="text-sm text-gray-400">per client (154% markup)</div>
                   </div>
                 </div>
+                <p className="text-center text-gray-300 mt-6 text-sm">
+                  With 25 clients: Earn £2,475/mo in revenue, £1,500/mo profit margin
+                </p>
               </div>
             </motion.div>
 

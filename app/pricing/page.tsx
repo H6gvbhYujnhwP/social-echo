@@ -115,7 +115,7 @@ export default function PricingPage() {
         <div>
           <h2 className="text-2xl font-bold text-center mb-4">Agency White Label Plans</h2>
           <p className="text-center text-gray-600 mb-8">
-            Resell to your clients and earn up to 520% markup
+            Grow as you go — £39/client/month with unlimited capacity
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             {/* Agency Starter */}
@@ -123,14 +123,14 @@ export default function PricingPage() {
               <div className="mb-6">
                 <h3 className="text-xl font-bold mb-2">Agency Starter</h3>
                 <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-3xl font-bold">£199</span>
-                  <span className="text-gray-600">/month</span>
+                  <span className="text-3xl font-bold">£39</span>
+                  <span className="text-gray-600">/client/month</span>
                 </div>
               </div>
               <ul className="space-y-2 mb-6 text-sm">
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span>Up to 10 client accounts</span>
+                  <span>Unlimited client accounts</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
@@ -144,6 +144,10 @@ export default function PricingPage() {
                   <span className="text-green-500 mt-1">✓</span>
                   <span>Admin dashboard</span>
                 </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 mt-1">✓</span>
+                  <span>Auto-proration billing</span>
+                </li>
               </ul>
               <button
                 onClick={() => handleSelectPlan('SocialEcho_AgencyStarter')}
@@ -152,7 +156,7 @@ export default function PricingPage() {
                 Get Started
               </button>
               <p className="text-xs text-center mt-3 text-gray-500">
-                Resell at £99/client = £791 margin
+                Resell at £99/client = £60 margin per client
               </p>
             </GlassCard>
 
@@ -161,22 +165,18 @@ export default function PricingPage() {
               <div className="mb-6">
                 <h3 className="text-xl font-bold mb-2">Agency Growth</h3>
                 <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-3xl font-bold">£399</span>
-                  <span className="text-gray-600">/month</span>
+                  <span className="text-3xl font-bold">£39</span>
+                  <span className="text-gray-600">/client/month</span>
                 </div>
               </div>
               <ul className="space-y-2 mb-6 text-sm">
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span>Up to 25 client accounts</span>
+                  <span>Everything in Starter</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span>Unlimited posts per client</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-1">✓</span>
-                  <span>Custom domain</span>
+                  <span>Custom domain support</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
@@ -186,6 +186,10 @@ export default function PricingPage() {
                   <span className="text-green-500 mt-1">✓</span>
                   <span>Export-ready content</span>
                 </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 mt-1">✓</span>
+                  <span>Advanced analytics</span>
+                </li>
               </ul>
               <button
                 onClick={() => handleSelectPlan('SocialEcho_AgencyGrowth')}
@@ -194,7 +198,7 @@ export default function PricingPage() {
                 Get Started
               </button>
               <p className="text-xs text-center mt-3 text-gray-500">
-                Resell at £99/client = £2,076 margin (520%)
+                Same great rate — more features
               </p>
             </GlassCard>
 
@@ -203,22 +207,22 @@ export default function PricingPage() {
               <div className="mb-6">
                 <h3 className="text-xl font-bold mb-2">Agency Scale</h3>
                 <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-3xl font-bold">£799</span>
-                  <span className="text-gray-600">/month</span>
+                  <span className="text-3xl font-bold">£39</span>
+                  <span className="text-gray-600">/client/month</span>
                 </div>
               </div>
               <ul className="space-y-2 mb-6 text-sm">
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span>Up to 50 client accounts</span>
+                  <span>Everything in Growth</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span>Advanced branding</span>
+                  <span>Advanced branding options</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span>Team seats</span>
+                  <span>Multiple team seats</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
@@ -236,7 +240,7 @@ export default function PricingPage() {
                 Get Started
               </button>
               <p className="text-xs text-center mt-3 text-gray-500">
-                Resell at £99/client = £4,151 margin
+                Enterprise features at the same rate
               </p>
             </GlassCard>
           </div>
