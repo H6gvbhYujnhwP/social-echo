@@ -5,18 +5,32 @@ import { getToken } from 'next-auth/jwt'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   
+  // Get the user's session token for all protected routes
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  })
+  
+  // Agency routing: redirect agency users from /dashboard to /agency
+  if (pathname === '/dashboard' && token) {
+    if (token.role === 'AGENCY_ADMIN' || token.role === 'AGENCY_STAFF') {
+      // Check if they're impersonating (allow dashboard access during impersonation)
+      const impersonating = request.cookies.get('impersonating')
+      
+      if (!impersonating) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/agency'
+        return NextResponse.redirect(url)
+      }
+    }
+  }
+  
   // Check if accessing admin routes (including hidden URL)
   if (pathname.startsWith('/admin') || pathname.startsWith('/admin73636')) {
     // Skip middleware for admin signin page
     if (pathname === '/admin/signin' || pathname === '/admin73636/signin') {
       return NextResponse.next()
     }
-    
-    // Get the user's session token
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    })
     
     // If not authenticated, redirect to admin signin
     if (!token) {
@@ -51,5 +65,7 @@ export const config = {
   matcher: [
     '/admin/:path*',
     '/admin73636/:path*',
+    '/dashboard',
+    '/agency/:path*',
   ],
 }

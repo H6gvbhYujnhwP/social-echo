@@ -66,6 +66,10 @@ export async function POST(req: NextRequest) {
       if (s?.lines?.data?.[0]?.price?.id) priceId = s.lines.data[0].price.id;
 
       const mapped = mapPlanFromPriceId(priceId);
+      
+      // Detect if this is an agency plan
+      const isAgencyPlan = priceId === 'price_1SFCsCLCgRgCwthBJ4l3xVFT' || 
+                          mapped?.planLabel?.toLowerCase().includes('agency');
 
       const subscription = await prisma.subscription.upsert({
         where: { userId: user.id },
@@ -85,7 +89,76 @@ export async function POST(req: NextRequest) {
         },
       });
       
-      console.log('[webhook] Subscription created/updated:', subscription.id, subscription.plan);
+      console.log('[webhook] Subscription created/updated:', subscription.id, subscription.plan, 'isAgency:', isAgencyPlan);
+      
+      // If this is an agency plan, upgrade user to AGENCY_ADMIN and create Agency record
+      if (isAgencyPlan && user.role !== 'AGENCY_ADMIN') {
+        console.log('[webhook] Upgrading user to AGENCY_ADMIN and creating Agency record');
+        
+        // Update user role
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: 'AGENCY_ADMIN' }
+        });
+        
+        // Create Agency record if it doesn't exist
+        const existingAgency = await prisma.agency.findUnique({
+          where: { ownerId: user.id }
+        });
+        
+        if (!existingAgency) {
+          // Generate a slug from business name or email
+          const slugBase = user.name.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 20);
+          let slug = slugBase;
+          let counter = 1;
+          
+          // Ensure unique slug
+          while (await prisma.agency.findUnique({ where: { slug } })) {
+            slug = `${slugBase}-${counter}`;
+            counter++;
+          }
+          
+          await prisma.agency.create({
+            data: {
+              ownerId: user.id,
+              name: user.name || 'My Agency',
+              slug,
+              plan: 'agency_universal',
+              stripeCustomerId: customerId,
+              stripeSubscriptionId: subId,
+              activeClientCount: 0,
+              status: 'active'
+            }
+          });
+          
+          console.log('[webhook] Created Agency record with slug:', slug);
+        } else {
+          // Update existing agency with Stripe IDs
+          await prisma.agency.update({
+            where: { id: existingAgency.id },
+            data: {
+              stripeCustomerId: customerId,
+              stripeSubscriptionId: subId,
+              status: 'active'
+            }
+          });
+          
+          console.log('[webhook] Updated existing Agency record:', existingAgency.id);
+        }
+        
+        // Log the upgrade
+        await prisma.auditLog.create({
+          data: {
+            actorId: user.id,
+            action: 'AGENCY_UPGRADE',
+            meta: {
+              message: 'User upgraded to Agency plan',
+              priceId,
+              subscriptionId: subId
+            }
+          }
+        }).catch(err => console.error('[webhook] Failed to create audit log:', err));
+      }
       
       // Send payment success email
       const planName = subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1);

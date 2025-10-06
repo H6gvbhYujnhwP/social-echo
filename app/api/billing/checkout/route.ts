@@ -138,8 +138,8 @@ export async function POST(request: NextRequest) {
         }
       ],
       success_url: isAgencyPlan 
-        ? `${baseUrl}/agency${brandQuery}?session_id={CHECKOUT_SESSION_ID}`
-        : `${baseUrl}/dashboard${brandQuery}?session_id={CHECKOUT_SESSION_ID}`,
+        ? `${baseUrl}/agency?welcome=1&session_id={CHECKOUT_SESSION_ID}${brandParam ? `&brand=${brandParam}` : ''}`
+        : `${baseUrl}/train?welcome=1&session_id={CHECKOUT_SESSION_ID}${brandParam ? `&brand=${brandParam}` : ''}`,
       cancel_url: `${baseUrl}/pricing${brandQuery}`,
       client_reference_id: user.id,
       metadata: {
