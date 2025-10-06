@@ -120,7 +120,7 @@ export async function createAuditLog(data: {
  * Calculate unit price for agency plan
  */
 export function getAgencyUnitPrice(): number {
-  return 49 // £49 per client per month
+  return 39 // £39 per client per month
 }
 
 /**

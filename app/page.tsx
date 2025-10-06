@@ -217,7 +217,7 @@ export default function HomePage() {
               className="text-center mb-16"
             >
               <p className="text-2xl text-white mb-6 font-semibold">
-                Stop paying £2,000+ per month for agencies — get daily posts for £49.
+                Stop paying £2,000+ per month for agencies — get daily posts from just £29.99.
               </p>
               <button 
                 onClick={() => handleSignUp('SocialEcho_Starter')}
