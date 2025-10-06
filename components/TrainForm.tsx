@@ -95,20 +95,54 @@ const FieldHelp = ({ text }: { text: string }) => (
 
 export function TrainForm({ initialProfile }: TrainFormProps) {
   const router = useRouter()
-  const [formData, setFormData] = useState<UserProfile>(
-    initialProfile || {
-      business_name: '',
-      website: '',
-      industry: '',
-      tone: 'professional',
-      products_services: '',
-      target_audience: '',
-      usp: '',
-      keywords: [],
-      rotation: 'serious',
+  
+  // Initialize selectedAudiences from the saved profile
+  const [selectedAudiences, setSelectedAudiences] = useState<string[]>(() => {
+    if (!initialProfile?.target_audience) return []
+    
+    // Parse the saved target_audience string to extract selected audiences
+    const savedAudiences: string[] = []
+    const audienceText = initialProfile.target_audience
+    
+    // Check each audience option to see if it's in the saved text
+    targetAudienceOptions.forEach(option => {
+      if (audienceText.includes(option.value)) {
+        savedAudiences.push(option.value)
+      }
+    })
+    
+    return savedAudiences
+  })
+  
+  // Initialize formData and remove selected audience names from target_audience text
+  const [formData, setFormData] = useState<UserProfile>(() => {
+    if (!initialProfile) {
+      return {
+        business_name: '',
+        website: '',
+        industry: '',
+        tone: 'professional',
+        products_services: '',
+        target_audience: '',
+        usp: '',
+        keywords: [],
+        rotation: 'serious',
+      }
     }
-  )
-  const [selectedAudiences, setSelectedAudiences] = useState<string[]>([])
+    
+    // Remove selected audience names from the target_audience text
+    let customText = initialProfile.target_audience || ''
+    targetAudienceOptions.forEach(option => {
+      customText = customText.replace(option.value, '').replace(', , ', ', ').trim()
+    })
+    // Clean up any leading/trailing commas and periods
+    customText = customText.replace(/^[,.\s]+|[,.\s]+$/g, '').trim()
+    
+    return {
+      ...initialProfile,
+      target_audience: customText
+    }
+  })
   const [errors, setErrors] = useState<Partial<Record<keyof UserProfile, string>>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
