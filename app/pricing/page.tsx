@@ -111,137 +111,76 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* Agency Plans */}
+        {/* Agency Plan */}
         <div>
-          <h2 className="text-2xl font-bold text-center mb-4">Agency White Label Plans</h2>
+          <h2 className="text-2xl font-bold text-center mb-4">Agency White Label Plan</h2>
           <p className="text-center text-gray-600 mb-8">
             Grow as you go — £39/client/month with unlimited capacity
           </p>
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Agency Starter */}
-            <GlassCard className="p-6">
-              <div className="mb-6">
-                <h3 className="text-xl font-bold mb-2">Agency Starter</h3>
-                <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-3xl font-bold">£39</span>
+          <div className="max-w-2xl mx-auto">
+            {/* Agency — Grow as You Go */}
+            <GlassCard className="p-8 border-2 border-purple-500">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-bold">
+                  AGENCY PLAN
+                </span>
+              </div>
+              <div className="mb-6 text-center">
+                <h3 className="text-2xl font-bold mb-2">Agency — Grow as You Go</h3>
+                <div className="flex items-baseline gap-2 mb-4 justify-center">
+                  <span className="text-4xl font-bold">£39</span>
                   <span className="text-gray-600">/client/month</span>
                 </div>
+                <p className="text-gray-600">One simple rate. Unlimited potential.</p>
               </div>
-              <ul className="space-y-2 mb-6 text-sm">
+              <ul className="space-y-3 mb-8">
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span>Unlimited client accounts</span>
+                  <span><strong>Unlimited client accounts</strong> — add as many as you need</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span>Unlimited posts per client</span>
+                  <span><strong>Unlimited posts per client</strong> — no caps, no limits</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span>Branded white-label</span>
+                  <span><strong>Branded white-label instance</strong> — your logo, your colors</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span>Admin dashboard</span>
+                  <span><strong>Admin dashboard</strong> — manage all clients in one place</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-green-500 mt-1">✓</span>
-                  <span>Auto-proration billing</span>
+                  <span><strong>Custom domain support</strong> — use your own domain</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 mt-1">✓</span>
+                  <span><strong>Auto-proration billing</strong> — only pay for what you use</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 mt-1">✓</span>
+                  <span><strong>Priority support</strong> — dedicated help when you need it</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-500 mt-1">✓</span>
+                  <span><strong>Export-ready content</strong> — CSV, PDF, and more</span>
                 </li>
               </ul>
               <button
                 onClick={() => handleSelectPlan('SocialEcho_AgencyStarter')}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors mb-4"
               >
                 Get Started
               </button>
-              <p className="text-xs text-center mt-3 text-gray-500">
-                Resell at £99/client = £60 margin per client
-              </p>
-            </GlassCard>
-
-            {/* Agency Growth */}
-            <GlassCard className="p-6 border-2 border-purple-500">
-              <div className="mb-6">
-                <h3 className="text-xl font-bold mb-2">Agency Growth</h3>
-                <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-3xl font-bold">£39</span>
-                  <span className="text-gray-600">/client/month</span>
-                </div>
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  <strong>Revenue Example:</strong> Resell at £99/client = <strong className="text-green-600">£60 margin per client</strong>
+                </p>
+                <p className="text-xs text-gray-600 mt-1">
+                  With 25 clients: £2,475/mo revenue, £1,500/mo profit
+                </p>
               </div>
-              <ul className="space-y-2 mb-6 text-sm">
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-1">✓</span>
-                  <span>Everything in Starter</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-1">✓</span>
-                  <span>Custom domain support</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-1">✓</span>
-                  <span>Priority support</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-1">✓</span>
-                  <span>Export-ready content</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-1">✓</span>
-                  <span>Advanced analytics</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => handleSelectPlan('SocialEcho_AgencyGrowth')}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-              >
-                Get Started
-              </button>
-              <p className="text-xs text-center mt-3 text-gray-500">
-                Same great rate — more features
-              </p>
-            </GlassCard>
-
-            {/* Agency Scale */}
-            <GlassCard className="p-6">
-              <div className="mb-6">
-                <h3 className="text-xl font-bold mb-2">Agency Scale</h3>
-                <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-3xl font-bold">£39</span>
-                  <span className="text-gray-600">/client/month</span>
-                </div>
-              </div>
-              <ul className="space-y-2 mb-6 text-sm">
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-1">✓</span>
-                  <span>Everything in Growth</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-1">✓</span>
-                  <span>Advanced branding options</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-1">✓</span>
-                  <span>Multiple team seats</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-1">✓</span>
-                  <span>Dedicated support</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-500 mt-1">✓</span>
-                  <span>Quarterly strategy call</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => handleSelectPlan('SocialEcho_AgencyScale')}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
-              >
-                Get Started
-              </button>
-              <p className="text-xs text-center mt-3 text-gray-500">
-                Enterprise features at the same rate
-              </p>
             </GlassCard>
           </div>
         </div>

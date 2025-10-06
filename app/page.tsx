@@ -135,48 +135,29 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="max-w-2xl mx-auto">
                 {/* Agency - Grow as You Go */}
-                <GlassCard className="p-6 text-center hover:scale-105 transition-transform duration-200 border-2 border-blue-500">
+                <GlassCard className="p-8 text-center hover:scale-105 transition-transform duration-200 border-2 border-blue-500">
                   <div className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full inline-block mb-2">
                     AGENCY PLAN
                   </div>
-                  <h4 className="text-xl font-bold text-white mb-2">Agency — Grow as You Go</h4>
-                  <div className="text-3xl font-bold text-blue-400 mb-4">£39/client/mo</div>
+                  <h4 className="text-2xl font-bold text-white mb-2">Agency — Grow as You Go</h4>
+                  <div className="text-4xl font-bold text-blue-400 mb-4">£39/client/mo</div>
+                  <p className="text-gray-300 mb-6">One simple rate. Unlimited potential.</p>
                   <ul className="text-left text-gray-300 space-y-2 text-sm mb-6">
-                    <li>✓ Unlimited client accounts</li>
-                    <li>✓ Branded white-label instance</li>
-                    <li>✓ Unlimited posts per client</li>
-                    <li>✓ Admin dashboard</li>
-                    <li>✓ Custom domain support</li>
-                    <li>✓ Auto-proration billing</li>
-                    <li>✓ Priority support</li>
+                    <li>✓ <strong>Unlimited client accounts</strong> — add as many as you need</li>
+                    <li>✓ <strong>Unlimited posts per client</strong> — no caps, no limits</li>
+                    <li>✓ <strong>Branded white-label instance</strong> — your logo, your colors</li>
+                    <li>✓ <strong>Admin dashboard</strong> — manage all clients in one place</li>
+                    <li>✓ <strong>Custom domain support</strong> — use your own domain</li>
+                    <li>✓ <strong>Auto-proration billing</strong> — only pay for what you use</li>
+                    <li>✓ <strong>Priority support</strong> — dedicated help when you need it</li>
                   </ul>
                   <button 
                     onClick={() => handleSignUp('SocialEcho_AgencyStarter')}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors text-lg"
                   >
                     Get Started
-                  </button>
-                </GlassCard>
-
-                {/* Enterprise Unlimited */}
-                <GlassCard className="p-6 text-center hover:scale-105 transition-transform duration-200">
-                  <h4 className="text-xl font-bold text-white mb-2">Enterprise Unlimited</h4>
-                  <div className="text-3xl font-bold text-orange-400 mb-4">£1,499+/mo</div>
-                  <ul className="text-left text-gray-300 space-y-2 text-sm mb-6">
-                    <li>✓ Unlimited client accounts</li>
-                    <li>✓ Full white-label SaaS</li>
-                    <li>✓ API access</li>
-                    <li>✓ Custom onboarding</li>
-                    <li>✓ SLA guarantees</li>
-                    <li>✓ Revenue-share model</li>
-                  </ul>
-                  <button 
-                    onClick={handleContactClick}
-                    className="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
-                  >
-                    Contact Sales
                   </button>
                 </GlassCard>
               </div>
