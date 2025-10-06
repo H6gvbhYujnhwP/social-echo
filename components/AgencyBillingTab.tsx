@@ -78,7 +78,7 @@ export function AgencyBillingTab() {
     )
   }
 
-  const pricePerClient = 25
+  const pricePerClient = 39
   const nextBillAmount = billing.activeClients * pricePerClient
 
   return (

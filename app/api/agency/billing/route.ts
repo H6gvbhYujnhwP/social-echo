@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       plan: agency.plan,
       activeClients: activeClientsCount,
-      monthlyAmount: activeClientsCount * 25, // £25 per client
+      monthlyAmount: activeClientsCount * 39, // £39 per client
       stripeCustomerId: agency.stripeCustomerId,
       stripeSubscriptionId: agency.stripeSubscriptionId,
       nextBillingDate,
