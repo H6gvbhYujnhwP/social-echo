@@ -16,7 +16,7 @@ interface TodayPanelProps {
   currentPostId: string | null
   postTypeMode: 'auto' | PostType
   isGenerating: boolean
-  onGenerate: (options?: { regenerate?: boolean }) => void
+  onGenerate: (options?: { regenerate?: boolean; customPrompt?: string }) => void
   onPostTypeChange: (postType: PostType) => void
   onOpenCustomise: () => void
   userPrompt?: string
@@ -35,6 +35,7 @@ export function TodayPanel({
   userPrompt = '',
   onUserPromptChange
 }: TodayPanelProps) {
+  const [customPrompt, setCustomPrompt] = useState('')
   const todayPlan = getTodayPostType()
 
   // Get the effective post type
@@ -52,11 +53,13 @@ export function TodayPanel({
   }
 
   const handleGenerate = () => {
-    onGenerate({ regenerate: false })
+    onGenerate({ regenerate: false, customPrompt: customPrompt || undefined })
+    setCustomPrompt('') // Clear after generating
   }
 
   const handleRegenerate = () => {
-    onGenerate({ regenerate: true })
+    onGenerate({ regenerate: true, customPrompt: customPrompt || undefined })
+    setCustomPrompt('') // Clear after regenerating
   }
 
   const effectivePostType = getEffectivePostType()
@@ -122,6 +125,25 @@ export function TodayPanel({
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Custom Prompt Field */}
+        <div>
+          <label htmlFor="customPrompt" className="block text-sm font-medium text-gray-700 mb-2">
+            Custom Instructions (Optional)
+          </label>
+          <textarea
+            id="customPrompt"
+            value={customPrompt}
+            onChange={(e) => setCustomPrompt(e.target.value)}
+            placeholder="Add specific instructions for this post... e.g., 'Focus on sustainability', 'Include a customer success story', 'Make it more casual'"
+            rows={3}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-400"
+            disabled={isGenerating}
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            These instructions will be added to the AI prompt for this generation only.
+          </p>
         </div>
 
         {/* Feedback Buttons - Show at top when draft exists */}

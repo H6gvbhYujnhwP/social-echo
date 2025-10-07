@@ -118,6 +118,7 @@ export default function DashboardPage() {
     keywords?: string
     postType?: PostType
     regenerate?: boolean
+    customPrompt?: string
   }) => {
     // Console log to track trigger source
     console.log('[generatePost] Triggered by: USER', options)
@@ -142,7 +143,8 @@ export default function DashboardPage() {
         keywords: [
           profile.keywords,
           options?.keywords || '',
-          options?.twist || ''
+          options?.twist || '',
+          options?.customPrompt || ''
         ].filter(Boolean).join(', '),
         rotation: profile.rotation,
         post_type: effectivePostType === 'auto' ? 'informational' : effectivePostType,
