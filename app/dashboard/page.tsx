@@ -32,6 +32,7 @@ export default function DashboardPage() {
   const [currentPostId, setCurrentPostId] = useState<string | null>(null)
   const [postTypeMode, setPostTypeMode] = useState<'auto' | PostType>('auto')
   const [showCustomiseModal, setShowCustomiseModal] = useState(false)
+  const [userPrompt, setUserPrompt] = useState('')
 
   // Check authentication
   useEffect(() => {
@@ -133,7 +134,6 @@ export default function DashboardPage() {
       // Build request payload
       const requestData = {
         business_name: profile.business_name,
-        website: profile.website || '',
         industry: profile.industry,
         tone: options?.tone || profile.tone,
         products_services: profile.products_services,
@@ -148,6 +148,7 @@ export default function DashboardPage() {
         post_type: effectivePostType === 'auto' ? 'informational' : effectivePostType,
         platform: 'linkedin' as const,
         force: options?.regenerate || false,
+        user_prompt: userPrompt || '',
       }
 
       const response = await fetch('/api/generate-text', {
@@ -291,6 +292,8 @@ export default function DashboardPage() {
               onGenerate={handleGeneratePost}
               onPostTypeChange={handlePostTypeChange}
               onOpenCustomise={() => setShowCustomiseModal(true)}
+              userPrompt={userPrompt}
+              onUserPromptChange={setUserPrompt}
             />
 
             {/* Right Column: Image Generation */}

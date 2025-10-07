@@ -41,6 +41,16 @@ export async function getDailyBucket(
 }
 
 /**
+ * Alias for getDailyBucket for backward compatibility
+ */
+export async function getBucketOfTheDay(
+  config: AiGlobalConfig,
+  userId: string
+): Promise<string> {
+  return getDailyBucket(config, userId)
+}
+
+/**
  * Get a randomized temperature value within configured range
  * 
  * @param config - AI configuration with randomness settings
@@ -102,11 +112,20 @@ export function buildSystemPrompt(
  * Get bucket information for logging/debugging
  * 
  * @param bucket - The bucket used for this generation
- * @returns Object with bucket info
+ * @returns Object with bucket info and description
  */
-export function getBucketInfo(bucket: string): { bucket: string; timestamp: string } {
+export function getBucketInfo(bucket: string): { bucket: string; description: string; timestamp: string } {
+  const bucketDescriptions: Record<string, string> = {
+    'serious_sme_finance': 'Serious SME Finance (cashflow, staff, late payments, growth)',
+    'funny_finance_story': 'Funny/Quirky Finance Story (weird leases, unusual loans, absurd expenses)',
+    'serious': 'Serious Business Content',
+    'quirky': 'Quirky/Fun Business Content',
+    'default': 'Default Content Mix'
+  }
+  
   return {
     bucket,
+    description: bucketDescriptions[bucket] || bucket,
     timestamp: new Date().toISOString()
   }
 }

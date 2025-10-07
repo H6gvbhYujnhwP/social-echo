@@ -11,6 +11,7 @@ export const TextGenerationRequestSchema = z.object({
   rotation: z.enum(['serious', 'quirky']),
   post_type: z.enum(['selling', 'informational', 'advice', 'news']),
   platform: z.enum(['linkedin', 'facebook']).optional().default('linkedin'),
+  user_prompt: z.string().optional().default(''),
 })
 
 export const TextGenerationResponseSchema = z.object({

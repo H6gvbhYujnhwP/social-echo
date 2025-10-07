@@ -10,6 +10,24 @@ import { prisma } from '../prisma'
 import { AiGlobalConfig, DEFAULT_AI_GLOBALS, PostType } from './ai-config'
 import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
+import { fetchHeadlines } from '../news/rss'
+import { pickPain } from './pains'
+import { getBucketOfTheDay, getBucketInfo } from './generation-helpers'
+
+/**
+ * Helper: Extract sector from profile
+ */
+function sectorFrom(profile: ProfileData) {
+  return [profile.industry, profile.products_services].filter(Boolean).join(' ')
+}
+
+/**
+ * Helper: Pick informational mode
+ */
+function pickInfMode() {
+  const modes = ['fun', 'quirky', 'serious'] as const
+  return modes[Math.floor(Math.random() * modes.length)]
+}
 
 // In-memory cache for config (5-minute TTL)
 let configCache: { config: AiGlobalConfig; timestamp: number } | null = null
@@ -160,11 +178,15 @@ export async function buildAndGenerateDraft(opts: {
   ]
   const uniqueKeywords = [...new Set(allKeywords)]
   
-  // 6. Build system prompt
+  // 6. Get bucket of the day for rotation
+  const bucket = await getBucketOfTheDay(config, opts.userId)
+  console.log('[rotation]', getBucketInfo(bucket))
+  
+  // 7. Build system prompt
   const systemPrompt = buildSystemPrompt(config, effectivePostType)
   
-  // 7. Build user prompt
-  const userPrompt = buildUserPrompt({
+  // 8. Build user prompt
+  let userPrompt = buildUserPrompt({
     config,
     profile: opts.profile,
     postType: effectivePostType,
@@ -174,7 +196,39 @@ export async function buildAndGenerateDraft(opts: {
     note: opts.twists?.note
   })
   
-  // 8. Map model label to actual API ID
+  // 9. Add bucket context
+  userPrompt += `\n\nToday's content bucket: ${bucket}`
+  
+  // 10. Add post-type specific logic
+  
+  // NEWS: fetch real headlines and require stance + source
+  if (effectivePostType === 'news') {
+    const headlines = await fetchHeadlines(sectorFrom(opts.profile), 6)
+    if (headlines.length) {
+      userPrompt += `\n\nCURRENT HEADLINES (pick 1 and craft a take):\n` +
+        headlines.map(h => `- ${h.title} ${h.source ? `(${h.source})` : ''} ${h.link ? `[${h.link}]` : ''}`).join('\n') +
+        `\nRules:\n- Open with a spiky hook.\n- 1–2 lines summarising the story (no hallucinations).\n- 1 implication for ${opts.profile.target_audience}.\n- 1 action.\n- Cite inline like: (Source: Publisher).`
+    }
+  }
+  
+  // SELLING: PAS structure with a random industry pain
+  if (effectivePostType === 'selling') {
+    const pain = pickPain(opts.profile.industry)
+    userPrompt += `\n\nSELLING FRAME:\n- Use PAS (Problem → Agitate → Solution).\n- Real pain: "${pain}"\n- Include a realistic, anonymised mini-story.\n- Present our solution (${opts.profile.products_services}) with 1 crisp benefit and 1 outcome metric.\n- Soft CTA (comment/DM for checklist/demo).`
+  }
+  
+  // ADVICE: practical steps and a measurable target
+  if (effectivePostType === 'advice') {
+    userPrompt += `\n\nADVICE FRAME:\n- Pick 1 concrete problem ${opts.profile.target_audience} faces.\n- Give 3 steps they can do THIS WEEK.\n- Include 1 small template/checklist line.\n- Include 1 measurable target (e.g., "cut response time from 2d → 2h").\n- Close with: "Reply 'GUIDE' and I'll DM the checklist."`
+  }
+  
+  // INFORMATIONAL: switch among fun/quirky/serious and include a wow stat
+  if (effectivePostType === 'informational') {
+    const mode = pickInfMode()
+    userPrompt += `\n\nINFO MODE: ${mode.toUpperCase()}\nRules:\n- Include one "wow" stat (source if possible).\n- ${mode === 'serious' ? 'Use authoritative tone.' : ''}\n- ${mode === 'fun' ? 'Use playful language, metaphor or analogy.' : ''}\n- ${mode === 'quirky' ? 'Tell a strange-but-true micro-story.' : ''}\n- Keep it skimmable with short lines.\n- One "so what" for ${opts.profile.target_audience}.`
+  }
+  
+  // 11. Map model label to actual API ID
   const { getModelId, getModelInfo } = await import('./model-mapping')
   const { calculateTemperature, calculateMaxTokens, trimPromptIfNeeded, formatDuration } = await import('./generation-utils')
   const { withRetry, extractErrorCode } = await import('./retry-utils')
@@ -295,6 +349,9 @@ export async function buildAndGenerateDraft(opts: {
         model: attemptModel,
         temperature: attemptTemp,
         max_tokens: tokenBudget.maxTokens,
+        presence_penalty: 0.4,
+        frequency_penalty: 0.2,
+        top_p: 0.95,
         messages: [
           { role: 'system', content: finalSystemPrompt },
           { role: 'user', content: finalUserPrompt }
@@ -343,15 +400,15 @@ export async function buildAndGenerateDraft(opts: {
  * Build system prompt based on config
  */
 function buildSystemPrompt(config: AiGlobalConfig, postType: PostType): string {
-  let prompt = `You are an expert LinkedIn content creator specializing in ${postType} posts for UK businesses.`
+  let prompt = `You are a high-signal LinkedIn ghostwriter. Write spiky, contrarian, story-first posts with short lines and a clear point of view. Keep it LinkedIn-safe.`
   
-  prompt += `\n\nYour task is to generate a professional LinkedIn post in JSON format with the following fields:`
+  prompt += `\n\nReturn STRICT JSON with fields:`
   
   if (config.includeHeadlineOptions) {
-    prompt += `\n- "headline_options": array of 3 compelling headline options`
+    prompt += `\n- "headline_options": array of 3 hooks (1 contrarian, 1 data-led, 1 story-first)`
   }
   
-  prompt += `\n- "post_text": the main post body (2-3 paragraphs, engaging and professional)`
+  prompt += `\n- "post_text": full post. Short lines. Bold POV. 1 vivid example/mini-anecdote. End with a provocative question.`
   
   if (config.includeHashtags) {
     prompt += `\n- "hashtags": array of relevant hashtags`
@@ -362,10 +419,11 @@ function buildSystemPrompt(config: AiGlobalConfig, postType: PostType): string {
   }
   
   if (config.ukPostingTimeHint) {
-    prompt += `\n- "best_time_uk": optimal posting time in UK timezone (HH:MM format, 24-hour)`
+    prompt += `\n- "best_time_uk": optimal posting time in UK timezone (HH:MM, 24-hour)`
   }
   
-  prompt += `\n\nRespond ONLY with valid JSON. No markdown, no explanations, just the JSON object.`
+  prompt += `\n\nGuardrails: no slurs/personal attacks; no fabricated facts. Opinions are fine.`
+  prompt += `\nRespond ONLY with valid JSON (no markdown, no commentary).`
   
   return prompt
 }
@@ -403,7 +461,11 @@ function buildUserPrompt(opts: {
     prompt += `\nAdditional guidance: ${opts.note}\n`
   }
   
-  prompt += `\nMake it engaging, professional, and tailored to the UK market.`
+  prompt += `\nStyle directives:
+- Lead with tension (surprise, myth-bust, or "most people get this wrong").
+- Sentences 4–12 words. Use blank lines generously.
+- One vivid detail beats three vague claims.
+- UK audience.`
   
   return prompt
 }

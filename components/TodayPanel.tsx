@@ -19,6 +19,8 @@ interface TodayPanelProps {
   onGenerate: (options?: { regenerate?: boolean }) => void
   onPostTypeChange: (postType: PostType) => void
   onOpenCustomise: () => void
+  userPrompt?: string
+  onUserPromptChange?: (value: string) => void
 }
 
 export function TodayPanel({ 
@@ -29,7 +31,9 @@ export function TodayPanel({
   isGenerating,
   onGenerate, 
   onPostTypeChange,
-  onOpenCustomise 
+  onOpenCustomise,
+  userPrompt = '',
+  onUserPromptChange
 }: TodayPanelProps) {
   const todayPlan = getTodayPostType()
 
@@ -124,6 +128,23 @@ export function TodayPanel({
         {todayDraft && currentPostId && (
           <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border-2 border-purple-200">
             <FeedbackButtons postId={currentPostId} />
+          </div>
+        )}
+
+        {/* User Brief Input */}
+        {!todayDraft && (
+          <div className="mb-4">
+            <label htmlFor="user-brief" className="block text-sm font-medium text-gray-300 mb-2">
+              Brief the AI (optional)
+            </label>
+            <textarea
+              id="user-brief"
+              value={userPrompt}
+              onChange={(e) => onUserPromptChange?.(e.target.value)}
+              placeholder="e.g., 'Talk about our new product launch' or 'Focus on cost savings for SMEs'"
+              rows={2}
+              className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+            />
           </div>
         )}
 

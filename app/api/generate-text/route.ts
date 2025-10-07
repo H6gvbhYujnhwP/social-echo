@@ -211,7 +211,8 @@ export async function POST(request: NextRequest) {
         learningSignals,
         twists: {
           toneOverride: validatedRequest.tone !== profile.tone ? validatedRequest.tone : undefined,
-          extraKeywords: validatedRequest.keywords ? validatedRequest.keywords.split(',').map(k => k.trim()) : undefined
+          extraKeywords: validatedRequest.keywords ? validatedRequest.keywords.split(',').map(k => k.trim()) : undefined,
+          note: validatedRequest.user_prompt || undefined
         }
       })
       console.log('[generate-text] Draft generated successfully')
