@@ -31,6 +31,15 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
   }
 
   const submitFeedback = async (feedback: 'up' | 'down', feedbackNote: string | null) => {
+    // Validate postId before submitting
+    if (!postId) {
+      console.error('[FeedbackButtons] No postId available')
+      setError('Cannot submit feedback: Post ID is missing. Please regenerate the post.')
+      return
+    }
+
+    console.log('[FeedbackButtons] Submitting feedback:', { postId, rating: feedback, note: feedbackNote })
+    
     setLoading(true)
     setError('')
     
@@ -46,6 +55,7 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
       })
       
       const data = await response.json()
+      console.log('[FeedbackButtons] API response:', { ok: response.ok, status: response.status, data })
       
       if (!response.ok) {
         throw new Error(data.error || 'Failed to save feedback')
@@ -61,6 +71,7 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
         setShowNoteInput(false)
       }, 3000)
     } catch (err: any) {
+      console.error('[FeedbackButtons] Feedback error:', err)
       setError(err.message || 'Failed to save feedback')
     } finally {
       setLoading(false)
