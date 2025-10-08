@@ -21,6 +21,7 @@ interface TodayPanelProps {
   onOpenCustomise: () => void
   userPrompt?: string
   onUserPromptChange?: (value: string) => void
+  onFeedbackSubmitted?: () => void
 }
 
 export function TodayPanel({ 
@@ -33,7 +34,8 @@ export function TodayPanel({
   onPostTypeChange,
   onOpenCustomise,
   userPrompt = '',
-  onUserPromptChange
+  onUserPromptChange,
+  onFeedbackSubmitted
 }: TodayPanelProps) {
   const [customPrompt, setCustomPrompt] = useState('')
   const todayPlan = getTodayPostType()
@@ -149,7 +151,10 @@ export function TodayPanel({
         {/* Feedback Buttons - Show at top when draft exists */}
         {todayDraft && (
           <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border-2 border-purple-200">
-            <FeedbackButtons postId={currentPostId || (todayDraft as any).id || ''} />
+            <FeedbackButtons 
+              postId={currentPostId || (todayDraft as any).id || ''} 
+              onFeedbackSubmitted={onFeedbackSubmitted}
+            />
           </div>
         )}
 

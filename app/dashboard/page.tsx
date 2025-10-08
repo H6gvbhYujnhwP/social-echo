@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
@@ -8,7 +8,7 @@ import { Calendar, User } from 'lucide-react'
 import { TodayPanel } from '../../components/TodayPanel'
 import { ImagePanel } from '../../components/ImagePanel'
 import { FineTunePanel } from '../../components/FineTunePanel'
-import { LearningProgress } from '../../components/LearningProgress'
+import { LearningProgress, type LearningProgressRef } from '../../components/LearningProgress'
 import { UserProfile, getProfile, getOrCreatePlanner, savePostHistory, type Planner, type PostType } from '../../lib/localstore'
 import Link from 'next/link'
 
@@ -34,6 +34,7 @@ export default function DashboardPage() {
   const [postTypeMode, setPostTypeMode] = useState<'auto' | PostType>('auto')
   const [showCustomiseModal, setShowCustomiseModal] = useState(false)
   const [userPrompt, setUserPrompt] = useState('')
+  const learningProgressRef = useRef<LearningProgressRef>(null)
 
   // Check authentication
   useEffect(() => {
@@ -318,6 +319,7 @@ export default function DashboardPage() {
               onOpenCustomise={() => setShowCustomiseModal(true)}
               userPrompt={userPrompt}
               onUserPromptChange={setUserPrompt}
+              onFeedbackSubmitted={() => learningProgressRef.current?.refresh()}
             />
 
             {/* Right Column: Image Generation */}
@@ -334,7 +336,7 @@ export default function DashboardPage() {
 
           {/* Learning Progress Section */}
           <div className="mt-8">
-            <LearningProgress />
+            <LearningProgress ref={learningProgressRef} />
           </div>
         </div>
       </main>

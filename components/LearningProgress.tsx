@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, forwardRef, useImperativeHandle } from 'react'
 import { motion } from 'framer-motion'
 
 interface FeedbackStats {
@@ -11,7 +11,11 @@ interface FeedbackStats {
   byTone: Record<string, { up: number; down: number }>
 }
 
-export function LearningProgress() {
+export interface LearningProgressRef {
+  refresh: () => void
+}
+
+export const LearningProgress = forwardRef<LearningProgressRef>((props, ref) => {
   const [stats, setStats] = useState<FeedbackStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -19,6 +23,11 @@ export function LearningProgress() {
   useEffect(() => {
     fetchStats()
   }, [])
+
+  // Expose refresh method to parent via ref
+  useImperativeHandle(ref, () => ({
+    refresh: fetchStats
+  }))
 
   const fetchStats = async () => {
     try {
@@ -291,4 +300,6 @@ export function LearningProgress() {
       )}
     </motion.div>
   )
-}
+})
+
+LearningProgress.displayName = 'LearningProgress'
