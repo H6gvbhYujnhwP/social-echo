@@ -31,7 +31,20 @@ export async function POST(request: NextRequest) {
     console.log('[feedback] Received request:', { userId, body })
     
     // Validate input
-    const validated = FeedbackSchema.parse(body)
+    let validated
+    try {
+      validated = FeedbackSchema.parse(body)
+    } catch (zodError: any) {
+      console.error('[feedback] Validation error:', zodError.errors)
+      return NextResponse.json(
+        { 
+          error: 'Invalid input', 
+          details: zodError.errors,
+          message: 'Please ensure you have generated a post before providing feedback.'
+        },
+        { status: 400 }
+      )
+    }
     
     console.log('[feedback] Validated data:', validated)
     
@@ -46,8 +59,12 @@ export async function POST(request: NextRequest) {
     console.log('[feedback] Post lookup result:', post ? 'Found' : 'Not found', { postId: validated.postId, userId })
     
     if (!post) {
+      console.error('[feedback] Post not found:', { postId: validated.postId, userId })
       return NextResponse.json(
-        { error: 'Post not found' },
+        { 
+          error: 'Post not found',
+          message: 'This post does not exist or does not belong to you. Please regenerate the post and try again.'
+        },
         { status: 404 }
       )
     }
@@ -64,24 +81,52 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Create feedback with all required fields
-    const feedback = await prisma.feedback.create({
-      data: {
-        userId,
-        postId: validated.postId,
-        feedback: validated.rating, // 'up' or 'down'
-        note: validated.note || null,
-        postType: post.postType,
-        tone: post.tone,
-        keywords: profile.keywords,
-        hashtags: post.hashtags
-      }
+    // Check if feedback already exists for this post
+    const existingFeedback = await prisma.feedback.findUnique({
+      where: { postId: validated.postId }
     })
+    
+    let feedback
+    
+    if (existingFeedback) {
+      // Update existing feedback
+      feedback = await prisma.feedback.update({
+        where: { postId: validated.postId },
+        data: {
+          feedback: validated.rating, // 'up' or 'down'
+          note: validated.note || null,
+          postType: post.postType,
+          tone: post.tone,
+          keywords: profile.keywords,
+          hashtags: post.hashtags
+        }
+      })
+      console.log('[feedback] Updated existing feedback:', { feedbackId: feedback.id })
+    } else {
+      // Create new feedback
+      feedback = await prisma.feedback.create({
+        data: {
+          userId,
+          postId: validated.postId,
+          feedback: validated.rating, // 'up' or 'down'
+          note: validated.note || null,
+          postType: post.postType,
+          tone: post.tone,
+          keywords: profile.keywords,
+          hashtags: post.hashtags
+        }
+      })
+      console.log('[feedback] Created new feedback:', { feedbackId: feedback.id })
+    }
     
     // Learning signals are now calculated dynamically from feedback data
     // No need to update Profile table
     
-    console.log('[feedback] Feedback saved successfully:', { feedbackId: feedback.id, rating: feedback.feedback })
+    console.log('[feedback] Feedback saved successfully:', { 
+      feedbackId: feedback.id, 
+      rating: feedback.feedback,
+      isUpdate: !!existingFeedback 
+    })
     
     // Return encouraging message based on rating
     const message = validated.rating === 'up' 

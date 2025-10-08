@@ -58,7 +58,9 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
       console.log('[FeedbackButtons] API response:', { ok: response.ok, status: response.status, data })
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to save feedback')
+        // Use the detailed message from the API if available
+        const errorMessage = data.message || data.error || 'Failed to save feedback'
+        throw new Error(errorMessage)
       }
       
       // Store the success message from the API
