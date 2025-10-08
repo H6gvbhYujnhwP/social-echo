@@ -54,8 +54,13 @@ export default function DashboardPage() {
     
     const loadData = async () => {
       try {
-        // Load profile from database
-        const profileResponse = await fetch('/api/profile')
+        // Load profile from database with cache-busting
+        const profileResponse = await fetch('/api/profile', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        })
         if (!profileResponse.ok) {
           // No profile - redirect to train
           router.push('/train')
@@ -63,6 +68,7 @@ export default function DashboardPage() {
         }
         const profileData = await profileResponse.json()
         setProfile(profileData)
+        console.log('Profile loaded:', profileData.business_name)
         
         // Load planner from database
         const plannerResponse = await fetch('/api/planner')

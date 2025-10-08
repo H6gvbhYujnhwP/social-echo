@@ -15,10 +15,16 @@ export default function TrainPage() {
     // Load profile from database API
     const loadProfile = async () => {
       try {
-        const response = await fetch('/api/profile')
+        const response = await fetch('/api/profile', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        })
         if (response.ok) {
           const data = await response.json()
           setProfile(data)
+          console.log('Profile loaded for editing:', data.business_name)
         } else if (response.status === 404) {
           // No profile yet - that's OK
           setProfile(null)

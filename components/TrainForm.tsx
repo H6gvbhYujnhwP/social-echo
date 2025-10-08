@@ -203,8 +203,13 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || 'Failed to save profile')
+        const errorMessage = error.error || 'Failed to save profile'
+        const errorDetails = error.details ? JSON.stringify(error.details) : ''
+        throw new Error(`${errorMessage}${errorDetails ? ': ' + errorDetails : ''}`)
       }
+
+      const result = await response.json()
+      console.log('Profile saved successfully:', result)
 
       // Also save to localStorage for backward compatibility (temporary)
       setProfile({
@@ -213,11 +218,15 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
         target_audience: audienceText,
       })
 
+      // Show success message
+      alert('✅ Profile saved successfully! Your AI is now trained with your latest business information.')
+
       // Navigate to dashboard
       router.replace('/dashboard')
-    } catch (err) {
+    } catch (err: any) {
       console.error('save failed', err)
-      alert('Failed to save profile. Please try again.')
+      const errorMessage = err.message || 'Failed to save profile. Please try again.'
+      alert(`❌ Error: ${errorMessage}`)
     } finally {
       setIsSubmitting(false)
     }
