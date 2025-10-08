@@ -85,8 +85,11 @@ export default function DashboardPage() {
         const postResponse = await fetch(`/api/posts?date=${today}`)
         if (postResponse.ok) {
           const postData = await postResponse.json()
+          console.log('[dashboard] Loaded today\'s post:', { id: postData.id, date: postData.date })
           setTodayDraft(postData)
           setCurrentPostId(postData.id)
+        } else {
+          console.log('[dashboard] No post found for today:', today)
         }
         // If no post for today, that's OK - user hasn't generated yet
         
@@ -178,7 +181,10 @@ export default function DashboardPage() {
       
       // Get the post ID from the response (API returns it as postId)
       if (data.postId) {
+        console.log('[dashboard] Set currentPostId from generation:', data.postId)
         setCurrentPostId(data.postId)
+      } else {
+        console.warn('[dashboard] No postId in generation response:', data)
       }
       
       // Also save to localStorage for backward compatibility (temporary)

@@ -32,9 +32,9 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
 
   const submitFeedback = async (feedback: 'up' | 'down', feedbackNote: string | null) => {
     // Validate postId before submitting
-    if (!postId) {
-      console.error('[FeedbackButtons] No postId available')
-      setError('Cannot submit feedback: Post ID is missing. Please regenerate the post.')
+    if (!postId || postId === '') {
+      console.error('[FeedbackButtons] No postId available, postId:', postId)
+      setError('This post needs to be regenerated before you can provide feedback. Please click "Regenerate Post" to create a new version.')
       return
     }
 

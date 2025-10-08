@@ -147,9 +147,9 @@ export function TodayPanel({
         </div>
 
         {/* Feedback Buttons - Show at top when draft exists */}
-        {todayDraft && currentPostId && (
+        {todayDraft && (
           <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border-2 border-purple-200">
-            <FeedbackButtons postId={currentPostId} />
+            <FeedbackButtons postId={currentPostId || ''} />
           </div>
         )}
 
