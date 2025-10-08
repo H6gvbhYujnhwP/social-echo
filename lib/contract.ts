@@ -27,11 +27,16 @@ export const ImageGenerationRequestSchema = z.object({
   visual_prompt: z.string().min(1),
   industry: z.string().min(1),
   tone: z.string().min(1),
-  style: z.enum(['meme', 'illustration', 'photo-real']).optional(),
+  style: z.enum(['meme', 'illustration', 'photo-real', 'funny', 'controversial', 'conceptual', 'infographic']).optional(),
+  // New fields for context-aware generation
+  post_type: z.enum(['selling', 'informational', 'advice', 'news']).optional(),
+  post_headline: z.string().optional(),
+  post_text: z.string().optional(),
 })
 
 export const ImageGenerationResponseSchema = z.object({
   image_base64: z.string().startsWith('data:image/'),
+  image_type: z.string().optional(), // The actual type used (for feedback)
 })
 
 export type TextGenerationRequest = z.infer<typeof TextGenerationRequestSchema>

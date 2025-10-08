@@ -309,6 +309,10 @@ export default function DashboardPage() {
               visualPrompt={todayDraft?.visual_prompt}
               industry={profile.industry}
               tone={profile.tone}
+              postType={postTypeMode === 'auto' ? 'informational' : postTypeMode}
+              postHeadline={todayDraft?.headline_options?.[0]}
+              postText={todayDraft?.post_text}
+              autoSelectedType={todayDraft ? undefined : undefined} // Will be calculated in ImagePanel
             />
           </div>
 

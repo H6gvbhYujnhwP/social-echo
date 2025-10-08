@@ -2,35 +2,58 @@
 
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Image, Download, RefreshCw, Palette } from 'lucide-react'
+import { Image, Download, RefreshCw, Palette, Info } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Select } from './ui/Select'
+import { getAvailableImageTypes } from '../lib/ai/image-service'
 
 interface ImagePanelProps {
   visualPrompt?: string
   industry: string
   tone: string
+  postType?: string
+  postHeadline?: string
+  postText?: string
+  autoSelectedType?: string
 }
 
-const styleOptions = [
-  { value: 'meme', label: 'Meme' },
-  { value: 'illustration', label: 'Illustration' },
-  { value: 'photo-real', label: 'Photo-real' },
-]
-
-export function ImagePanel({ visualPrompt, industry, tone }: ImagePanelProps) {
-  const [selectedStyle, setSelectedStyle] = useState<'meme' | 'illustration' | 'photo-real'>('illustration')
+export function ImagePanel({ 
+  visualPrompt, 
+  industry, 
+  tone,
+  postType,
+  postHeadline,
+  postText,
+  autoSelectedType
+}: ImagePanelProps) {
+  const imageTypes = getAvailableImageTypes()
+  
+  // Use auto-selected type as default, or fallback to 'illustration'
+  const [selectedStyle, setSelectedStyle] = useState<string>(autoSelectedType || 'illustration')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [usedImageType, setUsedImageType] = useState<string | null>(null)
+
+  // Update selected style when auto-selected type changes
+  React.useEffect(() => {
+    if (autoSelectedType) {
+      setSelectedStyle(autoSelectedType)
+      console.log('[ImagePanel] Auto-selected image type:', autoSelectedType)
+    }
+  }, [autoSelectedType])
 
   // Debug: Log visual prompt changes
   React.useEffect(() => {
-    console.log('ImagePanel received visual prompt:', visualPrompt)
-  }, [visualPrompt])
+    console.log('[ImagePanel] Visual prompt:', visualPrompt)
+    console.log('[ImagePanel] Post type:', postType)
+    console.log('[ImagePanel] Post headline:', postHeadline?.substring(0, 50))
+  }, [visualPrompt, postType, postHeadline])
 
   const handleGenerateImage = async () => {
-    console.log('Generate Image clicked! Visual prompt:', visualPrompt)
+    console.log('[ImagePanel] Generate Image clicked!')
+    console.log('[ImagePanel] Selected style:', selectedStyle)
+    console.log('[ImagePanel] Visual prompt:', visualPrompt)
     
     if (!visualPrompt) {
       setError('Please generate text content first to get a visual concept')
@@ -46,7 +69,16 @@ export function ImagePanel({ visualPrompt, industry, tone }: ImagePanelProps) {
         industry: industry,
         tone: tone,
         style: selectedStyle,
+        // Include post content for context-aware generation
+        post_type: postType,
+        post_headline: postHeadline,
+        post_text: postText,
       }
+
+      console.log('[ImagePanel] Sending request:', {
+        ...requestData,
+        post_text: requestData.post_text?.substring(0, 100) + '...'
+      })
 
       const response = await fetch('/api/generate-image', {
         method: 'POST',
@@ -57,12 +89,16 @@ export function ImagePanel({ visualPrompt, industry, tone }: ImagePanelProps) {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to generate image')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to generate image')
       }
 
       const data = await response.json()
       setGeneratedImage(data.image_base64)
+      setUsedImageType(data.image_type || selectedStyle)
+      console.log('[ImagePanel] Image generated successfully, type:', data.image_type)
     } catch (err) {
+      console.error('[ImagePanel] Error:', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setIsGenerating(false)
@@ -77,7 +113,6 @@ export function ImagePanel({ visualPrompt, industry, tone }: ImagePanelProps) {
 
     if (isMobile) {
       // For mobile: Open image in new tab so user can long-press and save
-      // This is more reliable than trying to force download on mobile
       const newWindow = window.open()
       if (newWindow) {
         newWindow.document.write(`
@@ -135,7 +170,7 @@ export function ImagePanel({ visualPrompt, industry, tone }: ImagePanelProps) {
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = url
-        link.download = `social-echo-${Date.now()}.png`
+        link.download = `social-echo-${usedImageType || 'image'}-${Date.now()}.png`
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
@@ -150,27 +185,43 @@ export function ImagePanel({ visualPrompt, industry, tone }: ImagePanelProps) {
     }
   }
 
+  // Find the selected image type info
+  const selectedTypeInfo = imageTypes.find(t => t.value === selectedStyle)
+
   return (
     <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20">
       <div className="p-6 border-b border-gray-200/50">
-        <div className="flex items-center">
-          <Image className="h-6 w-6 text-green-600 mr-3" />
-          <h2 className="text-2xl font-bold text-gray-900">Create Image</h2>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Image className="h-6 w-6 text-green-600 mr-3" />
+            <h2 className="text-2xl font-bold text-gray-900">Create Image</h2>
+          </div>
+          {autoSelectedType && (
+            <div className="flex items-center text-xs text-green-600 bg-green-50 px-3 py-1 rounded-full">
+              <Info className="h-3 w-3 mr-1" />
+              Auto-selected
+            </div>
+          )}
         </div>
       </div>
       
       <div className="p-6 space-y-6">
         <div>
-          <label className="block text-sm font-medium text-white mb-3 flex items-center">
+          <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
             <Palette className="h-4 w-4 mr-2" />
-            Style
+            Visual Style
           </label>
           <Select
             value={selectedStyle}
-            onChange={(e) => setSelectedStyle(e.target.value as typeof selectedStyle)}
-            options={styleOptions}
+            onChange={(e) => setSelectedStyle(e.target.value)}
+            options={imageTypes.map(t => ({ value: t.value, label: t.label }))}
             className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />
+          {selectedTypeInfo && (
+            <p className="mt-2 text-xs text-gray-500 italic">
+              {selectedTypeInfo.description}
+            </p>
+          )}
         </div>
 
         <Button
@@ -181,12 +232,12 @@ export function ImagePanel({ visualPrompt, industry, tone }: ImagePanelProps) {
           {isGenerating ? (
             <>
               <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-              Generating image...
+              Generating {selectedTypeInfo?.label || 'image'}...
             </>
           ) : (
             <>
               <Image className="mr-2 h-5 w-5" />
-              Generate Image
+              Generate {selectedTypeInfo?.label || 'Image'}
             </>
           )}
         </Button>
@@ -197,8 +248,8 @@ export function ImagePanel({ visualPrompt, industry, tone }: ImagePanelProps) {
             animate={{ opacity: 1, y: 0 }}
             className="p-4 bg-blue-50 border border-blue-200 rounded-xl"
           >
-            <p className="text-blue-700 text-center">
-              Generate text content first to create an image
+            <p className="text-blue-700 text-center text-sm">
+              💡 Generate text content first to create a contextually relevant image
             </p>
           </motion.div>
         )}
@@ -209,7 +260,7 @@ export function ImagePanel({ visualPrompt, industry, tone }: ImagePanelProps) {
             animate={{ opacity: 1, y: 0 }}
             className="p-4 bg-red-50 border border-red-200 rounded-xl"
           >
-            <p className="text-red-600 mb-3">{error}</p>
+            <p className="text-red-600 mb-3 text-sm">{error}</p>
             <Button
               variant="outline"
               size="sm"
@@ -231,10 +282,17 @@ export function ImagePanel({ visualPrompt, industry, tone }: ImagePanelProps) {
             <div className="border-2 border-gray-200 rounded-2xl overflow-hidden shadow-lg">
               <img
                 src={generatedImage}
-                alt="Generated social media image"
+                alt={`Generated ${usedImageType || 'social media'} image`}
                 className="w-full h-auto"
               />
             </div>
+            {usedImageType && (
+              <div className="text-center">
+                <span className="inline-block px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                  Style: {imageTypes.find(t => t.value === usedImageType)?.label || usedImageType}
+                </span>
+              </div>
+            )}
             <Button
               onClick={handleDownload}
               className="w-full bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white py-3 rounded-xl font-semibold"
