@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
+      console.log('[feedback] Unauthorized: No session')
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -26,7 +27,13 @@ export async function POST(request: NextRequest) {
     
     const userId = (session.user as any).id
     const body = await request.json()
+    
+    console.log('[feedback] Received request:', { userId, body })
+    
+    // Validate input
     const validated = FeedbackSchema.parse(body)
+    
+    console.log('[feedback] Validated data:', validated)
     
     // Verify post belongs to user
     const post = await prisma.postHistory.findFirst({
@@ -35,6 +42,8 @@ export async function POST(request: NextRequest) {
         userId
       }
     })
+    
+    console.log('[feedback] Post lookup result:', post ? 'Found' : 'Not found', { postId: validated.postId, userId })
     
     if (!post) {
       return NextResponse.json(
@@ -72,8 +81,16 @@ export async function POST(request: NextRequest) {
     // Learning signals are now calculated dynamically from feedback data
     // No need to update Profile table
     
+    console.log('[feedback] Feedback saved successfully:', { feedbackId: feedback.id, rating: feedback.feedback })
+    
+    // Return encouraging message based on rating
+    const message = validated.rating === 'up' 
+      ? "Awesome! Glad I could help. Your feedback helps me learn what you love! 🎉"
+      : "Thanks for the feedback! I'm learning from this to make your next post even better. 💪"
+    
     return NextResponse.json({
       success: true,
+      message,
       feedback: {
         id: feedback.id,
         rating: feedback.feedback // 'up' or 'down'

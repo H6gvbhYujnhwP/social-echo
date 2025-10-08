@@ -16,6 +16,7 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
 
   const handleFeedback = (feedback: 'up' | 'down') => {
     setSelectedFeedback(feedback)
@@ -44,11 +45,14 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
         })
       })
       
+      const data = await response.json()
+      
       if (!response.ok) {
-        const data = await response.json()
         throw new Error(data.error || 'Failed to save feedback')
       }
       
+      // Store the success message from the API
+      setSuccessMessage(data.message || 'Thanks! SOCIAL ECHO is learning from your feedback.')
       setSubmitted(true)
       onFeedbackSubmitted?.()
       
@@ -80,7 +84,7 @@ export function FeedbackButtons({ postId, onFeedbackSubmitted }: FeedbackButtons
       <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
         <Check className="w-4 h-4 text-green-600" />
         <span className="text-sm text-green-700 font-medium">
-          Thanks! SOCIAL ECHO is learning from your feedback.
+          {successMessage}
         </span>
       </div>
     )
