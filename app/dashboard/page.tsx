@@ -14,6 +14,7 @@ import Link from 'next/link'
 
 // Type for generated draft
 export interface GeneratedDraft {
+  id?: string // Post ID from database (optional for backward compatibility)
   headline_options: string[]
   post_text: string
   hashtags: string[]
@@ -82,12 +83,21 @@ export default function DashboardPage() {
         
         // Load today's post from database
         const today = new Date().toISOString().split('T')[0]
-        const postResponse = await fetch(`/api/posts?date=${today}`)
+        const postResponse = await fetch(`/api/posts?date=${today}`, {
+          cache: 'no-store' // Ensure fresh data
+        })
         if (postResponse.ok) {
           const postData = await postResponse.json()
           console.log('[dashboard] Loaded today\'s post:', { id: postData.id, date: postData.date })
           setTodayDraft(postData)
-          setCurrentPostId(postData.id)
+          // Ensure postId is set - try postData.id first, then postData.postId
+          const postId = postData.id || postData.postId
+          if (postId) {
+            console.log('[dashboard] Set currentPostId from database:', postId)
+            setCurrentPostId(postId)
+          } else {
+            console.warn('[dashboard] No postId found in database response:', postData)
+          }
         } else {
           console.log('[dashboard] No post found for today:', today)
         }
