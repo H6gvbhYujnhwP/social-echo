@@ -2,225 +2,293 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Brain, TrendingUp, Hash, MessageSquare, Award, Info } from 'lucide-react'
-import { analyzeFeedback, shouldAutoUpdateProfile, type LearningInsights } from '../lib/learning-engine'
-import { getProfile, setProfile, type UserProfile } from '../lib/localstore'
-import { Button } from './ui/Button'
+
+interface FeedbackStats {
+  totalFeedback: number
+  upvotes: number
+  downvotes: number
+  byPostType: Record<string, { up: number; down: number }>
+  byTone: Record<string, { up: number; down: number }>
+}
 
 export function LearningProgress() {
-  const [insights, setInsights] = useState<LearningInsights | null>(null)
-  const [profile, setProfileState] = useState<UserProfile | null>(null)
-  const [showAutoUpdateNotice, setShowAutoUpdateNotice] = useState(false)
-  const [autoUpdateReason, setAutoUpdateReason] = useState('')
+  const [stats, setStats] = useState<FeedbackStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const currentProfile = getProfile()
-    if (!currentProfile) return
-
-    setProfileState(currentProfile)
-    const learningInsights = analyzeFeedback(currentProfile)
-    setInsights(learningInsights)
-
-    // Check if profile should be auto-updated
-    const autoUpdate = shouldAutoUpdateProfile(learningInsights)
-    if (autoUpdate.shouldUpdate) {
-      setShowAutoUpdateNotice(true)
-      setAutoUpdateReason(autoUpdate.reason)
-    }
+    fetchStats()
   }, [])
 
-  const handleApplyAutoUpdate = () => {
-    if (!profile || !insights) return
-
-    const autoUpdate = shouldAutoUpdateProfile(insights)
-    if (autoUpdate.shouldUpdate) {
-      const updatedProfile = { ...profile, ...autoUpdate.updates }
-      setProfile(updatedProfile)
-      setProfileState(updatedProfile)
-      setShowAutoUpdateNotice(false)
+  const fetchStats = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/feedback', {
+        cache: 'no-store'
+      })
       
-      // Re-analyze with updated profile
-      const newInsights = analyzeFeedback(updatedProfile)
-      setInsights(newInsights)
+      if (!response.ok) {
+        throw new Error('Failed to fetch learning progress')
+      }
+      
+      const data = await response.json()
+      console.log('[LearningProgress] Fetched stats:', data)
+      setStats(data)
+      setError(null)
+    } catch (err: any) {
+      console.error('[LearningProgress] Error fetching stats:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleDismissAutoUpdate = () => {
-    setShowAutoUpdateNotice(false)
+  // Calculate confidence percentage (0-100)
+  const calculateConfidence = (total: number): number => {
+    if (total === 0) return 0
+    // Confidence grows with feedback count, plateaus at 50 items
+    return Math.min(100, Math.round((total / 50) * 100))
   }
 
-  if (!insights || !profile) {
+  // Calculate success rate for a category
+  const calculateSuccessRate = (up: number, down: number): number => {
+    const total = up + down
+    if (total === 0) return 0
+    return Math.round((up / total) * 100)
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+            <span className="text-white text-lg">📊</span>
+          </div>
+          <h3 className="text-xl font-semibold text-white">Learning Progress</h3>
+        </div>
+        <p className="text-white/60 text-sm">Loading your learning progress...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+            <span className="text-white text-lg">📊</span>
+          </div>
+          <h3 className="text-xl font-semibold text-white">Learning Progress</h3>
+        </div>
+        <p className="text-red-400 text-sm">{error}</p>
+      </div>
+    )
+  }
+
+  if (!stats) {
     return null
   }
 
-  const getLearningStageColor = (stage: LearningInsights['learningStage']) => {
-    switch (stage) {
-      case 'cold-start':
-        return 'text-gray-600 bg-gray-100'
-      case 'learning':
-        return 'text-blue-600 bg-blue-100'
-      case 'confident':
-        return 'text-green-600 bg-green-100'
-    }
-  }
+  const confidence = calculateConfidence(stats.totalFeedback)
+  const overallSuccessRate = calculateSuccessRate(stats.upvotes, stats.downvotes)
 
-  const getLearningStageLabel = (stage: LearningInsights['learningStage']) => {
-    switch (stage) {
-      case 'cold-start':
-        return 'Getting Started'
-      case 'learning':
-        return 'Learning Your Style'
-      case 'confident':
-        return 'Confident'
-    }
-  }
+  // Get top performing post type and tone
+  const postTypes = Object.entries(stats.byPostType).map(([type, data]) => ({
+    type,
+    successRate: calculateSuccessRate(data.up, data.down),
+    total: data.up + data.down
+  })).sort((a, b) => b.successRate - a.successRate)
+
+  const tones = Object.entries(stats.byTone).map(([tone, data]) => ({
+    tone,
+    successRate: calculateSuccessRate(data.up, data.down),
+    total: data.up + data.down
+  })).sort((a, b) => b.successRate - a.successRate)
 
   return (
-    <div className="space-y-6">
-      {/* Auto-Update Notice */}
-      {showAutoUpdateNotice && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl"
-        >
-          <div className="flex items-start gap-3">
-            <Brain className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <h4 className="font-semibold text-gray-900 mb-1">
-                SOCIAL ECHO has learned your preferences!
-              </h4>
-              <p className="text-sm text-gray-700 mb-3">{autoUpdateReason}</p>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={handleApplyAutoUpdate}
-                  size="sm"
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
-                >
-                  Apply Update
-                </Button>
-                <Button
-                  onClick={handleDismissAutoUpdate}
-                  variant="outline"
-                  size="sm"
-                >
-                  Keep Current
-                </Button>
-              </div>
-            </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+            <span className="text-white text-xl">📊</span>
           </div>
-        </motion.div>
+          <div>
+            <h3 className="text-xl font-semibold text-white">Learning Progress</h3>
+            <p className="text-white/60 text-sm">Your AI is getting smarter with every feedback</p>
+          </div>
+        </div>
+        <button
+          onClick={fetchStats}
+          className="text-white/60 hover:text-white transition-colors text-sm"
+          title="Refresh stats"
+        >
+          🔄
+        </button>
+      </div>
+
+      {/* No feedback yet */}
+      {stats.totalFeedback === 0 && (
+        <div className="text-center py-8">
+          <p className="text-white/80 text-lg mb-2">No feedback yet!</p>
+          <p className="text-white/60 text-sm">
+            Start giving feedback on your generated posts to help the AI learn your preferences.
+          </p>
+          <div className="mt-4 text-white/40 text-xs">
+            👍 Click "Good" when you love a post<br />
+            👎 Click "Needs Work" to help improve future posts
+          </div>
+        </div>
       )}
 
-      {/* Learning Overview */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Brain className="w-6 h-6 text-purple-600" />
+      {/* Stats Grid */}
+      {stats.totalFeedback > 0 && (
+        <div className="space-y-6">
+          {/* Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Total Feedback */}
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <div className="text-white/60 text-sm mb-1">Total Feedback</div>
+              <div className="text-3xl font-bold text-white">{stats.totalFeedback}</div>
+              <div className="text-white/40 text-xs mt-1">
+                {stats.upvotes} 👍 · {stats.downvotes} 👎
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Learning Progress</h3>
-              <p className="text-sm text-gray-600">
-                SOCIAL ECHO is learning from your feedback
+
+            {/* Confidence */}
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <div className="text-white/60 text-sm mb-1">AI Confidence</div>
+              <div className="text-3xl font-bold text-white">{confidence}%</div>
+              <div className="w-full bg-white/10 rounded-full h-2 mt-2">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${confidence}%` }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
+                />
+              </div>
+            </div>
+
+            {/* Success Rate */}
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <div className="text-white/60 text-sm mb-1">Success Rate</div>
+              <div className="text-3xl font-bold text-white">{overallSuccessRate}%</div>
+              <div className="text-white/40 text-xs mt-1">
+                Posts you loved
+              </div>
+            </div>
+          </div>
+
+          {/* Encouragement Message */}
+          {stats.totalFeedback < 10 && (
+            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl p-4 border border-purple-500/30">
+              <p className="text-white/90 text-sm">
+                💡 <strong>Keep going!</strong> Provide at least 10 pieces of feedback to unlock more detailed insights and better personalization.
               </p>
             </div>
-          </div>
-          <div className={`px-3 py-1 rounded-full text-sm font-medium ${getLearningStageColor(insights.learningStage)}`}>
-            {getLearningStageLabel(insights.learningStage)}
-          </div>
-        </div>
-
-        {/* Feedback Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-2 mb-1">
-              <MessageSquare className="w-4 h-4 text-gray-600" />
-              <span className="text-sm font-medium text-gray-600">Total Feedback</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-900">{insights.totalFeedback}</p>
-          </div>
-          <div className="p-4 bg-green-50 rounded-lg">
-            <div className="flex items-center gap-2 mb-1">
-              <TrendingUp className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-600">Confidence</span>
-            </div>
-            <p className="text-2xl font-bold text-green-700">
-              {Math.round(insights.tonePreference.confidence * 100)}%
-            </p>
-          </div>
-          <div className="p-4 bg-blue-50 rounded-lg">
-            <div className="flex items-center gap-2 mb-1">
-              <Hash className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-600">Hashtags</span>
-            </div>
-            <p className="text-2xl font-bold text-blue-700">
-              ~{insights.hashtagPreference.preferredCount}
-            </p>
-          </div>
-        </div>
-
-        {/* Insights */}
-        <div className="space-y-4">
-          {/* Tone Preference */}
-          <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg">
-            <div className="flex items-start gap-3">
-              <Award className="w-5 h-5 text-purple-600 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="font-semibold text-gray-900 mb-1">Tone Preference</h4>
-                <p className="text-sm text-gray-700">
-                  {insights.tonePreference.reason}
-                </p>
-                {insights.tonePreference.suggested && (
-                  <p className="text-sm text-purple-700 font-medium mt-2">
-                    Suggestion: Try "{insights.tonePreference.suggested}" tone
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* Post Type Performance */}
-          <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
-            <div className="flex items-start gap-3">
-              <TrendingUp className="w-5 h-5 text-green-600 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="font-semibold text-gray-900 mb-3">Post Type Performance</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  {Object.entries(insights.postTypePerformance).map(([type, perf]) => {
-                    const total = perf.upvotes + perf.downvotes
-                    if (total === 0) return null
-                    
-                    return (
-                      <div key={type} className="flex items-center justify-between p-2 bg-white rounded-md">
-                        <span className="text-sm font-medium text-gray-700 capitalize">{type}</span>
-                        <span className={`text-sm font-bold ${perf.score > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {perf.upvotes}↑ {perf.downvotes}↓
-                        </span>
+          {postTypes.length > 0 && stats.totalFeedback >= 5 && (
+            <div>
+              <h4 className="text-white font-semibold mb-3 flex items-center">
+                <span className="mr-2">📝</span>
+                Post Type Performance
+              </h4>
+              <div className="space-y-2">
+                {postTypes.map(({ type, successRate, total }) => (
+                  <div key={type} className="bg-white/5 rounded-lg p-3 border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/90 text-sm capitalize">{type}</span>
+                      <span className="text-white/60 text-xs">{total} posts</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="flex-1 bg-white/10 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full ${
+                            successRate >= 70
+                              ? 'bg-green-500'
+                              : successRate >= 40
+                              ? 'bg-yellow-500'
+                              : 'bg-red-500'
+                          }`}
+                          style={{ width: `${successRate}%` }}
+                        />
                       </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Learning Tip */}
-          {insights.learningStage === 'cold-start' && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-start gap-3">
-                <Info className="w-5 h-5 text-blue-600 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold text-blue-900 mb-1">Keep Providing Feedback!</h4>
-                  <p className="text-sm text-blue-700">
-                    Give feedback on at least 5 posts to help SOCIAL ECHO learn your preferences and improve content quality.
-                  </p>
-                </div>
+                      <span className="text-white font-semibold text-sm w-12 text-right">
+                        {successRate}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
+
+          {/* Tone Performance */}
+          {tones.length > 0 && stats.totalFeedback >= 5 && (
+            <div>
+              <h4 className="text-white font-semibold mb-3 flex items-center">
+                <span className="mr-2">🎭</span>
+                Tone Performance
+              </h4>
+              <div className="space-y-2">
+                {tones.map(({ tone, successRate, total }) => (
+                  <div key={tone} className="bg-white/5 rounded-lg p-3 border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/90 text-sm capitalize">{tone}</span>
+                      <span className="text-white/60 text-xs">{total} posts</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="flex-1 bg-white/10 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full ${
+                            successRate >= 70
+                              ? 'bg-green-500'
+                              : successRate >= 40
+                              ? 'bg-yellow-500'
+                              : 'bg-red-500'
+                          }`}
+                          style={{ width: `${successRate}%` }}
+                        />
+                      </div>
+                      <span className="text-white font-semibold text-sm w-12 text-right">
+                        {successRate}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Learning Insights */}
+          {stats.totalFeedback >= 10 && (
+            <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-xl p-4 border border-blue-500/30">
+              <h4 className="text-white font-semibold mb-2 flex items-center">
+                <span className="mr-2">💡</span>
+                AI Insights
+              </h4>
+              <ul className="text-white/80 text-sm space-y-1">
+                {tones.length > 0 && tones[0].successRate > 70 && (
+                  <li>✨ You love <strong>{tones[0].tone}</strong> tone posts! I'll use it more often.</li>
+                )}
+                {postTypes.length > 0 && postTypes[0].successRate > 70 && (
+                  <li>📈 <strong className="capitalize">{postTypes[0].type}</strong> posts are your favorite type!</li>
+                )}
+                {stats.totalFeedback >= 20 && (
+                  <li>🎯 With {stats.totalFeedback} pieces of feedback, I'm getting really good at understanding your style!</li>
+                )}
+              </ul>
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+      )}
+    </motion.div>
   )
 }
