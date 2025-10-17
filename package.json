@@ -1,0 +1,71 @@
+{
+  "name": "social-echo",
+  "version": "1.0.0",
+  "description": "AI LinkedIn Content Generator",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.65.0",
+    "@auth/prisma-adapter": "^2.10.0",
+    "@prisma/client": "^6.17.1",
+    "@stripe/stripe-js": "^8.0.0",
+    "@types/bcrypt": "^6.0.0",
+    "@types/node": "20.11.30",
+    "@types/react": "18.2.66",
+    "@types/react-dom": "18.2.22",
+    "autoprefixer": "10.4.21",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
+    "framer-motion": "11.2.12",
+    "lucide-react": "0.414.0",
+    "next": "14.2.15",
+    "next-auth": "^4.24.11",
+    "openai": "4.56.0",
+    "otplib": "^12.0.1",
+    "postcss": "8.4.49",
+    "prisma": "^6.17.1",
+    "qrcode": "^1.5.4",
+    "@types/qrcode": "^1.5.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "resend": "^6.1.2",
+    "rss-parser": "^3.13.0",
+    "stripe": "^19.1.0",
+    "tailwindcss": "3.4.13",
+    "tesseract.js": "^6.0.1",
+    "typescript": "5.4.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "eslint": "8.57.0",
+    "eslint-config-next": "14.2.15",
+    "ts-node": "^10.9.2"
+  },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/H6gvbhYujnhwP/social-echo.git"
+  },
+  "keywords": [
+    "linkedin",
+    "social-media",
+    "content-generation",
+    "ai"
+  ],
+  "author": "Social Echo Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/H6gvbhYujnhwP/social-echo/issues"
+  },
+  "homepage": "https://github.com/H6gvbhYujnhwP/social-echo#readme"
+}
