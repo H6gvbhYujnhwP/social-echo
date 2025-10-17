@@ -7,6 +7,7 @@ import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
+import { BackButton } from '@/components/ui/BackButton'
 import './styles.css'
 
 interface AgencyBranding {
@@ -139,8 +140,15 @@ function SignInForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 px-4 py-8">
+      <div className="max-w-md w-full">
+        {/* Back Button */}
+        <div className="mb-4">
+          <BackButton label="Back" fallbackUrl="/" />
+        </div>
+        
+        {/* Form Card */}
+        <div className="bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
           {/* Agency Logo or Default Branding */}
           {branding?.logoUrl ? (
@@ -287,6 +295,8 @@ function SignInForm() {
             </p>
           </div>
         )}
+        </div>
+        {/* End Form Card */}
       </div>
 
       {/* Custom CSS for focus rings */}

@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
+import { BackButton } from '@/components/ui/BackButton'
 import './styles.css'
 import { signIn } from 'next-auth/react'
 
@@ -129,8 +130,15 @@ function SignUpForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 px-4 py-8">
+      <div className="max-w-md w-full">
+        {/* Back Button */}
+        <div className="mb-4">
+          <BackButton label="Back" fallbackUrl="/pricing" />
+        </div>
+        
+        {/* Form Card */}
+        <div className="bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-3xl font-bold text-blue-600 mb-2">SOCIAL ECHO</h1>
           <p className="text-gray-800 text-base md:text-base">Create your account</p>
@@ -261,6 +269,8 @@ function SignUpForm() {
             No refunds within the first 30 days.
           </p>
         </div>
+        </div>
+        {/* End Form Card */}
       </div>
     </div>
   )
