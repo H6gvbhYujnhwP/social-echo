@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function FeaturesPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <Container className="py-12 sm:py-16">
         <FeaturesFlow />
       </Container>

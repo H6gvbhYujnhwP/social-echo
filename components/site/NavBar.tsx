@@ -93,7 +93,7 @@ export default function NavBar() {
             Sign In
           </Link>
           <Link 
-            href="/pricing" 
+            href="/signup" 
             className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-lg"
           >
             Get Started
@@ -226,7 +226,7 @@ export default function NavBar() {
 
               {/* Get Started Button */}
               <Link
-                href="/pricing"
+                href="/signup"
                 className="py-3 px-6 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors text-center shadow-lg"
                 onClick={closeMobileMenu}
               >

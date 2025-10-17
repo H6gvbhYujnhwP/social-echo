@@ -7,7 +7,8 @@ import Link from 'next/link';
 
 export default function ResellersPage() {
   return (
-    <div className="mx-auto max-w-6xl px-6 py-16 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="mx-auto max-w-6xl px-6 py-16 text-white">
       {/* Hero Section */}
       <section className="mb-16 text-center">
         <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
@@ -200,6 +201,7 @@ export default function ResellersPage() {
           </Link>
         </div>
       </section>
+      </div>
     </div>
   );
 }
