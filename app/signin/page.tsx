@@ -7,6 +7,7 @@ import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
+import './styles.css'
 
 interface AgencyBranding {
   name: string
@@ -151,9 +152,9 @@ function SignInForm() {
               />
             </div>
           ) : (
-            <h1 className="text-3xl font-bold text-blue-600 mb-2">SOCIAL ECHO</h1>
+            <h1 className="text-3xl md:text-3xl font-bold text-blue-600 mb-2">SOCIAL ECHO</h1>
           )}
-          <p className="text-gray-600">Sign in to your account</p>
+          <p className="text-gray-800 text-base md:text-base">Sign in to your account</p>
           {branding && (
             <p className="mt-2 text-sm text-gray-500">
               Powered by <span className="font-semibold">{branding.name}</span>
@@ -163,7 +164,7 @@ function SignInForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm md:text-sm font-medium text-gray-900 mb-1.5">
               Email
             </label>
             <input
@@ -172,7 +173,7 @@ function SignInForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:border-transparent"
+              className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-500 transition-colors"
               style={{ 
                 outlineColor: primaryColor,
                 borderColor: error && !needs2FA ? '#ef4444' : undefined
@@ -182,8 +183,8 @@ function SignInForm() {
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <div className="flex items-center justify-between mb-1.5">
+              <label htmlFor="password" className="block text-sm md:text-sm font-medium text-gray-900">
                 Password
               </label>
               <Link
@@ -200,7 +201,7 @@ function SignInForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:border-transparent"
+              className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-500 transition-colors"
               style={{ 
                 outlineColor: primaryColor,
                 borderColor: error && !needs2FA ? '#ef4444' : undefined
@@ -211,7 +212,7 @@ function SignInForm() {
 
           {needs2FA && (
             <div>
-              <label htmlFor="totpCode" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="totpCode" className="block text-sm md:text-sm font-medium text-gray-900 mb-1.5">
                 2FA Code
               </label>
               <input
@@ -220,7 +221,7 @@ function SignInForm() {
                 value={totpCode}
                 onChange={(e) => setTotpCode(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:border-transparent"
+                className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-500 transition-colors"
                 style={{ outlineColor: primaryColor }}
                 placeholder="123456"
                 maxLength={6}
@@ -242,7 +243,7 @@ function SignInForm() {
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full py-3 text-base font-semibold"
             disabled={loading}
             style={{ backgroundColor: primaryColor }}
           >
@@ -258,11 +259,11 @@ function SignInForm() {
           >
             Forgot password?
           </a>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-800">
             Don't have an account?{' '}
             <a 
               href="/signup" 
-              className="hover:underline"
+              className="font-medium hover:underline"
               style={{ color: primaryColor }}
             >
               Sign up

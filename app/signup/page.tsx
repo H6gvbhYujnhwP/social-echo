@@ -1,8 +1,11 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+export const dynamic = 'force-dynamic'
+
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
+import './styles.css'
 import { signIn } from 'next-auth/react'
 
 function SignUpForm() {
@@ -129,8 +132,8 @@ function SignUpForm() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-blue-600 mb-2">SOCIAL ECHO</h1>
-          <p className="text-gray-600">Create your account</p>
+          <h1 className="text-3xl md:text-3xl font-bold text-blue-600 mb-2">SOCIAL ECHO</h1>
+          <p className="text-gray-800 text-base md:text-base">Create your account</p>
           {plan && (
             <div className={`mt-3 p-3 rounded-md ${
               plan.toLowerCase().includes('starter')
@@ -156,7 +159,7 @@ function SignUpForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="name" className="block text-sm md:text-sm font-medium text-gray-900 mb-1.5">
               Name
             </label>
             <input
@@ -164,28 +167,28 @@ function SignUpForm() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-500 transition-colors"
               placeholder="John Doe"
             />
           </div>
 
           <div>
-            <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-1">
-              Business name <span className="text-gray-500 text-xs">(optional)</span>
+            <label htmlFor="businessName" className="block text-sm md:text-sm font-medium text-gray-900 mb-1.5">
+              Business name <span className="text-gray-600 text-xs">(optional)</span>
             </label>
             <input
               id="businessName"
               type="text"
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-500 transition-colors"
               placeholder="Coffee Shop ABC Ltd (optional)"
             />
-            <p className="text-xs text-gray-500 mt-1">For invoices and billing</p>
+            <p className="text-xs text-gray-700 mt-1.5">For invoices and billing</p>
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm md:text-sm font-medium text-gray-900 mb-1.5">
               Email
             </label>
             <input
@@ -194,13 +197,13 @@ function SignUpForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-500 transition-colors"
               placeholder="you@company.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm md:text-sm font-medium text-gray-900 mb-1.5">
               Password
             </label>
             <input
@@ -210,10 +213,10 @@ function SignUpForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-500 transition-colors"
               placeholder="••••••••"
             />
-            <p className="text-xs text-gray-500 mt-1">At least 8 characters</p>
+            <p className="text-xs text-gray-700 mt-1.5">At least 8 characters</p>
           </div>
 
           {error && (
@@ -224,7 +227,7 @@ function SignUpForm() {
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full py-3 text-base font-semibold"
             disabled={loading}
           >
             {loading 
@@ -235,16 +238,16 @@ function SignUpForm() {
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-800">
             Already have an account?{' '}
-            <a href="/signin" className="text-blue-600 hover:underline">
+            <a href="/signin" className="text-blue-600 font-medium hover:underline">
               Sign in
             </a>
           </p>
         </div>
 
         <div className="mt-6 text-center">
-          <p className="text-xs text-gray-600">
+          <p className="text-xs text-gray-700">
             By continuing, you agree to our{' '}
             <a href="/terms" className="text-blue-600 hover:underline">
               Terms of Service
