@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import './styles.css'
 import { signIn } from 'next-auth/react'
