@@ -6,7 +6,7 @@ import Container from '@/components/layout/Container'
 
 export default function HelpPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
       <Container className="py-8 sm:py-12">
         {/* Header */}
         <div className="text-center mb-8 sm:mb-12">

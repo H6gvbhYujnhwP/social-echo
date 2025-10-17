@@ -61,9 +61,9 @@ export default function NavBar() {
   };
 
   return (
-    <header className="w-full border-b border-white/10 bg-transparent">
+    <header className="w-full border-b border-gray-200 bg-white shadow-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="text-2xl font-bold tracking-wide text-white hover:opacity-90 transition-opacity">
+        <Link href="/" className="text-2xl font-bold tracking-wide text-blue-600 hover:text-blue-700 transition-colors">
           SOCIAL ECHO
         </Link>
         
@@ -73,10 +73,10 @@ export default function NavBar() {
             <Link
               key={href}
               href={href}
-              className={`text-sm font-medium transition-opacity ${
+              className={`text-sm font-medium transition-colors ${
                 pathname === href 
-                  ? 'text-white opacity-100' 
-                  : 'text-white/80 hover:text-white hover:opacity-100'
+                  ? 'text-blue-600' 
+                  : 'text-gray-700 hover:text-blue-600'
               }`}
             >
               {label}
@@ -88,7 +88,7 @@ export default function NavBar() {
         <div className="hidden items-center gap-4 md:flex">
           <Link 
             href="/signin" 
-            className="text-sm font-medium text-white/80 hover:text-white hover:opacity-100 transition-opacity"
+            className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
           >
             Sign In
           </Link>
@@ -103,7 +103,7 @@ export default function NavBar() {
         {/* Mobile Hamburger Button */}
         <button
           type="button"
-          className="md:hidden inline-flex items-center justify-center rounded-md p-2 text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white transition-colors"
+          className="md:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-600 transition-colors"
           onClick={toggleMobileMenu}
           aria-expanded={mobileMenuOpen}
           aria-controls="mobile-menu"

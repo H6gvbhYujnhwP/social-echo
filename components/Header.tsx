@@ -3,12 +3,27 @@
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 
 export function Header() {
   const { data: session, status } = useSession()
   const loading = status === 'loading'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const pathname = usePathname()
+
+  // Don't render Header on marketing pages - they use NavBar instead
+  const isMarketingPage = pathname === '/' || 
+                         pathname === '/features' || 
+                         pathname === '/pricing' || 
+                         pathname === '/resellers' || 
+                         pathname === '/help' ||
+                         pathname === '/signup' ||
+                         pathname === '/signin'
+
+  if (isMarketingPage) {
+    return null
+  }
 
   const closeMobileMenu = () => setMobileMenuOpen(false)
 
