@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import * as bcrypt from 'bcrypt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
-import { sendWelcomeEmail } from '@/lib/email/service'
+// Email sending removed - now handled by webhooks after payment
 
 // Force Node.js runtime
 export const runtime = 'nodejs'
@@ -77,65 +77,12 @@ export async function POST(request: NextRequest) {
     
     console.log('[signup] User created with pending_payment status', {
       userId: user.id,
-      email: user.email,
       businessName: user.businessName || 'none',
     });
     
-    // Send welcome email (non-blocking) with retry logic
-    const sendWelcomeEmailAsync = async () => {
-      // Check if welcome email already sent (defensive guard)
-      if (user.welcomeSentAt) {
-        console.log('[signup] Welcome email already sent', { userId: user.id, sentAt: user.welcomeSentAt });
-        return;
-      }
-      
-      try {
-        // First attempt
-        const success = await sendWelcomeEmail(user.email, user.name);
-        if (success) {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { welcomeSentAt: new Date() }
-          });
-          console.log('[signup] Welcome email sent and marked', { userId: user.id, email: user.email });
-        } else {
-          throw new Error('Email send returned false');
-        }
-      } catch (err) {
-        console.error('[signup] Welcome email failed, retrying...', {
-          userId: user.id,
-          email: user.email,
-          error: (err as Error)?.message
-        });
-        
-        // Retry once after 2 seconds
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        try {
-          const success = await sendWelcomeEmail(user.email, user.name);
-          if (success) {
-            await prisma.user.update({
-              where: { id: user.id },
-              data: { welcomeSentAt: new Date() }
-            });
-            console.log('[signup] Welcome email sent on retry', { userId: user.id });
-          } else {
-            console.error('[signup] Welcome email retry failed', { userId: user.id });
-          }
-        } catch (err2) {
-          console.error('[signup] Welcome email retry failed', {
-            userId: user.id,
-            email: user.email,
-            error: (err2 as Error)?.message
-          });
-        }
-      }
-    };
-    
-    // Execute async (non-blocking)
-    sendWelcomeEmailAsync().catch(err => 
-      console.error('[signup] Unexpected error in welcome email:', err)
-    );
+    // NOTE: Email sending removed from signup route per v7.0 blueprint
+    // Emails are now sent ONLY after payment confirmation via Stripe webhooks
+    // This prevents sending emails to users who never complete payment
     
     // Return userId and email for checkout flow
     return NextResponse.json({

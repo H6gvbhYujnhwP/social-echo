@@ -8,16 +8,13 @@ import { getUsageLimit, type Plan } from '@/lib/usage/limits';
 import { getBillingRecipientByStripeCustomer, validateBillingRecipient } from '@/lib/billing/recipient';
 import { sendSecureBillingEmailSafe } from '@/lib/billing/secure-email';
 import { 
-  sendPaymentSuccessEmail, 
   sendPaymentFailedEmail, 
   sendSubscriptionCancelledEmail,
   sendSubscriptionUpgradedEmail,
-  sendTrialStartedEmail,
   sendTrialConvertedEmail,
   sendTrialCancelledEmail,
   sendWelcomeEmail,
   sendOnboardingEmail,
-  sendPlanUpgradeEmail
 } from '@/lib/email/service';
 
 export const runtime = 'nodejs'; // ensure Node (so we can read raw body)
@@ -120,7 +117,12 @@ export async function POST(req: NextRequest) {
         },
       });
       
-      console.log('[webhook] Subscription created/updated:', subscription.id, subscription.plan, 'isAgency:', isAgencyPlan);
+      console.log('[webhook] Subscription linked via checkout.session.completed:', {
+        subscriptionId: subscription.id,
+        plan: subscription.plan,
+        status: subscriptionStatus,
+        isAgency: isAgencyPlan,
+      });
       
       // If this is an agency plan, upgrade user to AGENCY_ADMIN and create Agency record
       if (isAgencyPlan && user.role !== 'AGENCY_ADMIN') {
@@ -191,49 +193,10 @@ export async function POST(req: NextRequest) {
         }).catch(err => console.error('[webhook] Failed to create audit log:', err));
       }
       
-      // Send welcome email if not already sent (idempotency guard)
-      if (!user.welcomeSentAt) {
-        console.log('[webhook] Sending welcome email to:', user.email);
-        sendWelcomeEmail(user.email, user.name).then(success => {
-          if (success) {
-            prisma.user.update({
-              where: { id: user.id },
-              data: { welcomeSentAt: new Date() }
-            }).catch(err => console.error('[webhook] Failed to update welcomeSentAt:', err));
-          }
-        }).catch(err => 
-          console.error('[webhook] Failed to send welcome email:', err)
-        );
-      } else {
-        console.log('[webhook] Welcome email already sent to:', user.email, 'at', user.welcomeSentAt);
-      }
-      
-      // Send appropriate email based on subscription status
-      const planName = subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1);
-      
-      if (subscriptionStatus === 'trialing' && trialEnd) {
-        // Trial started - send trial email
-        const trialEndFormatted = trialEnd.toLocaleString('en-GB', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-        console.log('[webhook] Sending trial started email to:', user.email);
-        
-        sendTrialStartedEmail(user.email, user.name, trialEndFormatted).catch(err =>
-          console.error('[webhook] Failed to send trial started email:', err)
-        );
-      } else {
-        // Regular payment - send payment success email
-        const amount = s.amount_total ? `£${(s.amount_total / 100).toFixed(2)}` : 'N/A';
-        console.log('[webhook] Sending payment success email to:', user.email);
-        
-        sendPaymentSuccessEmail(user.email, user.name, planName, amount).catch(err =>
-          console.error('[webhook] Failed to send payment success email:', err)
-        );
-      }
+      // NOTE: Email sending removed from checkout.session.completed per v7.0 blueprint
+      // Emails are sent ONLY from customer.subscription.created after full activation
+      // This event only links the session to customer/subscription - no emails
+      console.log('[webhook] Checkout session linked to subscription - emails will be sent by subscription.created event');
       break;
     }
 
@@ -275,33 +238,29 @@ export async function POST(req: NextRequest) {
         
         // Use eventType instead of event.type to avoid TypeScript narrowing issues
         if (eventType === 'customer.subscription.created') {
-          // Send onboarding email for new Starter/Pro subscriptions
-          if (newPlan === 'starter' || newPlan === 'pro') {
-            sendSecureBillingEmailSafe({
-              stripeCustomerId: customerId,
-              eventId: event.id,
-              type: 'onboarding',
-              sendFn: sendOnboardingEmail,
-            });
-          }
+          // Send welcome email ONLY on subscription creation (after payment confirmed)
+          // This is the ONLY place where welcome email is sent
+          console.log('[webhook] Sending activation emails for new subscription:', {
+            customerId,
+            plan: newPlan,
+            eventId: event.id,
+          });
           
-          // Send Pro plan activation email
-          if (newPlan === 'pro') {
-            const amount = '£49.99';
-            const renewalDate = syncedSub.currentPeriodEnd?.toLocaleDateString('en-GB', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric'
-            }) || 'N/A';
-            
-            sendSecureBillingEmailSafe({
-              stripeCustomerId: customerId,
-              eventId: event.id,
-              type: 'upgrade',
-              sendFn: sendPlanUpgradeEmail,
-              sendArgs: [amount, renewalDate],
-            });
-          }
+          // Send welcome email (idempotent via EmailLog)
+          sendSecureBillingEmailSafe({
+            stripeCustomerId: customerId,
+            eventId: event.id,
+            type: 'welcome',
+            sendFn: sendWelcomeEmail,
+          });
+          
+          // Send onboarding email for all plans (idempotent via EmailLog)
+          sendSecureBillingEmailSafe({
+            stripeCustomerId: customerId,
+            eventId: event.id,
+            type: 'onboarding',
+            sendFn: sendOnboardingEmail,
+          });
         }
         // Send upgrade email if plan changed
         else if (eventType === 'customer.subscription.updated') {
