@@ -790,13 +790,13 @@ export default function AdminUsersPage() {
             {/* Send Email */}
             <div className="flex items-center gap-2">
               <Checkbox
-                id="sendEmail"
                 checked={createForm.sendEmail}
                 onCheckedChange={(checked) => setCreateForm({ ...createForm, sendEmail: checked as boolean })}
+                aria-labelledby="sendEmailLabel"
               />
-              <label htmlFor="sendEmail" className="text-sm text-gray-700 cursor-pointer">
+              <span id="sendEmailLabel" className="text-sm text-gray-700 cursor-pointer" onClick={() => setCreateForm({ ...createForm, sendEmail: !createForm.sendEmail })}>
                 Send trial activation email
-              </label>
+              </span>
             </div>
 
             {/* Actions */}
