@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Badge } from '@/components/ui/Badge';
 import { Separator } from '@/components/ui/Separator';
+import { createUserWithTrial, generateSecurePassword } from './actions';
 
 type UserRow = {
   id: string;
@@ -37,6 +38,17 @@ export default function AdminUsersPage() {
   const [detail, setDetail] = useState<UserRow | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    plan: 'pro' as 'starter' | 'pro',
+    trialAmount: 7,
+    trialUnit: 'days' as 'minutes' | 'hours' | 'days',
+    sendEmail: false,
+  });
+  const [creating, setCreating] = useState(false);
 
   async function fetchPage(p = 1) {
     setLoading(true);
@@ -319,6 +331,12 @@ export default function AdminUsersPage() {
             
             <div className="flex gap-2">
               <Button 
+                onClick={() => setShowCreateModal(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                + Create User
+              </Button>
+              <Button 
                 variant="outline" 
                 onClick={() => window.open('/api/admin/users/export', '_blank')}
               >
@@ -580,6 +598,237 @@ export default function AdminUsersPage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Modal */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New User with Trial</DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setCreating(true);
+            
+            try {
+              const result = await createUserWithTrial(createForm);
+              
+              if (result.success) {
+                setMessage({ type: 'success', text: result.message || 'User created successfully' });
+                
+                // Copy reset link to clipboard
+                if (result.resetUrl) {
+                  try {
+                    await navigator.clipboard.writeText(result.resetUrl);
+                    setMessage({ 
+                      type: 'success', 
+                      text: `${result.message}. Reset link copied to clipboard!` 
+                    });
+                  } catch (clipError) {
+                    console.error('Failed to copy to clipboard:', clipError);
+                  }
+                }
+                
+                // Reset form and close modal
+                setCreateForm({
+                  name: '',
+                  email: '',
+                  password: '',
+                  plan: 'pro',
+                  trialAmount: 7,
+                  trialUnit: 'days',
+                  sendEmail: false,
+                });
+                setShowCreateModal(false);
+                
+                // Refresh the user list
+                fetchPage(1);
+              } else {
+                setMessage({ 
+                  type: 'error', 
+                  text: result.error || 'Failed to create user' 
+                });
+                
+                // If user exists, show link to their detail page
+                if (result.existingUserId) {
+                  setMessage({ 
+                    type: 'error', 
+                    text: `${result.error}. Click to view existing user.` 
+                  });
+                }
+              }
+            } catch (error) {
+              setMessage({ 
+                type: 'error', 
+                text: error instanceof Error ? error.message : 'Failed to create user' 
+              });
+            } finally {
+              setCreating(false);
+            }
+          }} className="space-y-6">
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Name (optional)
+              </label>
+              <Input
+                type="text"
+                value={createForm.name}
+                onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                placeholder="John Doe"
+              />
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="email"
+                value={createForm.email}
+                onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                placeholder="user@example.com"
+                required
+              />
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password <span className="text-red-500">*</span>
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  value={createForm.password}
+                  onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                  placeholder="Minimum 8 characters"
+                  required
+                  minLength={8}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={async () => {
+                    const pwd = await generateSecurePassword();
+                    setCreateForm({ ...createForm, password: pwd });
+                  }}
+                >
+                  Generate
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">At least 8 characters</p>
+            </div>
+
+            {/* Plan */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Plan <span className="text-red-500">*</span>
+              </label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="plan"
+                    value="starter"
+                    checked={createForm.plan === 'starter'}
+                    onChange={(e) => setCreateForm({ ...createForm, plan: e.target.value as 'starter' | 'pro' })}
+                    className="w-4 h-4"
+                  />
+                  <span>Starter (8 posts/month)</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="plan"
+                    value="pro"
+                    checked={createForm.plan === 'pro'}
+                    onChange={(e) => setCreateForm({ ...createForm, plan: e.target.value as 'starter' | 'pro' })}
+                    className="w-4 h-4"
+                  />
+                  <span>Pro (30 posts/month)</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Trial Duration */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Trial Duration <span className="text-red-500">*</span>
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  value={createForm.trialAmount}
+                  onChange={(e) => setCreateForm({ ...createForm, trialAmount: parseFloat(e.target.value) })}
+                  placeholder="7"
+                  min="0.001"
+                  max="365"
+                  step="0.001"
+                  required
+                  className="flex-1"
+                />
+                <select
+                  value={createForm.trialUnit}
+                  onChange={(e) => setCreateForm({ ...createForm, trialUnit: e.target.value as 'minutes' | 'hours' | 'days' })}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="minutes">Minutes</option>
+                  <option value="hours">Hours</option>
+                  <option value="days">Days</option>
+                </select>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Decimals allowed (e.g., 0.5 hours = 30 minutes)
+              </p>
+            </div>
+
+            {/* Send Email */}
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="sendEmail"
+                checked={createForm.sendEmail}
+                onCheckedChange={(checked) => setCreateForm({ ...createForm, sendEmail: checked as boolean })}
+              />
+              <label htmlFor="sendEmail" className="text-sm text-gray-700 cursor-pointer">
+                Send trial activation email
+              </label>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setCreateForm({
+                    name: '',
+                    email: '',
+                    password: '',
+                    plan: 'pro',
+                    trialAmount: 7,
+                    trialUnit: 'days',
+                    sendEmail: false,
+                  });
+                }}
+                disabled={creating}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={creating || !createForm.email || !createForm.password || createForm.password.length < 8}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {creating ? 'Creating...' : 'Create User'}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
