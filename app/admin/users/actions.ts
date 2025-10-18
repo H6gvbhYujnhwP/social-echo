@@ -92,7 +92,7 @@ export async function createUserWithTrial(input: CreateUserInput) {
       const newUser = await tx.user.create({
         data: {
           email: validated.email,
-          name: validated.name ?? null,
+          name: validated.name || '',
           passwordHash,
           role: 'USER',
           isSuspended: false,
