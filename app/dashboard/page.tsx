@@ -586,9 +586,9 @@ export default function DashboardPage() {
       )}
 
       {/* Main Content */}
-      <main className="relative z-10 px-6 py-8 pointer-events-auto">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-8">
+      <main className="relative z-10 px-4 sm:px-6 lg:px-8 py-8 pointer-events-auto">
+        <div className="w-full max-w-[95%] xl:max-w-[90%] 2xl:max-w-[85%] mx-auto">
+          <div className="grid lg:grid-cols-2 gap-6 xl:gap-8 2xl:gap-10">
             {/* Left Column: Today's Content */}
             <TodayPanel
               profile={profile}
