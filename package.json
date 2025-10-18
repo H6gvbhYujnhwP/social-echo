@@ -50,7 +50,7 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "engines": {
-    "node": ">=18.17.0"
+    "node": "20.x"
   },
   "repository": {
     "type": "git",
