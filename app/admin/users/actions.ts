@@ -75,7 +75,7 @@ export async function createUserWithTrial(input: CreateUserInput) {
     }
     
     // Hash password
-    const passwordHash = await bcrypt.hash(validated.password, 10)
+    const hashedPassword = await bcrypt.hash(validated.password, 10)
     
     // Calculate trial period
     const now = new Date()
@@ -93,7 +93,7 @@ export async function createUserWithTrial(input: CreateUserInput) {
         data: {
           email: validated.email,
           name: validated.name || '',
-          passwordHash,
+          password: hashedPassword,
           role: 'USER',
           isSuspended: false,
         },
