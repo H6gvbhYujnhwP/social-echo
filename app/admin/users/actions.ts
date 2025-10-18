@@ -3,7 +3,7 @@
 import * as bcrypt from 'bcrypt'
 import { prisma } from '@/lib/prisma'
 import { limitsFor, normalizePlan, type Plan } from '@/lib/billing/plan-map'
-import { sendSecureBillingEmailSafe } from '@/lib/billing/secure-email'
+import { sendWelcomeEmail, sendOnboardingEmail } from '@/lib/email/service'
 import { z } from 'zod'
 
 // Validation schema
@@ -117,16 +117,13 @@ export async function createUserWithTrial(input: CreateUserInput) {
       return newUser
     })
     
-    // Send activation email if requested
+    // Send activation emails if requested
     if (validated.sendEmail) {
       try {
-        // Note: We don't have stripeCustomerId for manual trials, so we'll send by userId
-        // This is a special case for manual trials
-        await sendSecureBillingEmailSafe(
-          null, // No stripeCustomerId for manual trials
-          'onboarding',
-          { userId: user.id }
-        )
+        // Send welcome and onboarding emails for manual trials
+        // Using direct email functions since we don't have stripeCustomerId
+        await sendWelcomeEmail(user.email, user.name || 'User')
+        await sendOnboardingEmail(user.email, user.name || 'User')
       } catch (emailError) {
         console.error('[createUserWithTrial] Failed to send email:', emailError)
         // Don't fail the whole operation if email fails
