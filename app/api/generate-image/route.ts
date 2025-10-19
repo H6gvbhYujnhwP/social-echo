@@ -105,6 +105,35 @@ export async function POST(request: NextRequest) {
   }
   
   try {
+    // Check authentication
+    const { getServerSession } = await import('next-auth')
+    const { authOptions } = await import('@/lib/auth')
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    
+    const userId = (session.user as any).id
+    
+    // Check access control (trial expiration, suspension, subscription status)
+    const { checkUserAccess } = await import('@/lib/access-control')
+    const accessCheck = await checkUserAccess(userId)
+    
+    if (!accessCheck.allowed) {
+      return NextResponse.json(
+        { 
+          error: 'Access denied',
+          message: accessCheck.reason,
+          status: accessCheck.subscription?.status
+        },
+        { status: 403 }
+      )
+    }
+    
     const body = await request.json()
     
     // Validate request

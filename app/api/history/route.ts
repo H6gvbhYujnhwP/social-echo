@@ -26,6 +26,21 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
+    
+    // Check access control (trial expiration, suspension, subscription status)
+    const { checkUserAccess } = await import('@/lib/access-control')
+    const accessCheck = await checkUserAccess(user.id)
+    
+    if (!accessCheck.allowed) {
+      return NextResponse.json(
+        { 
+          error: 'Access denied',
+          message: accessCheck.reason,
+          status: accessCheck.subscription?.status
+        },
+        { status: 403 }
+      )
+    }
 
     // Determine max history based on plan
     const maxHistory = user.subscription?.plan === 'pro' ? 5 : 1
@@ -82,6 +97,21 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+    
+    // Check access control (trial expiration, suspension, subscription status)
+    const { checkUserAccess } = await import('@/lib/access-control')
+    const accessCheck = await checkUserAccess(user.id)
+    
+    if (!accessCheck.allowed) {
+      return NextResponse.json(
+        { 
+          error: 'Access denied',
+          message: accessCheck.reason,
+          status: accessCheck.subscription?.status
+        },
+        { status: 403 }
+      )
     }
 
     // Parse request body

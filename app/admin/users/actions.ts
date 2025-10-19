@@ -104,11 +104,12 @@ export async function createUserWithTrial(input: CreateUserInput) {
         data: {
           userId: newUser.id,
           plan,
-          status: 'active',
+          status: 'trial', // Set status to 'trial' for admin-created trial users
           usageCount: 0,
           usageLimit,
           currentPeriodStart: now,
           currentPeriodEnd: periodEnd,
+          trialEnd: periodEnd, // Set trialEnd to match the trial duration
           stripeCustomerId: null,
           stripeSubscriptionId: null,
         },

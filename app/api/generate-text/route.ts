@@ -96,29 +96,22 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Check usage limits
-    const subscription = await prisma.subscription.findUnique({
-      where: { userId }
-    })
+    // Check access control (trial expiration, suspension, subscription status)
+    const { checkUserAccess } = await import('@/lib/access-control')
+    const accessCheck = await checkUserAccess(userId)
     
-    if (!subscription) {
-      return NextResponse.json(
-        { error: 'Subscription required. Please subscribe to a plan.' },
-        { status: 402 }
-      )
-    }
-    
-    // Check subscription status
-    if (!['active', 'trialing', 'past_due'].includes(subscription.status)) {
+    if (!accessCheck.allowed) {
       return NextResponse.json(
         { 
-          error: 'Subscription inactive',
-          message: 'Your subscription is not active. Please update your payment method.',
-          status: subscription.status
+          error: 'Access denied',
+          message: accessCheck.reason,
+          status: accessCheck.subscription?.status
         },
-        { status: 402 }
+        { status: 403 }
       )
     }
+    
+    const subscription = accessCheck.subscription!
     
     // Check customisation limit (for regenerations)
     if (isRegeneration) {
@@ -140,16 +133,13 @@ export async function POST(request: NextRequest) {
     
     // Check usage limit (only for new posts, not regenerations)
     if (!force) {
-      const { checkPostsRemaining } = await import('@/lib/usage/service');
-      const usage = await checkPostsRemaining(userId);
-      
-      if (!usage.allowed) {
+      if (subscription.usageCount >= subscription.usageLimit) {
         return NextResponse.json(
           { 
             error: 'Usage limit reached',
-            message: `You've used all ${usage.postsAllowance} posts for this month. Upgrade your plan for more posts.`,
-            posts_used: usage.postsUsed,
-            posts_allowance: usage.postsAllowance,
+            message: `You've used all ${subscription.usageLimit} posts for this period. Upgrade your plan for more posts.`,
+            posts_used: subscription.usageCount,
+            posts_allowance: subscription.usageLimit,
             plan: subscription.plan
           },
           { status: 402 }
