@@ -139,53 +139,72 @@ export function TodayPanel({
           </div>
         </div>
 
-        {/* Custom Prompt Field with inline Regenerate button */}
-        <section aria-labelledby="custom-instructions" className="w-full">
-          <label id="custom-instructions" htmlFor="customPrompt" className="block text-sm font-medium text-gray-700 mb-2">
+        {/* Main Generate Button - Moved above Custom Instructions */}
+        <div className="flex justify-center md:justify-start">
+          <Button
+            type="button"
+            onClick={handleGenerate}
+            disabled={isGenerating}
+            size="lg"
+            className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+          >
+            {isGenerating ? (
+              <>
+                <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-5 w-5" />
+                Generate New Post
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Custom Instructions Card with embedded Regenerate button */}
+        <div className="rounded-lg border border-gray-300 bg-white p-4 dark:bg-neutral-900">
+          <label htmlFor="customPrompt" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
             Custom Instructions (Optional)
           </label>
-          
-          <div className="w-full">
-            <textarea
-              id="customPrompt"
-              value={customPrompt}
-              onChange={(e) => setCustomPrompt(e.target.value)}
-              placeholder="Add specific instructions for this post... e.g., 'Focus on sustainability', 'Include a customer success story', 'Make it more casual'"
-              className="w-full min-h-[120px] rounded-xl border border-gray-300 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 resize-none text-gray-900 placeholder-gray-400 dark:bg-gray-900/60"
-              disabled={isGenerating}
-            />
-            <p className="mt-1 text-xs text-gray-500">
+          <textarea
+            id="customPrompt"
+            value={customPrompt}
+            onChange={(e) => setCustomPrompt(e.target.value)}
+            placeholder="Add specific instructions for this post... e.g., 'Focus on sustainability', 'Include a customer success story', 'Make it more casual'"
+            className="w-full min-h-[120px] rounded-lg border border-gray-300 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 resize-none text-gray-900 placeholder-gray-400 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            disabled={isGenerating}
+          />
+          <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               These instructions will be added to the AI prompt for this generation only.
             </p>
-
             {todayDraft && (
-              <div className="mt-3 flex">
-                <Button
-                  type="button"
-                  onClick={() => onRegenerate(customPrompt)}
-                  disabled={isGenerating || customisationsLeft === 0}
-                  size="sm"
-                  variant="outline"
-                  className="ml-auto inline-flex items-center justify-center rounded-xl border border-purple-600 px-3 py-2 text-sm font-medium text-purple-600 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full"
-                  aria-live="polite"
-                  title={customisationsLeft === 0 ? "No regenerations left today" : `Updates this draft using your instructions (${customisationsLeft}/2 left)`}
-                >
-                  {isGenerating ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Regenerating...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Apply & Regenerate ({customisationsLeft}/2 left)
-                    </>
-                  )}
-                </Button>
-              </div>
+              <Button
+                type="button"
+                onClick={() => onRegenerate(customPrompt)}
+                disabled={isGenerating || customisationsLeft === 0}
+                size="sm"
+                variant="secondary"
+                className="inline-flex items-center justify-center whitespace-nowrap"
+                aria-live="polite"
+                title={customisationsLeft === 0 ? "No regenerations left today" : `Updates this draft using your instructions (${customisationsLeft}/2 left)`}
+              >
+                {isGenerating ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Applying...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Apply & Regenerate ({customisationsLeft}/2 left)
+                  </>
+                )}
+              </Button>
             )}
           </div>
-        </section>
+        </div>
 
         {/* Feedback Buttons - Always show when draft exists, even if postId is missing */}
         {todayDraft && (
@@ -217,26 +236,7 @@ export function TodayPanel({
 
 
 
-        {/* Main Generate Button (always visible) */}
-        <Button
-          type="button"
-          onClick={handleGenerate}
-          disabled={isGenerating}
-          size="lg"
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
-        >
-          {isGenerating ? (
-            <>
-              <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Sparkles className="mr-2 h-5 w-5" />
-              Generate New Post
-            </>
-          )}
-        </Button>
+
 
         {/* Generated Content Display */}
         {todayDraft && (
