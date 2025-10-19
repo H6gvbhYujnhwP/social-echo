@@ -10,7 +10,7 @@ import { prisma } from '../prisma'
 import { AiGlobalConfig, DEFAULT_AI_GLOBALS, PostType } from './ai-config'
 import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
-import { fetchHeadlines } from '../news/rss'
+import { fetchSectorNews, type ProfileData as NewsProfileData } from '../news/enhanced-news-service'
 import { pickPain } from './pains'
 import { getBucketOfTheDay, getBucketInfo } from './generation-helpers'
 
@@ -201,13 +201,59 @@ export async function buildAndGenerateDraft(opts: {
   
   // 10. Add post-type specific logic
   
-  // NEWS: fetch real headlines and require stance + source
+  // NEWS: fetch real sector-based headlines with fallback to creative generation
   if (effectivePostType === 'news') {
-    const headlines = await fetchHeadlines(sectorFrom(opts.profile), 6)
-    if (headlines.length) {
-      userPrompt += `\n\nCURRENT HEADLINES (pick 1 and craft a take):\n` +
-        headlines.map(h => `- ${h.title} ${h.source ? `(${h.source})` : ''} ${h.link ? `[${h.link}]` : ''}`).join('\n') +
-        `\nRules:\n- Open with a spiky hook.\n- 1–2 lines summarising the story (no hallucinations).\n- 1 implication for ${opts.profile.target_audience}.\n- 1 action.\n- Cite inline like: (Source: Publisher).`
+    // Prepare profile data for news service
+    const newsProfile: NewsProfileData = {
+      industry: opts.profile.industry,
+      products_services: opts.profile.products_services,
+      keywords: opts.profile.keywords,
+      target_audience: opts.profile.target_audience,
+      business_name: opts.profile.business_name
+    }
+    
+    // Fetch sector-relevant news with relevance scoring
+    const newsResult = await fetchSectorNews(newsProfile, {
+      limit: 6,
+      minRelevanceScore: 5,
+      maxDays: 30
+    })
+    
+    console.log('[ai-service] News fetch result:', {
+      hasRelevantNews: newsResult.hasRelevantNews,
+      headlineCount: newsResult.headlines.length,
+      fallbackReason: newsResult.fallbackReason
+    })
+    
+    if (newsResult.hasRelevantNews && newsResult.headlines.length > 0) {
+      // Use real news headlines
+      userPrompt += `\n\nREAL SECTOR NEWS (pick 1 and craft a professional take):\n` +
+        newsResult.headlines.map(h => 
+          `- ${h.title} ${h.source ? `(${h.source})` : ''} ${h.link ? `[${h.link}]` : ''} [Relevance: ${h.relevanceScore || 0}]`
+        ).join('\n') +
+        `\n\nRules for real news posts:\n` +
+        `- Open with a spiky hook that grabs attention\n` +
+        `- 1–2 lines summarising the story accurately (NO hallucinations or fabrications)\n` +
+        `- 1 specific implication for ${opts.profile.target_audience}\n` +
+        `- 1 actionable takeaway or question\n` +
+        `- Cite the source inline like: (Source: ${newsResult.headlines[0]?.source || 'Publisher'})\n` +
+        `- Keep it professional and credible - this is REAL news`
+    } else {
+      // Fallback to creative news-style generation
+      console.log('[ai-service] Falling back to creative news generation:', newsResult.fallbackReason)
+      
+      userPrompt += `\n\nCREATIVE NEWS-STYLE POST (no real headlines available):\n` +
+        `Since no significant sector news was found, generate a forward-looking news-style post inspired by:\n` +
+        `- Current trends in ${opts.profile.industry}\n` +
+        `- Innovations relevant to ${opts.profile.target_audience}\n` +
+        `- Industry insights about ${opts.profile.products_services}\n\n` +
+        `Frame it as:\n` +
+        `- "Industry Watch" or "Sector Spotlight" style\n` +
+        `- Focus on emerging trends or common challenges\n` +
+        `- Include a thought-provoking question or insight\n` +
+        `- Make it feel timely and relevant even without a specific news hook\n` +
+        `- DO NOT fabricate specific news events or cite fake sources\n` +
+        `- Keep the tone professional and forward-looking`
     }
   }
   
