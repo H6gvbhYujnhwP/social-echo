@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Sparkles, Copy, RefreshCw, Edit3, Calendar as CalendarIcon } from 'lucide-react'
+import Link from 'next/link'
 import { Button } from './ui/Button'
 import { Copyable } from './Copyable'
 import { Badge } from './ui/Badge'
@@ -109,9 +110,22 @@ export function TodayPanel({
       <div className="p-6 space-y-6">
         {/* Post Type Selector */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Post Type
-          </label>
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-sm font-medium text-gray-700">
+              Post Type
+            </label>
+            <Link href="/planner">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="inline-flex items-center gap-2"
+              >
+                <CalendarIcon className="h-4 w-4" />
+                Open Planner
+              </Button>
+            </Link>
+          </div>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => onPostTypeChange('auto' as any)}

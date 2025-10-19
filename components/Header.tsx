@@ -49,10 +49,6 @@ export function Header() {
                   Dashboard
                 </Link>
                 <span className="text-gray-400">•</span>
-                <Link href="/planner" className="text-gray-600 hover:text-blue-600">
-                  Planner
-                </Link>
-                <span className="text-gray-400">•</span>
                 <Link href="/train" className="text-gray-600 hover:text-blue-600">
                   Train Again
                 </Link>
@@ -117,13 +113,6 @@ export function Header() {
                   onClick={closeMobileMenu}
                 >
                   Dashboard
-                </Link>
-                <Link
-                  href="/planner"
-                  className="text-gray-600 hover:text-blue-600 py-2"
-                  onClick={closeMobileMenu}
-                >
-                  Planner
                 </Link>
                 <Link
                   href="/train"
