@@ -63,22 +63,25 @@ const toneOptions = [
 
 // Target audience options for multi-select
 const targetAudienceOptions = [
-  { value: 'SME Owners', label: 'SME Owners', description: 'Small-medium business owners and entrepreneurs' },
-  { value: 'C-Suite Executives', label: 'C-Suite Executives', description: 'CEOs, CFOs, CTOs, and senior leadership' },
-  { value: 'Marketing Professionals', label: 'Marketing Professionals', description: 'Marketing managers, directors, and specialists' },
-  { value: 'HR Professionals', label: 'HR Professionals', description: 'HR managers, recruiters, and people ops' },
-  { value: 'Finance Professionals', label: 'Finance Professionals', description: 'Accountants, financial advisors, CFOs' },
-  { value: 'Tech Professionals', label: 'Tech Professionals', description: 'Developers, IT managers, tech leads' },
-  { value: 'Sales Professionals', label: 'Sales Professionals', description: 'Sales reps, BDMs, account executives' },
-  { value: 'Consultants', label: 'Consultants', description: 'Business consultants and advisors' },
-  { value: 'Freelancers', label: 'Freelancers', description: 'Independent contractors and solopreneurs' },
-  { value: 'Startups', label: 'Startups', description: 'Early-stage companies and founders' },
-  { value: 'Legal Professionals', label: 'Legal Professionals', description: 'Lawyers, solicitors, legal advisors' },
-  { value: 'Healthcare Professionals', label: 'Healthcare Professionals', description: 'Doctors, nurses, healthcare administrators' },
-  { value: 'Retail Businesses', label: 'Retail Businesses', description: 'Retail store owners and managers' },
-  { value: 'Hospitality Businesses', label: 'Hospitality Businesses', description: 'Hotels, restaurants, cafes, bars' },
-  { value: 'Real Estate Professionals', label: 'Real Estate Professionals', description: 'Estate agents, property developers' },
-  { value: 'Education Professionals', label: 'Education Professionals', description: 'Teachers, trainers, education administrators' },
+  { value: 'SME Owners', label: 'SME Owners', description: 'Small–medium business owners and entrepreneurs' },
+  { value: 'Startups & Founders', label: 'Startups & Founders', description: 'Early-stage companies and innovators' },
+  { value: 'C-Suite Executives', label: 'C-Suite Executives', description: 'CEOs, CFOs, senior leaders' },
+  { value: 'Marketing Professionals', label: 'Marketing Professionals', description: 'Managers, strategists, content creators' },
+  { value: 'Sales & Business Development', label: 'Sales & Business Development', description: 'Reps, BDMs, growth specialists' },
+  { value: 'Consultants & Advisors', label: 'Consultants & Advisors', description: 'Business and management consultants' },
+  { value: 'Freelancers & Solopreneurs', label: 'Freelancers & Solopreneurs', description: 'Independent professionals and creatives' },
+  { value: 'Retail Businesses', label: 'Retail Businesses', description: 'Shops, boutiques, eCommerce, local traders' },
+  { value: 'Hospitality & Leisure', label: 'Hospitality & Leisure', description: 'Restaurants, cafes, hotels, venues' },
+  { value: 'Health & Wellness Providers', label: 'Health & Wellness Providers', description: 'Gyms, salons, therapists, clinics' },
+  { value: 'Public Services & Community', label: 'Public Services & Community', description: 'Charities, councils, NGOs' },
+  { value: 'Education & Training', label: 'Education & Training', description: 'Schools, tutors, learning centers' },
+  { value: 'Content Creators & Influencers', label: 'Content Creators & Influencers', description: 'YouTubers, bloggers, social creators' },
+  { value: 'Creative Agencies', label: 'Creative Agencies', description: 'Marketing, branding, design studios' },
+  { value: 'Tech & IT Professionals', label: 'Tech & IT Professionals', description: 'Developers, IT managers, tech startups' },
+  { value: 'High Street Customers / The Public', label: 'High Street Customers / The Public', description: 'Everyday consumers and lifestyle brands' },
+  { value: 'Entertainment & Events', label: 'Entertainment & Events', description: 'Musicians, event organizers, venues' },
+  { value: 'Real Estate & Property', label: 'Real Estate & Property', description: 'Estate agents, developers, brokers' },
+  { value: 'Legal & Financial Services', label: 'Legal & Financial Services', description: 'Lawyers, accountants, advisors' },
 ]
 
 interface TrainFormProps {
@@ -162,8 +165,14 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
     if (!formData.products_services.trim()) {
       newErrors.products_services = 'Products/Services description is required'
     }
-    if (!formData.target_audience.trim() && selectedAudiences.length === 0) {
-      newErrors.target_audience = 'Target audience description is required'
+    // Validate target audience: either select from options or provide custom text
+    const customAudience = formData.target_audience.trim()
+    if (selectedAudiences.length === 0 && !customAudience) {
+      newErrors.target_audience = 'Please select at least one audience or describe your own'
+    }
+    // If custom audience is provided, validate it has at least 3 alphanumeric characters
+    if (customAudience && customAudience.replace(/[^a-zA-Z0-9]/g, '').length < 3) {
+      newErrors.target_audience = 'Custom audience must contain at least 3 alphanumeric characters'
     }
     if (!formData.usp.trim()) {
       newErrors.usp = 'USP (Unique Selling Point) is required'
@@ -341,7 +350,7 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
         <p className="text-sm text-gray-300 mb-4">
           Select all that apply (you can choose multiple):
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
           {targetAudienceOptions.map((option) => (
             <button
               key={option.value}
@@ -372,15 +381,22 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
           ))}
         </div>
         
-        {/* Custom Audience Text */}
-        <Textarea
-          label="Additional Audience Details (Optional)"
-          value={formData.target_audience}
-          onChange={(e) => updateField('target_audience', e.target.value)}
-          error={errors.target_audience}
-          placeholder="e.g., Specifically targeting mid-sized law firms in London with 10-50 employees who struggle with manual processes and are looking to adopt AI automation..."
-          rows={3}
-        />
+        {/* Custom Audience Input */}
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-white mb-2">
+            Or describe your audience in your own words
+          </label>
+          <Input
+            value={formData.target_audience}
+            onChange={(e) => updateField('target_audience', e.target.value)}
+            error={errors.target_audience}
+            placeholder="e.g., Local car detailers, independent bakers, parish councils..."
+            maxLength={60}
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            {formData.target_audience.length}/60 characters
+          </p>
+        </div>
         <FieldHelp text="Who are your ideal clients? Select from the options above and/or add specific details: demographics, company size, pain points, goals. The more specific, the better your content will resonate." />
       </div>
 
