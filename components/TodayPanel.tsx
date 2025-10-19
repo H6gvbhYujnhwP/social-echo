@@ -153,7 +153,7 @@ export function TodayPanel({
           </div>
         </div>
 
-        {/* Main Generate Button - Moved above Custom Instructions */}
+        {/* Main Generate Button */}
         <div className="flex justify-center md:justify-start">
           <Button
             type="button"
@@ -175,61 +175,6 @@ export function TodayPanel({
             )}
           </Button>
         </div>
-
-        {/* Custom Instructions Card with embedded Regenerate button */}
-        <div className="rounded-lg border border-gray-300 bg-white p-4 dark:bg-neutral-900">
-          <label htmlFor="customPrompt" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Custom Instructions (Optional)
-          </label>
-          <textarea
-            id="customPrompt"
-            value={customPrompt}
-            onChange={(e) => setCustomPrompt(e.target.value)}
-            placeholder="Add specific instructions for this post... e.g., 'Focus on sustainability', 'Include a customer success story', 'Make it more casual'"
-            className="w-full min-h-[120px] rounded-lg border border-gray-300 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 resize-none text-gray-900 placeholder-gray-400 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-            disabled={isGenerating}
-          />
-          <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              These instructions will be added to the AI prompt for this generation only.
-            </p>
-            {todayDraft && (
-              <Button
-                type="button"
-                onClick={() => onRegenerate(customPrompt)}
-                disabled={isGenerating || customisationsLeft === 0}
-                size="sm"
-                variant="secondary"
-                className="inline-flex items-center justify-center whitespace-nowrap"
-                aria-live="polite"
-                title={customisationsLeft === 0 ? "No regenerations left today" : `Updates this draft using your instructions (${customisationsLeft}/2 left)`}
-              >
-                {isGenerating ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    Applying...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Apply & Regenerate ({customisationsLeft}/2 left)
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Feedback Buttons - Always show when draft exists, even if postId is missing */}
-        {todayDraft && (
-          <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border-2 border-purple-200">
-            <FeedbackButtons 
-              postId={currentPostId || ''} 
-              resetKey={feedbackResetKey}
-              onFeedbackSubmitted={onFeedbackSubmitted}
-            />
-          </div>
-        )}
 
         {/* User Brief Input */}
         {!todayDraft && (
@@ -338,6 +283,57 @@ export function TodayPanel({
                   <p className="text-lg font-semibold text-gray-900">{todayDraft.best_time_uk}</p>
                 </div>
               </div>
+            </div>
+
+            {/* Custom Instructions - Moved inside Post Draft section */}
+            <div className="rounded-lg border border-gray-300 bg-white p-4 dark:bg-neutral-900">
+              <label htmlFor="customPrompt" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Custom Instructions (Optional)
+              </label>
+              <textarea
+                id="customPrompt"
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                placeholder="e.g., Focus more on community engagement or make it sound more professional"
+                className="w-full min-h-[120px] rounded-lg border border-gray-300 bg-white/70 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 resize-none text-gray-900 placeholder-gray-400 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                disabled={isGenerating}
+              />
+              <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Use this box to refine the current draft. Click Apply & Regenerate to apply your changes.
+                </p>
+                <Button
+                  type="button"
+                  onClick={() => onRegenerate(customPrompt)}
+                  disabled={isGenerating || customisationsLeft === 0}
+                  size="sm"
+                  variant="secondary"
+                  className="inline-flex items-center justify-center whitespace-nowrap"
+                  aria-live="polite"
+                  title={customisationsLeft === 0 ? "No regenerations left today" : `Updates this draft using your instructions (${customisationsLeft}/2 left)`}
+                >
+                  {isGenerating ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      Applying...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Apply & Regenerate ({customisationsLeft}/2 left)
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Feedback Buttons - Always show when draft exists, even if postId is missing */}
+            <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border-2 border-purple-200">
+              <FeedbackButtons 
+                postId={currentPostId || ''} 
+                resetKey={feedbackResetKey}
+                onFeedbackSubmitted={onFeedbackSubmitted}
+              />
             </div>
           </motion.div>
         )}
