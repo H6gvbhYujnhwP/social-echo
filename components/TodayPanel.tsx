@@ -27,6 +27,8 @@ interface TodayPanelProps {
   feedbackResetKey?: number | string
   usage?: any
   customisationsLeft?: number
+  isTrialExhausted?: boolean
+  onTrialExhausted?: () => void
 }
 
 export function TodayPanel({ 
@@ -43,7 +45,9 @@ export function TodayPanel({
   onFeedbackSubmitted,
   feedbackResetKey,
   usage,
-  customisationsLeft = 2
+  customisationsLeft = 2,
+  isTrialExhausted = false,
+  onTrialExhausted
 }: TodayPanelProps) {
   const [customPrompt, setCustomPrompt] = useState('')
   const todayPlan = getTodayPostType()
@@ -154,26 +158,42 @@ export function TodayPanel({
         </div>
 
         {/* Main Generate Button */}
-        <div className="flex justify-center md:justify-start">
-          <Button
-            type="button"
-            onClick={handleGenerate}
-            disabled={isGenerating}
-            size="lg"
-            className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
-          >
-            {isGenerating ? (
-              <>
-                <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-5 w-5" />
-                Generate New Post
-              </>
-            )}
-          </Button>
+        <div className="space-y-2">
+          <div className="flex justify-center md:justify-start">
+            <Button
+              type="button"
+              onClick={() => {
+                if (isTrialExhausted) {
+                  onTrialExhausted?.()
+                } else {
+                  handleGenerate()
+                }
+              }}
+              disabled={isGenerating || isTrialExhausted}
+              size="lg"
+              className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+              title={isTrialExhausted ? "Trial limit reached – upgrade to continue" : undefined}
+            >
+              {isGenerating ? (
+                <>
+                  <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  Generate New Post
+                </>
+              )}
+            </Button>
+          </div>
+          
+          {/* Trial exhausted notice */}
+          {isTrialExhausted && (
+            <p className="text-sm text-yellow-400 text-center md:text-left">
+              Trial limit reached. <Link href="/account?tab=billing" className="underline hover:text-yellow-300">Upgrade to continue</Link>.
+            </p>
+          )}
         </div>
 
         {/* User Brief Input */}
@@ -304,13 +324,25 @@ export function TodayPanel({
                   <div className="relative z-10">
                     <Button
                       type="button"
-                      onClick={() => onRegenerate(customPrompt)}
-                      disabled={isGenerating || !customPrompt.trim() || customisationsLeft === 0 || !currentPostId}
+                      onClick={() => {
+                        if (isTrialExhausted) {
+                          onTrialExhausted?.()
+                        } else {
+                          onRegenerate(customPrompt)
+                        }
+                      }}
+                      disabled={isGenerating || !customPrompt.trim() || customisationsLeft === 0 || !currentPostId || isTrialExhausted}
                       size="sm"
                       variant="primary"
                       className="min-w-[220px] inline-flex items-center justify-center whitespace-nowrap bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md"
                       aria-live="polite"
-                      title={customisationsLeft === 0 ? "No regenerations left today" : `Updates this draft using your instructions (${customisationsLeft}/2 left)`}
+                      title={
+                        isTrialExhausted 
+                          ? "Trial limit reached – upgrade to continue" 
+                          : customisationsLeft === 0 
+                            ? "No regenerations left today" 
+                            : `Updates this draft using your instructions (${customisationsLeft}/2 left)`
+                      }
                     >
                       {isGenerating ? (
                         <>

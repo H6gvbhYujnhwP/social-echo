@@ -9,6 +9,7 @@ import { TodayPanel } from '../../components/TodayPanel'
 import { ImagePanel } from '../../components/ImagePanel'
 import { LearningProgress, type LearningProgressRef } from '../../components/LearningProgress'
 import HistoryDrawer from '../../components/HistoryDrawer'
+import TrialExhaustedModal from '../../components/TrialExhaustedModal'
 import { UserProfile, getProfile, getOrCreatePlanner, savePostHistory, type Planner, type PostType } from '../../lib/localstore'
 import Link from 'next/link'
 
@@ -43,6 +44,8 @@ export default function DashboardPage() {
   const [subscription, setSubscription] = useState<any>(null)
   const [showTrialBanner, setShowTrialBanner] = useState(false)
   const [usage, setUsage] = useState<any>(null)
+  const [showTrialExhaustedModal, setShowTrialExhaustedModal] = useState(false)
+  const [isTrialExhausted, setIsTrialExhausted] = useState(false)
 
   // Check authentication
   useEffect(() => {
@@ -90,7 +93,13 @@ export default function DashboardPage() {
           setSubscription(subData)
           // Show trial banner for both 'trial' and 'trialing' status
           setShowTrialBanner(subData.isTrial === true)
-          console.log('Subscription loaded:', subData.status, subData.plan, 'isTrial:', subData.isTrial)
+          
+          // Check if trial is exhausted
+          const remaining = Math.max(0, (subData.usageLimit ?? 0) - (subData.usageCount ?? 0))
+          const isTrial = subData.status === 'trial'
+          setIsTrialExhausted(isTrial && remaining === 0)
+          
+          console.log('Subscription loaded:', subData.status, subData.plan, 'isTrial:', subData.isTrial, 'remaining:', remaining)
         }
         
         // Load usage data
@@ -286,9 +295,14 @@ export default function DashboardPage() {
 
         // Usage limit reached (402 Payment Required)
         if (response.status === 402) {
-          const message = errorData.message || 'Usage limit reached. Please upgrade your plan.'
-          if (confirm(`${message}\n\nWould you like to upgrade now?`)) {
-            router.push('/account')
+          // Check if it's a trial exhaustion
+          if (errorData.error === 'TRIAL_EXHAUSTED' || errorData.isTrial) {
+            setShowTrialExhaustedModal(true)
+          } else {
+            const message = errorData.message || 'Usage limit reached. Please upgrade your plan.'
+            if (confirm(`${message}\n\nWould you like to upgrade now?`)) {
+              router.push('/account')
+            }
           }
           setIsGenerating(false)
           return
@@ -667,6 +681,8 @@ export default function DashboardPage() {
               feedbackResetKey={feedbackResetKey}
               usage={usage}
               customisationsLeft={customisationsLeft}
+              isTrialExhausted={isTrialExhausted}
+              onTrialExhausted={() => setShowTrialExhaustedModal(true)}
             />
 
             {/* Right Column: Image Generation */}
@@ -698,6 +714,12 @@ export default function DashboardPage() {
         onClose={() => setIsHistoryDrawerOpen(false)}
         onRestore={handleRestoreHistory}
         onPreview={handlePreviewHistory}
+      />
+      
+      {/* Trial Exhausted Modal */}
+      <TrialExhaustedModal
+        open={showTrialExhaustedModal}
+        onClose={() => setShowTrialExhaustedModal(false)}
       />
     </div>
   )

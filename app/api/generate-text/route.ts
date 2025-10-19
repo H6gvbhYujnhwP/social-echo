@@ -134,6 +134,22 @@ export async function POST(request: NextRequest) {
     // Check usage limit (only for new posts, not regenerations)
     if (!force) {
       if (subscription.usageCount >= subscription.usageLimit) {
+        // Special error for trial users
+        if (subscription.status === 'trial') {
+          return NextResponse.json(
+            { 
+              error: 'TRIAL_EXHAUSTED',
+              message: `You've reached the end of your trial. Upgrade to continue creating posts.`,
+              posts_used: subscription.usageCount,
+              posts_allowance: subscription.usageLimit,
+              plan: subscription.plan,
+              isTrial: true
+            },
+            { status: 402 }
+          )
+        }
+        
+        // Regular usage limit error for active subscriptions
         return NextResponse.json(
           { 
             error: 'Usage limit reached',
