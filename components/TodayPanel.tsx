@@ -297,32 +297,34 @@ export function TodayPanel({
                   className="w-full min-h-[100px] rounded-lg border border-gray-300 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 resize-none text-gray-900 placeholder-gray-400"
                   disabled={isGenerating}
                 />
-                <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <p className="text-xs text-gray-500">
                     Use this box to refine the current draft. Click Apply & Regenerate to apply your changes.
                   </p>
-                  <Button
-                    type="button"
-                    onClick={() => onRegenerate(customPrompt)}
-                    disabled={isGenerating || !customPrompt.trim() || customisationsLeft === 0}
-                    size="sm"
-                    variant="secondary"
-                    className="inline-flex items-center justify-center whitespace-nowrap"
-                    aria-live="polite"
-                    title={customisationsLeft === 0 ? "No regenerations left today" : `Updates this draft using your instructions (${customisationsLeft}/2 left)`}
-                  >
-                    {isGenerating ? (
-                      <>
-                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        Applying...
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw className="mr-2 h-4 w-4" />
-                        Apply & Regenerate ({customisationsLeft}/2 left)
-                      </>
-                    )}
-                  </Button>
+                  <div className="relative z-10">
+                    <Button
+                      type="button"
+                      onClick={() => onRegenerate(customPrompt)}
+                      disabled={isGenerating || !customPrompt.trim() || customisationsLeft === 0 || !currentPostId}
+                      size="sm"
+                      variant="primary"
+                      className="min-w-[220px] inline-flex items-center justify-center whitespace-nowrap bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md"
+                      aria-live="polite"
+                      title={customisationsLeft === 0 ? "No regenerations left today" : `Updates this draft using your instructions (${customisationsLeft}/2 left)`}
+                    >
+                      {isGenerating ? (
+                        <>
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                          Refining…
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          Apply & Regenerate ({customisationsLeft}/2 left)
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
 
