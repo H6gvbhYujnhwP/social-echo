@@ -18,7 +18,7 @@ const RegenerateSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { postId: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     // Check authentication
@@ -32,7 +32,7 @@ export async function POST(
     }
     
     const userId = (session.user as any).id
-    const postId = params.postId
+    const postId = params.id
     
     // Assert API key
     assertOpenAIKey()
