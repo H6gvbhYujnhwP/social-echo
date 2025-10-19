@@ -36,6 +36,7 @@ export default function DashboardPage() {
   const [customisationsLeft, setCustomisationsLeft] = useState(2)
   const [feedbackResetKey, setFeedbackResetKey] = useState(0)
   const learningProgressRef = useRef<LearningProgressRef>(null)
+  const isRegeneratingRef = useRef(false) // Guard against double clicks
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState(false)
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null)
   const [generatedImageStyle, setGeneratedImageStyle] = useState<string | null>(null)
@@ -391,29 +392,44 @@ export default function DashboardPage() {
 
   // Handle regeneration with custom instructions
   const handleRegenerate = async (customInstructions: string) => {
-    if (!currentPostId) {
-      console.error('[dashboard] Cannot regenerate: no currentPostId');
+    // Validate input
+    const trimmedInstructions = customInstructions.trim()
+    if (!trimmedInstructions) {
+      alert('Please add a short instruction before regenerating.');
       return;
     }
 
+    if (!currentPostId) {
+      console.error('[dashboard] Cannot regenerate: no currentPostId');
+      alert('No draft found. Please generate a post first.');
+      return;
+    }
+
+    // Prevent double clicks
+    if (isRegeneratingRef.current) {
+      console.log('[dashboard] Regeneration already in progress, ignoring click');
+      return;
+    }
+
+    // Set in-flight guard
+    isRegeneratingRef.current = true;
     setIsGenerating(true);
 
+    // Store previous count for rollback on error
+    const previousCount = customisationsLeft;
+
     try {
-      const response = await fetch('/api/generate-text', {
+      // Call dedicated regenerate endpoint
+      const response = await fetch(`/api/posts/${currentPostId}/regenerate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...profile,
-          force: true,
-          postId: currentPostId,
-          user_prompt: customInstructions,
-          post_type: postTypeMode === 'auto' ? 'informational' : postTypeMode,
-          platform: 'linkedin' as const
+          customInstruction: trimmedInstructions
         })
       });
 
       if (!response.ok) {
-        // Safe JSON parsing
+        // Parse error
         let errorData: any = {};
         try {
           errorData = await response.json();
@@ -421,35 +437,42 @@ export default function DashboardPage() {
           errorData = {};
         }
 
-        // Precise error messages based on status and code
-        if (response.status === 429 && errorData.code === 'CUSTOMISATIONS_EXHAUSTED') {
-          alert("You've used both regenerations for this draft. Generate a new post to continue.");
+        // Handle specific errors
+        if (response.status === 429) {
+          alert(errorData.message || "You've used both regenerations for this draft. Generate a new post to continue.");
         } else if (response.status === 404) {
           alert('Draft not found. Generate a new post first.');
-        } else if (response.status === 400 && errorData.code === 'BAD_REGEN_REQUEST') {
-          alert('Regeneration needs a draft ID. Generate first, then try again.');
-        } else if (response.status === 400 && errorData.code === 'INVALID_INPUT') {
-          // Show specific field error from Zod validation
-          const fieldName = errorData.field || 'input';
-          alert(`Invalid ${fieldName}: ${errorData.message}`);
+        } else if (response.status === 400) {
+          alert(errorData.message || 'Invalid request. Please try again.');
+        } else if (response.status === 403) {
+          alert(errorData.error || 'Access denied. Please check your subscription.');
         } else {
           alert(errorData.message || 'Failed to regenerate content. Please try again.');
         }
+        
+        // Restore previous count on error
+        setCustomisationsLeft(previousCount);
         return;
       }
 
       const data = await response.json();
+      
+      // Update draft in place (no scroll jump)
       setTodayDraft(data);
-
-      // Refresh customisation usage
-      const customisationResponse = await fetch(`/api/posts/${currentPostId}/customisation-usage`, {
-        cache: 'no-store'
-      });
-      if (customisationResponse.ok) {
-        const customisationData = await customisationResponse.json();
-        setCustomisationsLeft(customisationData.customisationsLeft || 0);
+      
+      // Update customisations left from server response (source of truth)
+      if (typeof data.customisationsLeft === 'number') {
+        setCustomisationsLeft(data.customisationsLeft);
+        console.log('[dashboard] Customisations left:', data.customisationsLeft);
+      } else {
+        // Fallback: decrement using functional update
+        setCustomisationsLeft((n) => Math.max(0, n - 1));
       }
 
+      // Show success toast
+      const regensUsed = 2 - (data.customisationsLeft || 0);
+      console.log(`[dashboard] Regeneration successful (${regensUsed}/2 used)`);
+      
       // Refresh usage counter
       router.refresh();
       const usageResponse = await fetch('/api/usage', {
@@ -463,8 +486,12 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Regeneration error:', error);
       alert('Failed to regenerate content. Please try again.');
+      
+      // Restore previous count on error
+      setCustomisationsLeft(previousCount);
     } finally {
       setIsGenerating(false);
+      isRegeneratingRef.current = false; // Clear in-flight guard
     }
   }
 

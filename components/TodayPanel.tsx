@@ -168,7 +168,7 @@ export function TodayPanel({
                   variant="outline"
                   className="ml-auto inline-flex items-center justify-center rounded-xl border border-purple-600 px-3 py-2 text-sm font-medium text-purple-600 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full"
                   aria-live="polite"
-                  title={customisationsLeft === 0 ? "Regeneration limit reached (2/2 used)" : "Updates this draft using your instructions. 2 attempts per draft."}
+                  title={customisationsLeft === 0 ? "No regenerations left today" : `Updates this draft using your instructions (${customisationsLeft}/2 left)`}
                 >
                   {isGenerating ? (
                     <>
