@@ -344,9 +344,9 @@ export async function POST(req: NextRequest) {
         include: { user: true }
       });
       
-      if (userSub && userSub.status === 'trialing') {
-        // Trial converted to active subscription
-        console.log('[webhook] Converting trial to active subscription:', userSub.id);
+      if (userSub && (userSub.status === 'trialing' || userSub.status === 'trial')) {
+        // Trial converted to active subscription (both Stripe trials and admin trials)
+        console.log('[webhook] Converting trial to active subscription:', userSub.id, 'from status:', userSub.status);
         
         // Validate subId before fetching
         if (!subId) {

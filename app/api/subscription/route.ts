@@ -20,6 +20,12 @@ export async function GET() {
     return NextResponse.json({ error: 'No subscription found' }, { status: 404 });
   }
 
+  // Check if trial has expired
+  const isTrial = user.subscription.status === 'trial'
+  const isTrialing = user.subscription.status === 'trialing'
+  const trialEnd = user.subscription.trialEnd
+  const isTrialExpired = isTrial && trialEnd && new Date() > trialEnd
+
   return NextResponse.json({
     plan: user.subscription.plan,
     status: user.subscription.status,
@@ -27,5 +33,8 @@ export async function GET() {
     usageLimit: user.subscription.usageLimit,
     currentPeriodStart: user.subscription.currentPeriodStart,
     currentPeriodEnd: user.subscription.currentPeriodEnd,
+    trialEnd: user.subscription.trialEnd,
+    isTrial: isTrial || isTrialing,
+    isTrialExpired,
   });
 }

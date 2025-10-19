@@ -87,8 +87,9 @@ export default function DashboardPage() {
         if (subResponse.ok) {
           const subData = await subResponse.json()
           setSubscription(subData)
-          setShowTrialBanner(subData.status === 'trialing')
-          console.log('Subscription loaded:', subData.status, subData.plan)
+          // Show trial banner for both 'trial' and 'trialing' status
+          setShowTrialBanner(subData.isTrial === true)
+          console.log('Subscription loaded:', subData.status, subData.plan, 'isTrial:', subData.isTrial)
         }
         
         // Load usage data
@@ -274,7 +275,36 @@ export default function DashboardPage() {
       })
 
       if (!response.ok) {
-        throw new Error(`Failed to generate content (HTTP ${response.status})`)
+        // Handle specific error cases
+        let errorData: any = {}
+        try {
+          errorData = await response.json()
+        } catch {
+          errorData = {}
+        }
+
+        // Usage limit reached (402 Payment Required)
+        if (response.status === 402) {
+          const message = errorData.message || 'Usage limit reached. Please upgrade your plan.'
+          if (confirm(`${message}\n\nWould you like to upgrade now?`)) {
+            router.push('/account')
+          }
+          setIsGenerating(false)
+          return
+        }
+
+        // Trial expired or access denied (403 Forbidden)
+        if (response.status === 403) {
+          const message = errorData.message || 'Access denied. Please check your subscription status.'
+          if (confirm(`${message}\n\nWould you like to go to your account settings?`)) {
+            router.push('/account')
+          }
+          setIsGenerating(false)
+          return
+        }
+
+        // Other errors
+        throw new Error(errorData.message || `Failed to generate content (HTTP ${response.status})`)
       }
 
       const data = await response.json()
@@ -323,7 +353,7 @@ export default function DashboardPage() {
       // Refresh usage counter after successful generation
       router.refresh()
       
-      // Also manually refetch usage for immediate update
+      // Also manually refetch usage and subscription for immediate update
       try {
         const usageResponse = await fetch('/api/usage', {
           cache: 'no-store',
@@ -334,8 +364,19 @@ export default function DashboardPage() {
           setUsage(usageData)
           console.log('[dashboard] Usage updated after generation:', usageData.posts_used, '/', usageData.posts_allowance)
         }
+        
+        // Also refetch subscription to update usage counter in banner
+        const subResponse = await fetch('/api/subscription', {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        })
+        if (subResponse.ok) {
+          const subData = await subResponse.json()
+          setSubscription(subData)
+          console.log('[dashboard] Subscription updated after generation:', subData.usageCount, '/', subData.usageLimit)
+        }
       } catch (err) {
-        console.error('[dashboard] Failed to refetch usage:', err)
+        console.error('[dashboard] Failed to refetch usage/subscription:', err)
       }
       
       // Clear generating state
@@ -539,48 +580,79 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Trial Banner */}
+      {/* Trial Status Banner */}
       {showTrialBanner && subscription && (
-        <div className="relative z-10 px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 pointer-events-auto">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <span className="text-2xl">🎉</span>
-              <div>
-                <p className="text-white font-semibold">
-                  Free trial active — You'll be billed on {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-GB', { 
-                    day: 'numeric', 
-                    month: 'long', 
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })} unless you cancel.
-                </p>
-                <div className="flex items-center space-x-4 mt-1">
-                  <a 
-                    href="/api/billing/portal" 
-                    className="text-white/90 hover:text-white text-sm underline"
-                  >
-                    Manage billing
-                  </a>
-                  <span className="text-white/50">•</span>
-                  <a 
-                    href="/api/billing/portal" 
-                    className="text-white/90 hover:text-white text-sm underline"
-                  >
-                    Cancel trial
-                  </a>
+        <div className="relative z-10 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 pointer-events-auto">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-start space-x-3">
+                <span className="text-2xl">🎯</span>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">
+                    {subscription.status === 'trial' ? 'Trial Account' : 'Free Trial Active'} — {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)} Plan
+                  </p>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-white/90 text-sm font-medium">
+                        Posts: {subscription.usageCount}/{subscription.usageLimit}
+                      </span>
+                      <div className="w-24 h-2 bg-white/20 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-white transition-all duration-300"
+                          style={{ width: `${Math.min((subscription.usageCount / subscription.usageLimit) * 100, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    {subscription.trialEnd && (
+                      <>
+                        <span className="hidden sm:block text-white/50">•</span>
+                        <span className="text-white/90 text-sm">
+                          {subscription.isTrialExpired ? (
+                            <span className="text-red-200 font-semibold">Trial Expired</span>
+                          ) : (
+                            <>Expires: {new Date(subscription.trialEnd).toLocaleDateString('en-GB', { 
+                              day: 'numeric', 
+                              month: 'short', 
+                              year: 'numeric'
+                            })}</>
+                          )}
+                        </span>
+                      </>
+                    )}
+                    {subscription.status === 'trialing' && subscription.currentPeriodEnd && (
+                      <>
+                        <span className="hidden sm:block text-white/50">•</span>
+                        <span className="text-white/90 text-sm">
+                          Billing starts: {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-GB', { 
+                            day: 'numeric', 
+                            month: 'short'
+                          })}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
+              <div className="flex items-center space-x-3">
+                {subscription.usageCount >= subscription.usageLimit && (
+                  <Link
+                    href="/account"
+                    className="px-4 py-2 bg-white text-purple-600 font-semibold rounded-lg hover:bg-white/90 transition-colors text-sm"
+                  >
+                    Upgrade Now
+                  </Link>
+                )}
+                <button
+                  onClick={() => setShowTrialBanner(false)}
+                  className="text-white/80 hover:text-white transition-colors"
+                  aria-label="Dismiss banner"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => setShowTrialBanner(false)}
-              className="text-white/80 hover:text-white transition-colors"
-              aria-label="Dismiss banner"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
           </div>
         </div>
       )}
