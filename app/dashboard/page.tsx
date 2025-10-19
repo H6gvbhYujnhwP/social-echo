@@ -592,8 +592,11 @@ export default function DashboardPage() {
               <div className="flex items-start space-x-3">
                 <span className="text-2xl">🎯</span>
                 <div className="flex-1">
-                  <p className="text-white font-semibold">
-                    {subscription.status === 'trial' ? 'Trial Account' : 'Free Trial Active'} — {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)} Plan
+                  <p className="text-sm text-white/70 mb-1">
+                    {isTrialExhausted 
+                      ? 'Trial complete — upgrade to keep posting' 
+                      : (subscription.status === 'trial' ? 'Trial Account' : 'Free Trial Active') + ' — ' + subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1) + ' Plan'
+                    }
                   </p>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-1">
                     <div className="flex items-center space-x-2">
@@ -602,12 +605,11 @@ export default function DashboardPage() {
                       </span>
                       <div className="w-24 h-2 bg-white/20 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-white transition-all duration-300"
+                          className={`h-full transition-all duration-300 ${isTrialExhausted ? 'bg-red-400' : 'bg-white'}`}
                           style={{ width: `${Math.min((subscription.usageCount / subscription.usageLimit) * 100, 100)}%` }}
                         />
                       </div>
-                    </div>
-                    {subscription.trialEnd && (
+                    </div>                   {subscription.trialEnd && (
                       <>
                         <span className="hidden sm:block text-white/50">•</span>
                         <span className="text-white/90 text-sm">
@@ -638,12 +640,12 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                {subscription.usageCount >= subscription.usageLimit && (
+                {isTrialExhausted && (
                   <Link
-                    href="/account"
+                    href="/account?tab=billing"
                     className="px-4 py-2 bg-white text-purple-600 font-semibold rounded-lg hover:bg-white/90 transition-colors text-sm"
                   >
-                    Upgrade Now
+                    Upgrade
                   </Link>
                 )}
                 <button
