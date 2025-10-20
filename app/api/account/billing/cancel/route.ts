@@ -58,13 +58,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update our database - always set to 'canceled' immediately
-    // This ensures admin panel shows correct status right away
+    // Update our database - let webhook handle status change
+    // Only update cancelAtPeriodEnd flag here
     await prisma.subscription.update({
       where: { id: subscription.id },
       data: {
-        status: 'canceled',
-        cancelAtPeriodEnd: canceledSubscription.cancel_at_period_end || false
+        status: canceledSubscription.cancel_at_period_end ? 'active' : 'canceled',
+        cancelAtPeriodEnd: !!canceledSubscription.cancel_at_period_end
       }
     });
 

@@ -5,6 +5,6 @@ import Stripe from 'stripe';
 // This allows the build to succeed even without Stripe configured
 export const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2025-08-27.basil' as any, // Match webhook version
+      apiVersion: '2024-06-20' as any, // Stable version
     })
   : null as any as Stripe; // Type assertion for build compatibility

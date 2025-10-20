@@ -341,19 +341,45 @@ function AccountPageInner() {
   }
 
   const handleUpgradeConfirm = async () => {
-    // Call custom upgrade endpoint
-    const res = await fetch('/api/account/upgrade-to-pro', {
-      method: 'POST'
-    })
+    try {
+      // If user has an active subscription, use change-plan for proration
+      if (subscription && ['active', 'trialing'].includes(subscription.status)) {
+        const res = await fetch('/api/account/billing/change-plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ targetPlan: 'pro' })
+        })
 
-    const data = await res.json()
+        const data = await res.json()
 
-    if (!res.ok) {
-      throw new Error(data.error || 'Upgrade failed')
+        if (!res.ok) {
+          throw new Error(data.error || 'Upgrade failed')
+        }
+
+        // Success - redirect to account page with success message
+        window.location.href = '/account?tab=billing&upgraded=pro'
+      } else {
+        // No active subscription - redirect to Stripe Checkout
+        const res = await fetch('/api/billing/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: 'SocialEcho_Pro' })
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Checkout failed')
+        }
+
+        // Redirect to Stripe Checkout
+        if (data.url) {
+          window.location.href = data.url
+        }
+      }
+    } catch (error) {
+      throw error
     }
-
-    // Success - redirect to account page with success message
-    window.location.href = '/account?tab=billing&upgraded=pro'
   }
 
   const handleUpdatePaymentMethod = async () => {
