@@ -44,8 +44,8 @@ export async function POST(request: NextRequest) {
 
     if (!subscription.stripeSubscriptionId) {
       return NextResponse.json(
-        { error: 'No Stripe subscription found' },
-        { status: 400 }
+        { needsCheckout: true, error: 'No Stripe subscription found' },
+        { status: 409 }
       );
     }
 
@@ -65,37 +65,64 @@ export async function POST(request: NextRequest) {
     const stripeSubscription: Stripe.Response<Stripe.Subscription> = 
       await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId);
 
-    // Update subscription with new price
+    // Option A: Reset cycle now, charge Pro now only (no double billing)
     const updatedSubscription = await stripe.subscriptions.update(
       subscription.stripeSubscriptionId,
       {
+        cancel_at_period_end: false,
         items: [{
           id: stripeSubscription.items.data[0].id,
           price: targetPriceId,
         }],
-        proration_behavior: 'create_prorations', // Default Stripe proration
+        billing_cycle_anchor: 'now',
+        proration_behavior: 'none', // No overlap, no extra line items
+        trial_end: 'now', // End any existing trial immediately
+        payment_behavior: 'default_incomplete'
       }
     );
 
+    // Immediately invoice and pay (so user is upgraded right now)
+    try {
+      const invoice = await stripe.invoices.create({
+        customer: updatedSubscription.customer as string,
+        subscription: updatedSubscription.id,
+        collection_method: 'charge_automatically'
+      });
+      await stripe.invoices.pay(invoice.id);
+      
+      console.log('[billing] Immediate invoice created and paid', {
+        invoiceId: invoice.id,
+        amount: invoice.amount_due
+      });
+    } catch (invoiceError: any) {
+      console.error('[billing] Invoice creation/payment failed:', invoiceError);
+      // Continue anyway - webhook will handle payment
+    }
+
     // Update our database
+    const newUsageLimit = validated.targetPlan === 'starter' ? 8 : 30;
     await prisma.subscription.update({
       where: { id: subscription.id },
       data: {
         plan: validated.targetPlan,
-        usageLimit: validated.targetPlan === 'starter' ? 8 : 20,
+        usageLimit: newUsageLimit,
+        usageCount: 0, // Reset usage count on plan change
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       }
     });
 
-    console.log('[billing] Plan changed', {
+    console.log('[billing] Plan changed successfully', {
       userId: user.id,
       from: subscription.plan,
-      to: validated.targetPlan
+      to: validated.targetPlan,
+      newLimit: newUsageLimit
     });
 
     return NextResponse.json({
       ok: true,
       newPlan: validated.targetPlan,
-      proratedAmount: updatedSubscription.latest_invoice
+      subscription: updatedSubscription
     });
 
   } catch (error: any) {

@@ -53,6 +53,17 @@ export async function POST(request: NextRequest) {
     // Determine if this is an agency plan
     const isAgencyPlan = plan === 'SocialEcho_Agency'
 
+    // Prevent creating new subscription if user already has an active one
+    if (!isAgencyPlan && user.subscription) {
+      const activeStatuses = ['active', 'trialing', 'past_due']
+      if (activeStatuses.includes(user.subscription.status)) {
+        return NextResponse.json({ 
+          needsChangePlan: true,
+          error: 'You already have an active subscription. Use change-plan instead.' 
+        }, { status: 409 })
+      }
+    }
+
     // For agency plans, only agency owners can checkout
     if (isAgencyPlan && user.role !== 'AGENCY_ADMIN') {
       return NextResponse.json({ 

@@ -136,16 +136,16 @@ export default function UpgradeModal({ isOpen, onClose, onConfirm, isTrialing }:
                         ) : (
                           <>
                             <p>
-                              • <strong>No refunds</strong> will be issued for unused Starter time
+                              • Your plan will be <strong>switched to Pro</strong> immediately
                             </p>
                             <p>
-                              • You will be charged <strong>£49.99 immediately</strong>
+                              • You will be charged <strong>£49.99 today</strong>
                             </p>
                             <p>
                               • A new billing cycle starts today
                             </p>
                             <p>
-                              • Your Starter subscription will be cancelled
+                              • Your usage limit resets to 30 posts/month
                             </p>
                           </>
                         )}
@@ -166,7 +166,7 @@ export default function UpgradeModal({ isOpen, onClose, onConfirm, isTrialing }:
                     />
                   </div>
                   <span className="text-white/90 text-sm leading-relaxed break-words min-w-0">
-                    I understand that {isTrialing ? 'my trial will end and I will be' : 'there are no refunds for unused Starter time and I will be'} charged £49.99 today, starting a new monthly billing cycle.
+                    I understand that {isTrialing ? 'my trial will end and I will be' : 'my plan will be switched to Pro and I will be'} charged £49.99 today, starting a new monthly billing cycle.
                   </span>
                 </label>
 
