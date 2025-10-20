@@ -97,7 +97,8 @@ function AccountPageInner() {
       .then(data => {
         setSubscription(data)
         setSelectedPlan(data.plan === 'pro' ? 'pro' : 'starter')
-        setIsTrialing(data.status === 'trialing')
+        // Check for both Stripe trials ('trialing') and admin trials ('trial')
+        setIsTrialing(data.status === 'trialing' || data.status === 'trial')
         setLoading(false)
       })
       .catch(err => {
@@ -274,6 +275,35 @@ function AccountPageInner() {
     } catch (err) {
       setMessage({ type: 'error', text: 'Failed to cancel subscription' })
     } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleSubscribe = async () => {
+    // For trial users, create a checkout session
+    setActionLoading(true)
+    setMessage(null)
+
+    try {
+      // Convert plan name to Stripe format (starter -> SocialEcho_Starter)
+      const stripePlan = `SocialEcho_${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)}`
+      
+      const res = await fetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: stripePlan })
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.url) {
+        window.location.href = data.url
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed to create checkout session' })
+        setActionLoading(false)
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Failed to create checkout session' })
       setActionLoading(false)
     }
   }
@@ -722,13 +752,13 @@ function AccountPageInner() {
                       </div>
                     </label>
                   </div>
-                <button
-                  onClick={handleChangePlan}
-                  disabled={actionLoading || selectedPlan === subscription?.plan}
-                  className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-                  >
-                    {actionLoading ? 'Changing...' : 'Change Plan'}
-                  </button>
+                 <button
+                   onClick={isTrialing ? handleSubscribe : handleChangePlan}
+                   disabled={actionLoading || (!isTrialing && selectedPlan === subscription?.plan)}
+                   className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                   >
+                     {actionLoading ? (isTrialing ? 'Loading...' : 'Changing...') : (isTrialing ? 'Subscribe' : 'Change Plan')}
+                   </button>
                 </div>
               </motion.div>
 

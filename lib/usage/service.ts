@@ -114,6 +114,14 @@ export async function trackPostGeneration(params: {
         }
       });
 
+      // CRITICAL: Also increment subscription.usageCount for access control
+      await tx.subscription.update({
+        where: { userId },
+        data: {
+          usageCount: { increment: 1 }
+        }
+      });
+
       console.log(`[trackPostGeneration] First generation tracked for post ${postId}, usage: ${usageCounter.postsUsed}`);
 
       return { success: true };
