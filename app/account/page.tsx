@@ -317,27 +317,40 @@ function AccountPageInner() {
       return
     }
 
-    // For other plan changes (downgrades), use the portal
-    setActionLoading(true)
-    setMessage(null)
+    // Check if this is a downgrade from Pro to Starter
+    if (subscription?.plan === 'pro' && selectedPlan === 'starter') {
+      // Schedule downgrade at period end
+      setActionLoading(true)
+      setMessage(null)
 
-    try {
-      const res = await fetch('/api/account/billing/portal', {
-        method: 'POST'
-      })
+      try {
+        const res = await fetch('/api/account/billing/downgrade', {
+          method: 'POST'
+        })
 
-      const data = await res.json()
+        const data = await res.json()
 
-      if (res.ok && data.url) {
-        window.location.href = data.url
-      } else {
-        setMessage({ type: 'error', text: 'Failed to open billing portal' })
+        if (res.ok) {
+          const effectiveDate = new Date(data.effectiveDate).toLocaleDateString('en-GB')
+          setMessage({ 
+            type: 'success', 
+            text: `Downgrade scheduled. Your plan will switch to Starter on ${effectiveDate}. Next bill will be £29.99.` 
+          })
+          // Refresh subscription data
+          window.location.reload()
+        } else {
+          setMessage({ type: 'error', text: data.error || 'Failed to schedule downgrade' })
+          setActionLoading(false)
+        }
+      } catch (err) {
+        setMessage({ type: 'error', text: 'Failed to schedule downgrade' })
         setActionLoading(false)
       }
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Failed to open billing portal' })
-      setActionLoading(false)
+      return
     }
+
+    // No change or invalid change
+    setMessage({ type: 'error', text: 'Invalid plan change' })
   }
 
   const handleUpgradeConfirm = async () => {
