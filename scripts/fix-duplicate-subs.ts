@@ -72,13 +72,16 @@ async function findDuplicateSubscriptions(identifier: string): Promise<Duplicate
   return {
     customerId,
     customerEmail,
-    subscriptions: activeSubscriptions.map(sub => ({
-      id: sub.id,
-      status: sub.status,
-      plan: sub.items.data[0]?.price.id || 'unknown',
-      created: sub.created,
-      current_period_end: sub.current_period_end
-    }))
+    subscriptions: activeSubscriptions.map(sub => {
+      const stripeSub = sub as any; // Type assertion for Stripe SDK compatibility
+      return {
+        id: stripeSub.id,
+        status: stripeSub.status,
+        plan: stripeSub.items.data[0]?.price.id || 'unknown',
+        created: stripeSub.created,
+        current_period_end: stripeSub.current_period_end || 0
+      };
+    })
   };
 }
 
