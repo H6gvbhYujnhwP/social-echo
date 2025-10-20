@@ -61,7 +61,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the Stripe price ID from environment variables
-    const priceId = process.env[`STRIPE_PRICE_${plan.toUpperCase()}`]
+    // Use the standard naming convention from plan-map.ts
+    let priceId: string | undefined;
+    if (plan === 'SocialEcho_Starter') {
+      priceId = process.env.STRIPE_STARTER_PRICE_ID;
+    } else if (plan === 'SocialEcho_Pro') {
+      priceId = process.env.STRIPE_PRO_PRICE_ID;
+    } else if (plan === 'SocialEcho_Agency') {
+      priceId = process.env.STRIPE_AGENCY_PRICE_ID;
+    }
+    
     if (!priceId) {
       return NextResponse.json({ 
         error: `Price ID not configured for plan: ${plan}` 
