@@ -299,7 +299,8 @@ function AccountPageInner() {
       if (res.ok && data.url) {
         window.location.href = data.url
       } else {
-        setMessage({ type: 'error', text: data.error || 'Failed to create checkout session' })
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || 'Failed to create checkout session')
+        setMessage({ type: 'error', text: errorMsg })
         setActionLoading(false)
       }
     } catch (err) {
