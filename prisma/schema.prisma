@@ -1,0 +1,318 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User roles for RBAC
+enum UserRole {
+  USER           // Regular individual user
+  ADMIN          // Legacy admin role
+  MASTER_ADMIN   // Full system access
+  AGENCY_ADMIN   // Agency owner/admin
+  AGENCY_STAFF   // Agency team member
+  CUSTOMER       // Agency's client
+}
+
+// User authentication
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  businessName  String?   @db.VarChar(120) // Optional business name for invoices
+  password      String    // bcrypt hashed
+  emailVerified DateTime?
+  role          UserRole  @default(USER)
+  
+  // 2FA
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+  
+  // Admin management fields
+  lastLogin    DateTime?
+  isSuspended  Boolean  @default(false)
+  notes        String?
+  
+  // Email tracking
+  welcomeSentAt DateTime?
+  
+  // Agency relationships
+  agencyId             String?  // If user is CUSTOMER, this links to their agency
+  agency               Agency?  @relation("AgencyCustomers", fields: [agencyId], references: [id], onDelete: SetNull)
+  ownedAgency          Agency?  @relation("AgencyOwner")
+  
+  // Relations
+  profile              Profile?
+  subscription         Subscription?
+  postHistory          PostHistory[]
+  feedback             Feedback[]
+  plannerDays          PlannerDay[]
+  passwordResetTokens  PasswordResetToken[]
+  usageCounters        UsageCounter[]
+  emailLogs            EmailLog[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([agencyId])
+}
+
+// User business profile (matches localStorage UserProfile)
+model Profile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Core profile fields (matching localStorage exactly)
+  business_name     String
+  website           String
+  industry          String
+  tone              String   // 'professional' | 'casual' | 'funny' | 'bold'
+  products_services String
+  target_audience   String
+  usp               String   // Unique Selling Point
+  keywords          String[] // Array of keywords
+  rotation          String   // 'serious' | 'quirky'
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Password reset tokens
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+}
+
+// Subscriptions & usage limits
+model Subscription {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  plan       String   @default("starter") // "starter" | "pro" | "enterprise"
+  status     String   @default("active")  // "active" | "canceled" | "trialing"
+  
+  // Usage tracking
+  usageCount Int      @default(0)  // Posts generated this month
+  usageLimit Int      @default(8)  // 8 for starter, higher for pro/enterprise
+  
+  // Billing period
+  currentPeriodStart DateTime @default(now())
+  currentPeriodEnd   DateTime
+  
+  // Stripe integration (for future)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  cancelAtPeriodEnd    Boolean  @default(false)
+  trialEnd             DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+}
+
+// Content planner schedule (matches localStorage Planner)
+model PlannerDay {
+  id       String  @id @default(cuid())
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  day      String  // 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'
+  type     String  // 'selling' | 'informational' | 'advice' | 'news'
+  enabled  Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, day])
+  @@index([userId])
+}
+
+// Post generation history (matches localStorage PostHistory)
+model PostHistory {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  date     String   // YYYY-MM-DD
+  postType String   // 'selling' | 'informational' | 'advice' | 'news'
+  tone     String   // 'professional' | 'casual' | 'funny' | 'bold'
+  
+  // Generated content
+  headlineOptions String[] // Array of headline options
+  postText        String   @db.Text
+  hashtags        String[] // Array of hashtags
+  visualPrompt    String   @db.Text
+  imageUrl        String?  // URL of generated image (if any)
+  imageStyle      String?  // Style of generated image (photo-real, illustration, etc.)
+  
+  // Metadata
+  isRegeneration Boolean  @default(false)
+  
+  // Usage tracking
+  firstGeneratedAt   DateTime? // When this post was first successfully generated
+  customisationsUsed Int       @default(0) // Number of customisations/regenerations (max 2)
+  
+  // Relations
+  feedback Feedback?
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Feedback on posts (matches localStorage PostFeedback)
+model Feedback {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  postId   String   @unique
+  post     PostHistory @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  feedback String   // 'up' | 'down'
+  note     String?  @db.Text
+  
+  // Context at time of feedback
+  postType String   // 'selling' | 'informational' | 'advice' | 'news'
+  tone     String   // 'professional' | 'casual' | 'funny' | 'bold'
+  keywords String[] // Keywords from profile at time of feedback
+  hashtags String[] // Hashtags from the post
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([postId])
+}
+
+// Admin configuration storage
+model AdminConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique  // e.g., 'ai_globals'
+  json      Json                // Configuration object
+  updatedBy String?             // User ID who last updated
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([key])
+}
+
+// Admin configuration change history
+model AdminConfigHistory {
+  id        String   @id @default(cuid())
+  key       String              // Config key (e.g., 'ai_globals')
+  json      Json                // Configuration snapshot
+  updatedBy String              // User ID who made the change
+  reason    String?  @db.Text   // Optional reason for change
+  
+  createdAt DateTime @default(now())
+  
+  @@index([key])
+  @@index([createdAt])
+}
+
+// Audit log for admin actions
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String              // User ID who performed the action
+  action    String              // Action type (e.g., 'SUSPEND', 'UNSUSPEND', 'PLAN_CHANGE', 'IMPERSONATE_START', 'IMPERSONATE_END')
+  targetId  String?             // Target user ID (if applicable)
+  meta      Json?               // Additional metadata
+  
+  createdAt DateTime @default(now())
+  
+  @@index([actorId])
+  @@index([targetId])
+  @@index([createdAt])
+}
+
+// Agency (white-label reseller)
+model Agency {
+  id        String   @id @default(cuid())
+  
+  // Owner relationship
+  ownerId   String   @unique
+  owner     User     @relation("AgencyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  
+  // Agency details
+  name      String
+  slug      String   @unique  // For branded login (e.g., 'acmeco')
+  
+  // White-label branding
+  logoUrl         String?
+  primaryColor    String?  @default("#3B82F6")  // Hex color
+  subdomain       String?  @unique  // Optional (e.g., 'acmeco' for acmeco.socialecho.ai)
+  customDomain    String?  @unique  // Optional full custom domain
+  
+  // Billing
+  plan                  String   @default("agency_universal")  // Single plan
+  stripeCustomerId      String?  @unique
+  stripeSubscriptionId  String?  @unique
+  activeClientCount     Int      @default(0)  // Synced with Stripe quantity
+  
+  // Status
+  status    String   @default("active")  // "active" | "suspended" | "canceled"
+  
+  // Relations
+  customers User[]   @relation("AgencyCustomers")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([slug])
+  @@index([subdomain])
+}
+
+
+// Monthly usage tracking (single source of truth)
+model UsageCounter {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Billing cycle boundaries (UTC)
+  cycleStartUtc  DateTime
+  cycleEndUtc    DateTime
+  
+  // Usage tracking
+  postsUsed      Int      @default(0) // Number of distinct posts generated in this cycle
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@unique([userId, cycleStartUtc, cycleEndUtc])
+  @@index([userId])
+  @@index([cycleStartUtc])
+}
+
+
+
+// Email sending log for idempotency and audit trail
+model EmailLog {
+  key       String   @id  // Unique key: e.g., "${eventId}:${type}:${customerId}"
+  type      String        // Email type: "upgrade", "welcome", "cancellation", etc.
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipient String        // Email address that received the email
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([type])
+}
+

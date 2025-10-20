@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Subscription" ADD COLUMN IF NOT EXISTS "cancelAtPeriodEnd" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Subscription" ADD COLUMN IF NOT EXISTS "trialEnd" TIMESTAMP(3);
+
