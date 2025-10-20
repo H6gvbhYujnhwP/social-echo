@@ -66,45 +66,64 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get current subscription from Stripe
+    // Retrieve subscription & determine the live item id
     const liveSub = await stripe.subscriptions.retrieve(
       subscription.stripeSubscriptionId,
-      { expand: ['schedule'] }
-    ) as any;
+      { expand: ['schedule', 'items.data.price'] }
+    );
 
-    const currentPeriodEnd = liveSub.current_period_end;
-    const currentPriceId = liveSub.items.data[0]?.price?.id || proPriceId;
+    const subItem = liveSub.items?.data?.[0];
+    if (!subItem?.id) {
+      throw new Error('[billing/downgrade] Missing subscription item');
+    }
 
-    // Create subscription schedule phases
-    // Phase 1: Keep current Pro plan until period end
-    // Phase 2: Switch to Starter at period end
-    const phases: any[] = [
+    const subscriptionItemId = subItem.id;
+    const currentPriceId = subItem.price?.id || proPriceId;
+    const currentPeriodEnd = (liveSub as any).current_period_end;
+
+    if (!currentPeriodEnd) {
+      throw new Error('[billing/downgrade] Missing current_period_end');
+    }
+
+    // Create/Update schedule phases WITH item id (critical)
+    const phases = [
       {
-        items: [{ price: currentPriceId }],
+        items: [{ id: subscriptionItemId, price: currentPriceId }],
         end_date: currentPeriodEnd,
-        proration_behavior: 'none',
+        proration_behavior: 'none' as const,
       },
       {
-        items: [{ price: starterPriceId }],
-        proration_behavior: 'none',
+        items: [{ id: subscriptionItemId, price: starterPriceId }],
+        proration_behavior: 'none' as const,
       },
     ];
 
-    let schedule: any;
-    const existingSchedule = liveSub.schedule;
-
-    if (existingSchedule?.id) {
-      // Update existing schedule
-      schedule = await stripe.subscriptionSchedules.update(existingSchedule.id, {
-        phases,
-      });
+    let schedule = liveSub.schedule as Stripe.SubscriptionSchedule | null;
+    
+    if (schedule?.id) {
+      const details = await stripe.subscriptionSchedules.retrieve(schedule.id);
+      if (details.status === 'released' || details.status === 'completed') {
+        schedule = await stripe.subscriptionSchedules.create({
+          from_subscription: liveSub.id,
+          phases,
+        });
+      } else {
+        schedule = await stripe.subscriptionSchedules.update(schedule.id, {
+          phases,
+        });
+      }
     } else {
-      // Create new schedule
       schedule = await stripe.subscriptionSchedules.create({
         from_subscription: liveSub.id,
         phases,
       });
     }
+
+    console.log('[billing/downgrade] scheduled', {
+      sub: liveSub.id,
+      schedule: schedule?.id,
+      effectiveDate: new Date(currentPeriodEnd * 1000).toISOString()
+    });
 
     // Update local database to mark downgrade scheduled
     await prisma.subscription.update({
