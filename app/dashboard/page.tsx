@@ -592,7 +592,7 @@ export default function DashboardPage() {
               <div className="flex items-start space-x-3">
                 <span className="text-2xl">🎯</span>
                 <div className="flex-1">
-                  <p className="text-sm text-white/70 mb-1">
+                  <p className="text-sm text-white font-medium mb-1">
                     {isTrialExhausted 
                       ? 'Trial complete — upgrade to keep posting' 
                       : (subscription.status === 'trial' ? 'Trial Account' : 'Free Trial Active') + ' — ' + subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1) + ' Plan'
@@ -600,7 +600,7 @@ export default function DashboardPage() {
                   </p>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-1">
                     <div className="flex items-center space-x-2">
-                      <span className="text-white/90 text-sm font-medium">
+                      <span className="text-white text-sm font-semibold">
                         Posts: {subscription.usageCount}/{subscription.usageLimit}
                       </span>
                       <div className="w-24 h-2 bg-white/20 rounded-full overflow-hidden">
@@ -612,7 +612,7 @@ export default function DashboardPage() {
                     </div>                   {subscription.trialEnd && (
                       <>
                         <span className="hidden sm:block text-white/50">•</span>
-                        <span className="text-white/90 text-sm">
+                        <span className="text-white text-sm font-medium">
                           {subscription.isTrialExpired ? (
                             <span className="text-red-200 font-semibold">Trial Expired</span>
                           ) : (
@@ -628,7 +628,7 @@ export default function DashboardPage() {
                     {subscription.status === 'trialing' && subscription.currentPeriodEnd && (
                       <>
                         <span className="hidden sm:block text-white/50">•</span>
-                        <span className="text-white/90 text-sm">
+                        <span className="text-white text-sm font-medium">
                           Billing starts: {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-GB', { 
                             day: 'numeric', 
                             month: 'short'

@@ -7,9 +7,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-08-27.basil' as any,
-})
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
 
 /**
  * POST /api/billing/checkout
@@ -151,6 +149,11 @@ export async function POST(request: NextRequest) {
         : `${baseUrl}/train?welcome=1&session_id={CHECKOUT_SESSION_ID}${brandParam ? `&brand=${brandParam}` : ''}`,
       cancel_url: `${baseUrl}/pricing${brandQuery}`,
       client_reference_id: user.id,
+
+      // Collect & persist customer address for automatic tax
+      billing_address_collection: 'required',
+      customer_update: { address: 'auto', shipping: 'auto' },
+
       metadata: {
         userId: user.id,
         plan: plan,
