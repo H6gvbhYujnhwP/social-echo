@@ -65,39 +65,32 @@ export async function POST(request: NextRequest) {
     const stripeSubscription: Stripe.Response<Stripe.Subscription> = 
       await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId);
 
-    // Option A: Reset cycle now, charge Pro now only (no double billing)
-    const updatedSubscription = await stripe.subscriptions.update(
+    // Validate and select the correct subscription item
+    const items = stripeSubscription.items?.data ?? [];
+    if (items.length === 0) {
+      throw new Error('[billing/change-plan] No subscription items found on current subscription');
+    }
+
+    // Prefer the single SocialEcho item; fallback to index 0
+    const currentItem = items.find(i => !!i?.price?.id) ?? items[0];
+    if (!currentItem?.id) {
+      throw new Error('[billing/change-plan] Missing subscription item id');
+    }
+    const subscriptionItemId = currentItem.id;
+
+    // Update the existing item (replace, don't add)
+    const updated = await stripe.subscriptions.update(
       subscription.stripeSubscriptionId,
       {
         cancel_at_period_end: false,
-        items: [{
-          id: stripeSubscription.items.data[0].id,
-          price: targetPriceId,
-        }],
+        items: [{ id: subscriptionItemId, price: targetPriceId }],
         billing_cycle_anchor: 'now',
-        proration_behavior: 'none', // No overlap, no extra line items
-        trial_end: 'now', // End any existing trial immediately
+        proration_behavior: 'none',
         payment_behavior: 'default_incomplete'
       }
     );
 
-    // Immediately invoice and pay (so user is upgraded right now)
-    try {
-      const invoice = await stripe.invoices.create({
-        customer: updatedSubscription.customer as string,
-        subscription: updatedSubscription.id,
-        collection_method: 'charge_automatically'
-      });
-      await stripe.invoices.pay(invoice.id);
-      
-      console.log('[billing] Immediate invoice created and paid', {
-        invoiceId: invoice.id,
-        amount: invoice.amount_due
-      });
-    } catch (invoiceError: any) {
-      console.error('[billing] Invoice creation/payment failed:', invoiceError);
-      // Continue anyway - webhook will handle payment
-    }
+    console.log('[billing/change-plan] updated', { sub: updated.id, price: targetPriceId });
 
     // Update our database
     const newUsageLimit = validated.targetPlan === 'starter' ? 8 : 30;
@@ -122,7 +115,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       newPlan: validated.targetPlan,
-      subscription: updatedSubscription
+      subscription: updated
     });
 
   } catch (error: any) {
