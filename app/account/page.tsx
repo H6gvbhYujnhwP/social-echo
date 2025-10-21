@@ -625,7 +625,9 @@ function AccountPageInner() {
                     </p>
                     {renewalDate && (
                       <p className="text-white/60 text-sm mt-2">
-                        {subscription?.cancelAtPeriodEnd 
+                        {subscription?.pendingPlan === 'starter' && subscription?.pendingAt
+                          ? `Scheduled downgrade to Starter from ${new Date(subscription.pendingAt).toLocaleDateString('en-GB')}`
+                          : subscription?.cancelAtPeriodEnd 
                           ? `Cancels on ${renewalDate.toLocaleDateString('en-GB')}`
                           : `Renews on ${renewalDate.toLocaleDateString('en-GB')}`
                         }
