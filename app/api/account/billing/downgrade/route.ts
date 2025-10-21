@@ -71,16 +71,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Retrieve subscription to get current period end
+    // Retrieve subscription to get current period window
     const liveSub = await stripe.subscriptions.retrieve(
       subscription.stripeSubscriptionId,
       { expand: ['schedule'] }
     );
 
+    const currentPeriodStart = (liveSub as any).current_period_start;
     const currentPeriodEnd = (liveSub as any).current_period_end;
 
-    if (!currentPeriodEnd) {
-      throw new Error('[billing/downgrade] Missing current_period_end');
+    // Defensive check: Ensure period timestamps are valid numbers
+    if (typeof currentPeriodStart !== 'number' || typeof currentPeriodEnd !== 'number') {
+      console.error('[billing/downgrade] Invalid period timestamps:', {
+        subscriptionId: liveSub.id,
+        currentPeriodStart,
+        currentPeriodEnd,
+        currentPeriodStartType: typeof currentPeriodStart,
+        currentPeriodEndType: typeof currentPeriodEnd,
+        subscription: liveSub,
+      });
+      return NextResponse.json(
+        { error: 'Invalid subscription period timestamps' },
+        { status: 400 }
+      );
     }
 
     // Release existing schedule if active or not_started
@@ -105,16 +118,18 @@ export async function POST(request: NextRequest) {
     });
 
     // Step 2: Update schedule with phases
-    // Phase 1: Keep Pro until current period end
+    // Phase 1: Keep Pro until current period end (anchor with start_date)
     // Phase 2: Switch to Starter at renewal
-    const phases = [
+    const phases: Stripe.SubscriptionScheduleUpdateParams.Phase[] = [
       {
+        start_date: currentPeriodStart,  // Anchor required when end_date is present
         items: [{ price: proPriceId, quantity: 1 }],
         end_date: currentPeriodEnd,
         proration_behavior: 'none' as const,
       },
       {
         items: [{ price: starterPriceId, quantity: 1 }],
+        // No dates here - starts automatically after phase 1 ends
         proration_behavior: 'none' as const,
       },
     ];
@@ -128,6 +143,7 @@ export async function POST(request: NextRequest) {
       customerId: subscription.stripeCustomerId,
       subscriptionId: liveSub.id,
       scheduleId: schedule.id,
+      currentPeriodStart: new Date(currentPeriodStart * 1000).toISOString(),
       currentPeriodEnd: new Date(currentPeriodEnd * 1000).toISOString(),
       phase1Price: proPriceId,
       phase2Price: starterPriceId,
