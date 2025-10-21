@@ -365,12 +365,32 @@ function AccountPageInner() {
 
         const data = await res.json()
 
+        // Handle SCA (3D Secure) if required
+        if (data.requiresAction && data.paymentIntentClientSecret) {
+          const { loadStripe } = await import('@stripe/stripe-js')
+          const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+          if (!stripe) {
+            throw new Error('Failed to load Stripe')
+          }
+          const { error } = await stripe.confirmCardPayment(data.paymentIntentClientSecret)
+          if (error) {
+            setMessage({ type: 'error', text: 'Card authentication failed. Please try again.' })
+            return
+          } else {
+            setMessage({ type: 'success', text: 'Payment confirmed. You\'re on Pro!' })
+            // Refresh to show updated subscription
+            setTimeout(() => window.location.reload(), 1500)
+            return
+          }
+        }
+
         if (!res.ok) {
           throw new Error(data.error || 'Upgrade failed')
         }
 
         // Success - redirect to account page with success message
-        window.location.href = '/account?tab=billing&upgraded=pro'
+        setMessage({ type: 'success', text: 'You\'re on Pro! £49.99 charged today.' })
+        setTimeout(() => window.location.href = '/account?tab=billing&upgraded=pro', 1500)
       } else {
         // No active subscription - redirect to Stripe Checkout
         const res = await fetch('/api/billing/checkout', {

@@ -86,37 +86,76 @@ export async function POST(request: NextRequest) {
         items: [{ id: subscriptionItemId, price: targetPriceId }],
         billing_cycle_anchor: 'now',
         proration_behavior: 'none',
-        payment_behavior: 'default_incomplete'
+        payment_behavior: 'default_incomplete',
+        payment_settings: { save_default_payment_method: 'on_subscription' },
       }
     );
 
     console.log('[billing/change-plan] updated', { sub: updated.id, price: targetPriceId });
 
-    // Update our database
+    // Pay the latest_invoice (no new invoice creation)
+    let latestInvoiceId = typeof updated.latest_invoice === 'string'
+      ? updated.latest_invoice
+      : updated.latest_invoice?.id;
+
+    if (latestInvoiceId) {
+      // Option A: attempt server-side payment (off-session card on file)
+      try {
+        const paid = await stripe.invoices.pay(latestInvoiceId);
+        console.log('[billing/change-plan] invoice paid', { invoice: paid.id, status: paid.status });
+        
+        // Update our database
+        const newUsageLimit = validated.targetPlan === 'starter' ? 8 : 30;
+        await prisma.subscription.update({
+          where: { id: subscription.id },
+          data: {
+            plan: validated.targetPlan,
+            usageLimit: newUsageLimit,
+            usageCount: 0, // Reset usage count on plan change
+            currentPeriodStart: new Date(),
+            currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          }
+        });
+
+        console.log('[billing] Plan changed successfully', {
+          userId: user.id,
+          from: subscription.plan,
+          to: validated.targetPlan,
+          newLimit: newUsageLimit
+        });
+
+        return NextResponse.json({ ok: true, upgraded: true });
+      } catch (e: any) {
+        // If SCA is required, return client secret so the client can confirm
+        const inv = await stripe.invoices.retrieve(latestInvoiceId, { expand: ['payment_intent'] }) as any;
+        const pi = inv.payment_intent as Stripe.PaymentIntent | null;
+        if (pi?.status === 'requires_action' && pi.client_secret) {
+          return NextResponse.json({
+            ok: true,
+            requiresAction: true,
+            paymentIntentClientSecret: pi.client_secret,
+          }, { status: 202 });
+        }
+        console.error('[billing/change-plan] pay invoice failed', e);
+        return NextResponse.json({ ok: false, error: 'payment_failed' }, { status: 402 });
+      }
+    }
+
+    // Fallback: if no invoice (shouldn't happen)
+    // Update database anyway
     const newUsageLimit = validated.targetPlan === 'starter' ? 8 : 30;
     await prisma.subscription.update({
       where: { id: subscription.id },
       data: {
         plan: validated.targetPlan,
         usageLimit: newUsageLimit,
-        usageCount: 0, // Reset usage count on plan change
+        usageCount: 0,
         currentPeriodStart: new Date(),
         currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       }
     });
 
-    console.log('[billing] Plan changed successfully', {
-      userId: user.id,
-      from: subscription.plan,
-      to: validated.targetPlan,
-      newLimit: newUsageLimit
-    });
-
-    return NextResponse.json({
-      ok: true,
-      newPlan: validated.targetPlan,
-      subscription: updated
-    });
+    return NextResponse.json({ ok: true, upgraded: true });
 
   } catch (error: any) {
     console.error('[billing] Plan change failed:', error);
