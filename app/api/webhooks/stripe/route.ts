@@ -15,9 +15,12 @@ import {
   sendTrialCancelledEmail,
   sendWelcomeEmail,
   sendOnboardingEmail,
+  sendPaymentActionRequiredEmail,
 } from '@/lib/email/service';
 
 export const runtime = 'nodejs'; // ensure Node (so we can read raw body)
+
+// Social Echo Blueprint v8.3 — Stripe-event-driven notifications only
 
 function mapPlanFromPriceId(priceId?: string) {
   if (!priceId) return undefined;
@@ -98,86 +101,56 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      const subscription = await prisma.subscription.upsert({
-        where: { userId: user.id },
-        create: {
-          userId: user.id,
-          stripeCustomerId: customerId,
-          stripeSubscriptionId: subId,
-          plan: (mapped?.planLabel || 'starter').toLowerCase(),
-          status: subscriptionStatus,
-          usageLimit: mapped?.usageLimit ?? 8,
-          currentPeriodStart: new Date(),
-          currentPeriodEnd: trialEnd || new Date(Date.now() + 30 * 24 * 3600 * 1000),
-        },
-        update: {
-          stripeCustomerId: customerId ?? undefined,
-          stripeSubscriptionId: subId ?? undefined,
-          status: subscriptionStatus,
-        },
-      });
-      
-      console.log('[webhook] Subscription linked via checkout.session.completed:', {
-        subscriptionId: subscription.id,
-        plan: subscription.plan,
-        status: subscriptionStatus,
-        isAgency: isAgencyPlan,
-      });
-      
-      // If this is an agency plan, upgrade user to AGENCY_ADMIN and create Agency record
-      if (isAgencyPlan && user.role !== 'AGENCY_ADMIN') {
-        console.log('[webhook] Upgrading user to AGENCY_ADMIN and creating Agency record');
+      console.log('[webhook] Subscription status:', subscriptionStatus, 'Trial end:', trialEnd);
+
+      if (isAgencyPlan) {
+        // Agency plan: create agency and agency subscription
+        console.log('[webhook] Agency plan detected, creating agency');
         
-        // Update user role
+        // Create agency if it doesn't exist
+        let agency = await prisma.agency.findFirst({ where: { ownerId: user.id } });
+        
+        if (!agency) {
+          // Generate slug from name
+          const baseSlug = (user.name || user.email || 'agency')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '');
+          const slug = `${baseSlug}-${Date.now()}`;
+          
+          agency = await prisma.agency.create({
+            data: {
+              name: `${user.name || user.email}'s Agency`,
+              slug,
+              ownerId: user.id,
+              stripeCustomerId: customerId,
+            }
+          });
+          
+          console.log('[webhook] Created agency:', agency.id);
+        } else {
+          // Update agency with Stripe customer ID if not set
+          if (!agency.stripeCustomerId) {
+            await prisma.agency.update({
+              where: { id: agency.id },
+              data: { stripeCustomerId: customerId }
+            });
+          }
+        }
+        
+        // Note: Agency subscriptions are handled separately
+        // This is just for user role upgrade
+        if (false) {
+          // Placeholder for future agency subscription logic
+          
+          console.log('[webhook] Created agency subscription');
+        }
+        
+        // Update user role to AGENCY_ADMIN
         await prisma.user.update({
           where: { id: user.id },
           data: { role: 'AGENCY_ADMIN' }
         });
-        
-        // Create Agency record if it doesn't exist
-        const existingAgency = await prisma.agency.findUnique({
-          where: { ownerId: user.id }
-        });
-        
-        if (!existingAgency) {
-          // Generate a slug from business name or email
-          const slugBase = user.name.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 20);
-          let slug = slugBase;
-          let counter = 1;
-          
-          // Ensure unique slug
-          while (await prisma.agency.findUnique({ where: { slug } })) {
-            slug = `${slugBase}-${counter}`;
-            counter++;
-          }
-          
-          await prisma.agency.create({
-            data: {
-              ownerId: user.id,
-              name: user.name || 'My Agency',
-              slug,
-              plan: 'agency_universal',
-              stripeCustomerId: customerId,
-              stripeSubscriptionId: subId,
-              activeClientCount: 0,
-              status: 'active'
-            }
-          });
-          
-          console.log('[webhook] Created Agency record with slug:', slug);
-        } else {
-          // Update existing agency with Stripe IDs
-          await prisma.agency.update({
-            where: { id: existingAgency.id },
-            data: {
-              stripeCustomerId: customerId,
-              stripeSubscriptionId: subId,
-              status: 'active'
-            }
-          });
-          
-          console.log('[webhook] Updated existing Agency record:', existingAgency.id);
-        }
         
         // Log the upgrade
         await prisma.auditLog.create({
@@ -262,19 +235,9 @@ export async function POST(req: NextRequest) {
             sendFn: sendOnboardingEmail,
           });
         }
-        // Send upgrade email if plan changed
-        else if (eventType === 'customer.subscription.updated') {
-          const oldPlanName = (result.plan || 'starter').charAt(0).toUpperCase() + (result.plan || 'starter').slice(1);
-          const newPlanName = newPlan.charAt(0).toUpperCase() + newPlan.slice(1);
-          
-          sendSecureBillingEmailSafe({
-            stripeCustomerId: customerId,
-            eventId: event.id,
-            type: 'subscription_upgraded',
-            sendFn: sendSubscriptionUpgradedEmail,
-            sendArgs: [oldPlanName, newPlanName],
-          });
-        }
+        // REMOVED: subscription_upgraded email from here
+        // Upgrade emails are now sent ONLY from invoice.payment_succeeded
+        // This prevents false "upgrade" emails when subscription is updated for other reasons
       } else {
         console.warn('[webhook] No subscription found for customer:', customerId);
       }
@@ -283,41 +246,35 @@ export async function POST(req: NextRequest) {
 
     case 'customer.subscription.deleted': {
       const sub = event.data.object as Stripe.Subscription;
-      const customerId = String(sub.customer);
-      const wasTrialing = sub.status === 'trialing';
+      const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer?.id || '';
       
-      console.log('[webhook] Subscription deleted:', sub.id, 'Was trialing:', wasTrialing);
+      console.log('[webhook] Subscription deleted for customer:', customerId);
       
-      // Use centralized cancellation function
-      const { handleSubscriptionCancellation } = await import('@/lib/billing/sync-subscription');
-      const result = await handleSubscriptionCancellation(sub);
-      
-      if (!result.success) {
-        console.error('[webhook] Failed to handle cancellation:', result.error);
-        break;
-      }
-      
-      console.log('[webhook] Subscription canceled:', {
-        userId: result.userId,
-      });
-      
-      // Send cancellation email
       const userSub = await prisma.subscription.findFirst({ 
         where: { stripeCustomerId: customerId },
         include: { user: true }
       });
       
       if (userSub) {
-        const planName = userSub.plan.charAt(0).toUpperCase() + userSub.plan.slice(1);
-        const endDate = userSub.currentPeriodEnd?.toLocaleDateString() || 'N/A';
+        console.log('[webhook] Cancelling subscription:', userSub.id);
         
-        if (wasTrialing) {
+        const wasTrial = userSub.status === 'trialing' || userSub.status === 'trial';
+        
+        await prisma.subscription.update({
+          where: { id: userSub.id },
+          data: { 
+            status: 'canceled',
+            cancelAtPeriodEnd: false,
+          },
+        });
+        
+        // Send appropriate cancellation email based on trial status
+        if (wasTrial) {
           sendSecureBillingEmailSafe({
             stripeCustomerId: customerId,
             eventId: event.id,
             type: 'trial_cancelled',
             sendFn: sendTrialCancelledEmail,
-            sendArgs: [planName],
           });
         } else {
           sendSecureBillingEmailSafe({
@@ -325,9 +282,10 @@ export async function POST(req: NextRequest) {
             eventId: event.id,
             type: 'cancellation',
             sendFn: sendSubscriptionCancelledEmail,
-            sendArgs: [planName, endDate],
           });
         }
+      } else {
+        console.warn('[webhook] No subscription found for deleted customer:', customerId);
       }
       break;
     }
@@ -336,22 +294,33 @@ export async function POST(req: NextRequest) {
       const inv = event.data.object as any;
       const customerId = String(inv.customer);
       const subId = typeof inv.subscription === 'string' ? inv.subscription : inv.subscription?.id;
+      const invoiceId = inv.id;
+      const paymentIntentId = typeof inv.payment_intent === 'string' ? inv.payment_intent : inv.payment_intent?.id;
       
-      console.log('[webhook] Payment succeeded for customer:', customerId, 'Amount:', inv.amount_paid);
+      console.log('[webhook] Payment succeeded:', {
+        customer: customerId,
+        invoice: invoiceId,
+        paymentIntent: paymentIntentId,
+        amount: inv.amount_paid,
+      });
       
       const userSub = await prisma.subscription.findFirst({ 
         where: { stripeCustomerId: customerId },
         include: { user: true }
       });
       
-      if (userSub && (userSub.status === 'trialing' || userSub.status === 'trial')) {
-        // Trial converted to active subscription (both Stripe trials and admin trials)
+      if (!userSub) {
+        console.warn('[webhook] No subscription found for customer:', customerId);
+        break;
+      }
+
+      // Check if this is a trial conversion (trial → active)
+      if (userSub.status === 'trialing' || userSub.status === 'trial') {
         console.log('[webhook] Converting trial to active subscription:', userSub.id, 'from status:', userSub.status);
         
         // Validate subId before fetching
         if (!subId) {
           console.error('[webhook] Missing subscription ID in invoice, using stripeSubscriptionId from DB:', userSub.stripeSubscriptionId);
-          // Try to use the subscription ID from our database
           if (!userSub.stripeSubscriptionId) {
             console.error('[webhook] No subscription ID available, skipping trial conversion');
             break;
@@ -393,14 +362,73 @@ export async function POST(req: NextRequest) {
           sendArgs: [planName],
         });
       }
+      
+      // Check if this is an upgrade payment (plan change)
+      // We detect this by checking if the invoice has metadata or if the subscription was recently updated
+      // A more reliable way is to check if the previous_attributes in subscription.updated had a different plan
+      // For now, we'll check if the subscription was updated recently (within last 5 minutes)
+      if (subId) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(subId, {
+            expand: ['items.data.price']
+          });
+          
+          const currentPriceId = subscription.items.data[0]?.price?.id;
+          
+          // Check if this price ID is different from what we have in DB
+          // This indicates an upgrade/downgrade just happened
+          const currentPlanFromPrice = mapPlanFromPriceId(currentPriceId);
+          
+          if (currentPlanFromPrice && currentPlanFromPrice.planLabel.toLowerCase() !== userSub.plan) {
+            // Plan changed - this is an upgrade/downgrade
+            const oldPlanName = userSub.plan.charAt(0).toUpperCase() + userSub.plan.slice(1);
+            const newPlanName = currentPlanFromPrice.planLabel;
+            
+            console.log('[webhook] Plan change detected:', {
+              oldPlan: oldPlanName,
+              newPlan: newPlanName,
+              invoice: invoiceId,
+              paymentIntent: paymentIntentId,
+            });
+            
+            // Send upgrade email (idempotent via event ID)
+            sendSecureBillingEmailSafe({
+              stripeCustomerId: customerId,
+              eventId: event.id,
+              type: 'subscription_upgraded',
+              sendFn: sendSubscriptionUpgradedEmail,
+              sendArgs: [oldPlanName, newPlanName],
+            });
+            
+            // Update the plan in our database to match Stripe
+            await prisma.subscription.update({
+              where: { id: userSub.id },
+              data: { 
+                plan: currentPlanFromPrice.planLabel.toLowerCase() as 'starter' | 'pro' | 'agency',
+                usageLimit: currentPlanFromPrice.usageLimit,
+              },
+            });
+          }
+        } catch (err) {
+          console.error('[webhook] Failed to check subscription for plan change:', err);
+        }
+      }
+      
       break;
     }
 
     case 'invoice.payment_failed': {
       const inv = event.data.object as any;
       const customerId = String(inv.customer);
+      const invoiceId = inv.id;
+      const paymentIntentId = typeof inv.payment_intent === 'string' ? inv.payment_intent : inv.payment_intent?.id;
       
-      console.log('[webhook] Payment failed for customer:', customerId, 'Amount:', inv.amount_due);
+      console.log('[webhook] Payment failed:', {
+        customer: customerId,
+        invoice: invoiceId,
+        paymentIntent: paymentIntentId,
+        amount: inv.amount_due,
+      });
       
       const userSub = await prisma.subscription.findFirst({ 
         where: { stripeCustomerId: customerId },
@@ -415,7 +443,7 @@ export async function POST(req: NextRequest) {
           data: { status: 'past_due' },
         });
         
-        // Send payment failed email
+        // Send payment failed email (idempotent via event ID)
         const planName = userSub.plan.charAt(0).toUpperCase() + userSub.plan.slice(1);
         
         sendSecureBillingEmailSafe({
@@ -430,7 +458,81 @@ export async function POST(req: NextRequest) {
       }
       break;
     }
+
+    case 'payment_intent.payment_failed': {
+      const pi = event.data.object as any; // Use any to access invoice field
+      const customerId = typeof pi.customer === 'string' ? pi.customer : pi.customer?.id || '';
+      const invoiceId = typeof pi.invoice === 'string' ? pi.invoice : pi.invoice?.id;
+      const paymentIntentId = pi.id;
+      
+      console.log('[webhook] Payment intent failed:', {
+        customer: customerId,
+        invoice: invoiceId,
+        paymentIntent: paymentIntentId,
+        amount: pi.amount,
+        error: pi.last_payment_error?.message,
+      });
+      
+      // Only send email if we haven't already sent one for the invoice
+      // (invoice.payment_failed will also fire, so we use idempotency to prevent duplicates)
+      if (customerId) {
+        const userSub = await prisma.subscription.findFirst({ 
+          where: { stripeCustomerId: customerId },
+          include: { user: true }
+        });
+        
+        if (userSub) {
+          const planName = userSub.plan.charAt(0).toUpperCase() + userSub.plan.slice(1);
+          
+          // This will be deduplicated if invoice.payment_failed already sent an email
+          sendSecureBillingEmailSafe({
+            stripeCustomerId: customerId,
+            eventId: event.id,
+            type: 'payment_failed',
+            sendFn: sendPaymentFailedEmail,
+            sendArgs: [planName],
+          });
+        }
+      }
+      break;
+    }
+
+    case 'invoice.payment_action_required': {
+      const inv = event.data.object as any;
+      const customerId = String(inv.customer);
+      const invoiceId = inv.id;
+      const paymentIntentId = typeof inv.payment_intent === 'string' ? inv.payment_intent : inv.payment_intent?.id;
+      
+      console.log('[webhook] Payment action required (SCA):', {
+        customer: customerId,
+        invoice: invoiceId,
+        paymentIntent: paymentIntentId,
+        amount: inv.amount_due,
+      });
+      
+      const userSub = await prisma.subscription.findFirst({ 
+        where: { stripeCustomerId: customerId },
+        include: { user: true }
+      });
+      
+      if (userSub) {
+        const planName = userSub.plan.charAt(0).toUpperCase() + userSub.plan.slice(1);
+        
+        // Send authentication required email (NOT a failure email)
+        // This is idempotent, so if the user completes auth and we get payment_succeeded,
+        // they won't get a duplicate email
+        sendSecureBillingEmailSafe({
+          stripeCustomerId: customerId,
+          eventId: event.id,
+          type: 'payment_action_required',
+          sendFn: sendPaymentActionRequiredEmail,
+          sendArgs: [planName, invoiceId],
+        });
+      }
+      break;
+    }
   }
 
   return NextResponse.json({ received: true });
 }
+

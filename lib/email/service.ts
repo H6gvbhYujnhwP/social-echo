@@ -165,6 +165,12 @@ export async function sendPaymentFailedEmail(to: string, userName: string, planN
   return sendEmail({ to, ...template });
 }
 
+// Payment action required (SCA)
+export async function sendPaymentActionRequiredEmail(to: string, userName: string, planName: string, invoiceId: string): Promise<boolean> {
+  const template = templates.paymentActionRequiredEmail(userName, planName, invoiceId);
+  return sendEmail({ to, ...template });
+}
+
 // Subscription upgraded
 export async function sendSubscriptionUpgradedEmail(to: string, userName: string, oldPlan: string, newPlan: string): Promise<boolean> {
   const template = templates.subscriptionUpgradedEmail(userName, oldPlan, newPlan);

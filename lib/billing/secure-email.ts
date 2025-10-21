@@ -15,6 +15,7 @@ export type BillingEmailType =
   | 'trial_cancelled'
   | 'payment_success'
   | 'payment_failed'
+  | 'payment_action_required'
   | 'subscription_upgraded'
   | 'subscription_downgraded';
 

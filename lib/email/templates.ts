@@ -385,6 +385,81 @@ The Social Echo Team
   };
 }
 
+// Payment action required email (SCA)
+export function paymentActionRequiredEmail(userName: string, planName: string, invoiceId: string): EmailTemplate {
+  return {
+    subject: 'Complete Your Payment Authentication',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #f59e0b; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
+            .alert { background: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 6px; margin: 20px 0; }
+            .button { display: inline-block; background: #f59e0b; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🔒 Authentication Required</h1>
+            </div>
+            <div class="content">
+              <p>Hi ${userName},</p>
+              <div class="alert">
+                <strong>Action Required:</strong> Your bank requires additional authentication to complete your payment for the ${planName} plan.
+              </div>
+              <p>This is a security measure called 3D Secure (SCA) that helps protect your payment.</p>
+              <p><strong>What you need to do:</strong></p>
+              <ul>
+                <li>Click the button below to complete authentication</li>
+                <li>You may be asked to enter a code sent to your phone</li>
+                <li>Or approve the payment in your banking app</li>
+              </ul>
+              <a href="${process.env.NEXTAUTH_URL}/dashboard?tab=billing&invoice=${invoiceId}" class="button">Complete Authentication</a>
+              <p><strong>Note:</strong> This is not a payment failure. Your payment is pending authentication only.</p>
+              <p>If you need assistance, please contact our support team.</p>
+              <p>Best regards,<br>The Social Echo Team</p>
+            </div>
+            <div class="footer">
+              <p>© 2025 Social Echo. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `🔒 Authentication Required
+
+Hi ${userName},
+
+Your bank requires additional authentication to complete your payment for the ${planName} plan.
+
+This is a security measure called 3D Secure (SCA) that helps protect your payment.
+
+What you need to do:
+- Click the link below to complete authentication
+- You may be asked to enter a code sent to your phone
+- Or approve the payment in your banking app
+
+Complete Authentication: ${process.env.NEXTAUTH_URL}/dashboard?tab=billing&invoice=${invoiceId}
+
+Note: This is not a payment failure. Your payment is pending authentication only.
+
+If you need assistance, please contact our support team.
+
+Best regards,
+The Social Echo Team
+
+© 2025 Social Echo. All rights reserved.
+    `
+  };
+}
+
 // Payment failed email
 export function paymentFailedEmail(userName: string, planName: string): EmailTemplate {
   return {
