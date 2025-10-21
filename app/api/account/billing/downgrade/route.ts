@@ -109,6 +109,37 @@ export async function POST(request: NextRequest) {
       },
     ];
 
+    // Log payload for debugging
+    console.log('[billing/downgrade] Payload validation:', {
+      from_subscription: liveSub.id,
+      from_subscription_type: typeof liveSub.id,
+      end_behavior: 'release',
+      phases_length: phases.length,
+      phase_0: {
+        items_is_array: Array.isArray(phases[0].items),
+        items_length: phases[0].items.length,
+        item_0_keys: Object.keys(phases[0].items[0]),
+        item_0_price: phases[0].items[0].price,
+        item_0_price_type: typeof phases[0].items[0].price,
+        item_0_quantity: phases[0].items[0].quantity,
+        item_0_quantity_type: typeof phases[0].items[0].quantity,
+        end_date: phases[0].end_date,
+        end_date_type: typeof phases[0].end_date,
+        end_date_is_integer: Number.isInteger(phases[0].end_date),
+        proration_behavior: phases[0].proration_behavior,
+      },
+      phase_1: {
+        items_is_array: Array.isArray(phases[1].items),
+        items_length: phases[1].items.length,
+        item_0_keys: Object.keys(phases[1].items[0]),
+        item_0_price: phases[1].items[0].price,
+        item_0_price_type: typeof phases[1].items[0].price,
+        item_0_quantity: phases[1].items[0].quantity,
+        item_0_quantity_type: typeof phases[1].items[0].quantity,
+        proration_behavior: phases[1].proration_behavior,
+      },
+    });
+
     // Create new schedule
     const schedule = await stripe.subscriptionSchedules.create({
       from_subscription: liveSub.id,
