@@ -8,13 +8,15 @@ import Stripe from 'stripe';
 
 export const runtime = 'nodejs';
 
-// Social Echo Blueprint v8.3 — unified Stripe API version (2024-06-20)
+// Social Echo Blueprint v8.4 — unified Stripe API version (2024-06-20)
 
 /**
  * POST /api/account/billing/downgrade
  * 
  * Schedules a downgrade from Pro to Starter at the end of the current billing period.
  * Uses Stripe Subscription Schedules to avoid immediate charges.
+ * 
+ * Fixed in v8.4: Use price-based items (not subscription item IDs) in schedule phases.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -68,63 +70,59 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Retrieve subscription & determine the live item id
+    // Retrieve subscription to get current period end
     const liveSub = await stripe.subscriptions.retrieve(
       subscription.stripeSubscriptionId,
-      { expand: ['schedule', 'items.data.price'] }
+      { expand: ['schedule'] }
     );
 
-    const subItem = liveSub.items?.data?.[0];
-    if (!subItem?.id) {
-      throw new Error('[billing/downgrade] Missing subscription item');
-    }
-
-    const subscriptionItemId = subItem.id;
-    const currentPriceId = subItem.price?.id || proPriceId;
+    const currentPeriodStart = (liveSub as any).current_period_start;
     const currentPeriodEnd = (liveSub as any).current_period_end;
 
     if (!currentPeriodEnd) {
       throw new Error('[billing/downgrade] Missing current_period_end');
     }
 
-    // Create/Update schedule phases WITH item id (critical)
+    // Release existing schedule if active or not_started
+    let existingSchedule = liveSub.schedule as Stripe.SubscriptionSchedule | null;
+    
+    if (existingSchedule?.id) {
+      const details = await stripe.subscriptionSchedules.retrieve(existingSchedule.id);
+      if (details.status === 'active' || details.status === 'not_started') {
+        console.log('[billing/downgrade] Releasing existing schedule:', existingSchedule.id);
+        await stripe.subscriptionSchedules.release(existingSchedule.id);
+      }
+    }
+
+    // Create schedule phases (price-based, NO item id)
+    // Phase 1: Keep Pro until current period end
+    // Phase 2: Switch to Starter at renewal
     const phases = [
       {
-        items: [{ id: subscriptionItemId, price: currentPriceId }],
+        items: [{ price: proPriceId, quantity: 1 }],
+        start_date: currentPeriodStart,
         end_date: currentPeriodEnd,
         proration_behavior: 'none' as const,
       },
       {
-        items: [{ id: subscriptionItemId, price: starterPriceId }],
+        items: [{ price: starterPriceId, quantity: 1 }],
+        start_date: currentPeriodEnd,
         proration_behavior: 'none' as const,
       },
     ];
 
-    let schedule = liveSub.schedule as Stripe.SubscriptionSchedule | null;
-    
-    if (schedule?.id) {
-      const details = await stripe.subscriptionSchedules.retrieve(schedule.id);
-      if (details.status === 'released' || details.status === 'completed') {
-        schedule = await stripe.subscriptionSchedules.create({
-          from_subscription: liveSub.id,
-          phases,
-        });
-      } else {
-        schedule = await stripe.subscriptionSchedules.update(schedule.id, {
-          phases,
-        });
-      }
-    } else {
-      schedule = await stripe.subscriptionSchedules.create({
-        from_subscription: liveSub.id,
-        phases,
-      });
-    }
+    // Create new schedule
+    const schedule = await stripe.subscriptionSchedules.create({
+      from_subscription: liveSub.id,
+      end_behavior: 'release',
+      phases,
+    });
 
-    console.log('[billing/downgrade] scheduled', {
-      sub: liveSub.id,
-      schedule: schedule?.id,
-      effectiveDate: new Date(currentPeriodEnd * 1000).toISOString()
+    console.log('[billing/downgrade] Schedule created:', {
+      customerId: subscription.stripeCustomerId,
+      subscriptionId: liveSub.id,
+      scheduleId: schedule.id,
+      currentPeriodEnd: new Date(currentPeriodEnd * 1000).toISOString(),
     });
 
     // Update local database to mark downgrade scheduled
@@ -154,7 +152,7 @@ export async function POST(request: NextRequest) {
     console.error('[billing] Downgrade scheduling failed:', error);
 
     return NextResponse.json(
-      { error: 'Failed to schedule downgrade' },
+      { error: 'Failed to schedule downgrade', details: error.message },
       { status: 500 }
     );
   }
