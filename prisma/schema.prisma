@@ -119,6 +119,11 @@ model Subscription {
   cancelAtPeriodEnd    Boolean  @default(false)
   trialEnd             DateTime?
   
+  // Pending downgrade state (v8.6)
+  pendingPlan          String?   // Target plan for scheduled downgrade (e.g., 'starter')
+  pendingAt            DateTime? // When the downgrade will take effect
+  scheduleId           String?   // Stripe Subscription Schedule ID
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   

@@ -20,7 +20,7 @@ import {
 
 export const runtime = 'nodejs'; // ensure Node (so we can read raw body)
 
-// Social Echo Blueprint v8.3 — Stripe-event-driven notifications only
+// Social Echo Blueprint v8.6 — Stripe-event-driven notifications only
 
 function mapPlanFromPriceId(priceId?: string) {
   if (!priceId) return undefined;
@@ -401,12 +401,28 @@ export async function POST(req: NextRequest) {
             });
             
             // Update the plan in our database to match Stripe
+            const newPlan = currentPlanFromPrice.planLabel.toLowerCase() as 'starter' | 'pro' | 'agency';
+            
+            // Clear pending downgrade state if switching to Starter (v8.6)
+            const updateData: any = {
+              plan: newPlan,
+              usageLimit: currentPlanFromPrice.usageLimit,
+            };
+            
+            if (newPlan === 'starter' && userSub.pendingPlan === 'starter') {
+              console.log('[webhook] Clearing pending downgrade state - downgrade completed:', {
+                userId: userSub.userId,
+                scheduleId: userSub.scheduleId,
+              });
+              updateData.pendingPlan = null;
+              updateData.pendingAt = null;
+              updateData.scheduleId = null;
+              updateData.cancelAtPeriodEnd = false;
+            }
+            
             await prisma.subscription.update({
               where: { id: userSub.id },
-              data: { 
-                plan: currentPlanFromPrice.planLabel.toLowerCase() as 'starter' | 'pro' | 'agency',
-                usageLimit: currentPlanFromPrice.usageLimit,
-              },
+              data: updateData,
             });
           }
         } catch (err) {

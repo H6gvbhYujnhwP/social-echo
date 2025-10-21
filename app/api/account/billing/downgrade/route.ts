@@ -8,7 +8,7 @@ import Stripe from 'stripe';
 
 export const runtime = 'nodejs';
 
-// Social Echo Blueprint v8.4 — unified Stripe API version (2024-06-20)
+// Social Echo Blueprint v8.6 — unified Stripe API version (2024-06-20)
 
 /**
  * POST /api/account/billing/downgrade
@@ -149,11 +149,15 @@ export async function POST(request: NextRequest) {
       phase2Price: starterPriceId,
     });
 
-    // Update local database to mark downgrade scheduled
+    // Update local database to persist pending downgrade state (v8.6)
+    const effectiveAt = new Date(currentPeriodEnd * 1000);
     await prisma.subscription.update({
       where: { id: subscription.id },
       data: {
-        cancelAtPeriodEnd: true, // Reuse this field to indicate scheduled change
+        cancelAtPeriodEnd: true, // Keep for backward compatibility
+        pendingPlan: 'starter',
+        pendingAt: effectiveAt,
+        scheduleId: schedule.id,
       }
     });
 
@@ -167,8 +171,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      currentPeriodEnd,
-      effectiveDate: new Date(currentPeriodEnd * 1000).toISOString(),
+      pendingPlan: 'starter',
+      effectiveAt: effectiveAt.toISOString(),
       scheduleId: schedule.id
     });
 

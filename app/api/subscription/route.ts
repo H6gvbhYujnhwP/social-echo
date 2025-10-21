@@ -36,5 +36,10 @@ export async function GET() {
     trialEnd: user.subscription.trialEnd,
     isTrial: isTrial || isTrialing,
     isTrialExpired,
+    // v8.6: Pending downgrade state
+    pendingPlan: user.subscription.pendingPlan,
+    pendingAt: user.subscription.pendingAt,
+    scheduleId: user.subscription.scheduleId,
+    cancelAtPeriodEnd: user.subscription.cancelAtPeriodEnd,
   });
 }

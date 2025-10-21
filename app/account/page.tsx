@@ -16,6 +16,10 @@ interface Subscription {
   currentPeriodEnd: string
   cancelAtPeriodEnd: boolean
   trialEnd?: string
+  // v8.6: Pending downgrade state
+  pendingPlan?: string | null
+  pendingAt?: string | null
+  scheduleId?: string | null
 }
 
 interface Invoice {
@@ -94,11 +98,27 @@ function AccountPageInner() {
       headers: { 'Cache-Control': 'no-cache' }
     })
       .then(res => res.json())
-      .then(data => {
+      .then(async (data) => {
         setSubscription(data)
         setSelectedPlan(data.plan === 'pro' ? 'pro' : 'starter')
         // Check for both Stripe trials ('trialing') and admin trials ('trial')
         setIsTrialing(data.status === 'trialing' || data.status === 'trial')
+        
+        // v8.6: Reconcile pending downgrade state from Stripe if not in database
+        if (!data.pendingPlan && data.plan === 'pro') {
+          try {
+            const reconcileRes = await fetch('/api/account/billing/reconcile-schedule')
+            if (reconcileRes.ok) {
+              const reconcileData = await reconcileRes.json()
+              if (reconcileData.pendingPlan) {
+                setSubscription({ ...data, ...reconcileData })
+              }
+            }
+          } catch (err) {
+            console.error('Failed to reconcile schedule:', err)
+          }
+        }
+        
         setLoading(false)
       })
       .catch(err => {
@@ -331,7 +351,7 @@ function AccountPageInner() {
         const data = await res.json()
 
         if (res.ok) {
-          const effectiveDate = new Date(data.effectiveDate).toLocaleDateString('en-GB')
+          const effectiveDate = new Date(data.effectiveAt).toLocaleDateString('en-GB')
           setMessage({ 
             type: 'success', 
             text: `Downgrade scheduled. Your plan will switch to Starter on ${effectiveDate}. Next bill will be £29.99.` 
@@ -351,6 +371,34 @@ function AccountPageInner() {
 
     // No change or invalid change
     setMessage({ type: 'error', text: 'Invalid plan change' })
+  }
+
+  const handleCancelDowngrade = async () => {
+    setActionLoading(true)
+    setMessage(null)
+
+    try {
+      const res = await fetch('/api/account/billing/cancel-downgrade', {
+        method: 'POST'
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setMessage({ 
+          type: 'success', 
+          text: 'Scheduled downgrade cancelled. You will remain on Pro plan.' 
+        })
+        // Refresh subscription data
+        window.location.reload()
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed to cancel downgrade' })
+        setActionLoading(false)
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Failed to cancel downgrade' })
+      setActionLoading(false)
+    }
   }
 
   const handleUpgradeConfirm = async () => {
@@ -774,6 +822,34 @@ function AccountPageInner() {
           {/* Billing Tab */}
           {activeTab === 'billing' && (
             <div className="space-y-6">
+              {/* Pending Downgrade Banner (v8.6) */}
+              {subscription?.pendingPlan === 'starter' && subscription?.pendingAt && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-yellow-500/20 backdrop-blur-lg rounded-xl p-4 border border-yellow-500/40"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-3">
+                      <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-white font-medium">Downgrade Scheduled</p>
+                        <p className="text-white/80 text-sm mt-1">
+                          Your plan will switch to Starter on {new Date(subscription.pendingAt).toLocaleDateString('en-GB')}. You'll keep Pro benefits until then.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleCancelDowngrade}
+                      disabled={actionLoading}
+                      className="bg-white/20 hover:bg-white/30 text-white font-medium py-1.5 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap ml-4"
+                    >
+                      {actionLoading ? 'Cancelling...' : 'Cancel Downgrade'}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Plan Management */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -790,10 +866,16 @@ function AccountPageInner() {
                         value="starter"
                         checked={selectedPlan === 'starter'}
                         onChange={(e) => setSelectedPlan(e.target.value as 'starter' | 'pro')}
+                        disabled={!!subscription?.pendingPlan}
                         className="w-4 h-4"
                       />
                       <div className="flex-1">
-                        <p className="text-white font-medium">Starter Plan</p>
+                        <p className="text-white font-medium">
+                          Starter Plan
+                          {subscription?.pendingPlan === 'starter' && subscription?.pendingAt && (
+                            <span className="ml-2 text-yellow-400 text-sm">(scheduled at renewal)</span>
+                          )}
+                        </p>
                         <p className="text-white/60 text-sm">£29.99/month • 8 posts per month</p>
                       </div>
                     </label>
@@ -804,21 +886,29 @@ function AccountPageInner() {
                         value="pro"
                         checked={selectedPlan === 'pro'}
                         onChange={(e) => setSelectedPlan(e.target.value as 'starter' | 'pro')}
+                        disabled={!!subscription?.pendingPlan}
                         className="w-4 h-4"
                       />
                       <div className="flex-1">
-                        <p className="text-white font-medium">Pro Plan</p>
+                        <p className="text-white font-medium">
+                          Pro Plan
+                          {subscription?.plan === 'pro' && subscription?.pendingPlan === 'starter' && subscription?.pendingAt && (
+                            <span className="ml-2 text-white/60 text-sm">(ends {new Date(subscription.pendingAt).toLocaleDateString('en-GB')})</span>
+                          )}
+                        </p>
                         <p className="text-white/60 text-sm">£49.99/month • 30 posts per month</p>
                       </div>
                     </label>
                   </div>
-                 <button
-                   onClick={isTrialing ? handleSubscribe : handleChangePlan}
-                   disabled={actionLoading || (!isTrialing && selectedPlan === subscription?.plan)}
-                   className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                 {!subscription?.pendingPlan && (
+                   <button
+                     onClick={isTrialing ? handleSubscribe : handleChangePlan}
+                     disabled={actionLoading || (!isTrialing && selectedPlan === subscription?.plan)}
+                     className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                    >
                      {actionLoading ? (isTrialing ? 'Loading...' : 'Changing...') : (isTrialing ? 'Subscribe' : 'Change Plan')}
                    </button>
+                 )}
                 </div>
               </motion.div>
 
