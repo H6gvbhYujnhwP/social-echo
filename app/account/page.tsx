@@ -808,7 +808,7 @@ function AccountPageInner() {
                       />
                       <div className="flex-1">
                         <p className="text-white font-medium">Pro Plan</p>
-                        <p className="text-white/60 text-sm">£49.99/month • 20 posts per month</p>
+                        <p className="text-white/60 text-sm">£49.99/month • 30 posts per month</p>
                       </div>
                     </label>
                   </div>

@@ -8,6 +8,8 @@ import Stripe from 'stripe';
 
 export const runtime = 'nodejs';
 
+// Social Echo Blueprint v8.3 — unified Stripe API version (2024-06-20)
+
 /**
  * POST /api/account/billing/downgrade
  * 
