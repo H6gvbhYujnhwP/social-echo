@@ -95,18 +95,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Create schedule phases (price-based, NO item id)
-    // Phase 1: Keep Pro until current period end
+    // Phase 1: Keep Pro until current period end (start_date is implicit from subscription)
     // Phase 2: Switch to Starter at renewal
     const phases = [
       {
         items: [{ price: proPriceId, quantity: 1 }],
-        start_date: currentPeriodStart,
         end_date: currentPeriodEnd,
         proration_behavior: 'none' as const,
       },
       {
         items: [{ price: starterPriceId, quantity: 1 }],
-        start_date: currentPeriodEnd,
         proration_behavior: 'none' as const,
       },
     ];
