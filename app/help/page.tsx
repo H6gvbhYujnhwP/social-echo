@@ -1,6 +1,6 @@
 'use client'
 
-import { helpContent } from '../(marketing)/help/content'
+import { helpContent } from './content'
 import Link from 'next/link'
 import Container from '@/components/layout/Container'
 import { useSession } from 'next-auth/react'
