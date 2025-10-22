@@ -215,7 +215,7 @@ export function TodayPanel({
         {/* User Brief Input */}
         {!todayDraft && (
           <div className="mb-4">
-            <label htmlFor="user-brief" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="user-brief" className="block text-sm font-medium text-slate-700 mb-2">
               Brief the AI (optional)
             </label>
             <textarea
@@ -224,7 +224,7 @@ export function TodayPanel({
               onChange={(e) => onUserPromptChange?.(e.target.value)}
               placeholder="e.g., 'Talk about our new product launch' or 'Focus on cost savings for SMEs'"
               rows={2}
-              className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
             />
           </div>
         )}
