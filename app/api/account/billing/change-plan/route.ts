@@ -81,16 +81,23 @@ export async function POST(request: NextRequest) {
     const subscriptionItemId = currentItem.id;
 
     // Update the existing item (replace, don't add)
+    const updateParams: Stripe.SubscriptionUpdateParams = {
+      cancel_at_period_end: false,
+      items: [{ id: subscriptionItemId, price: targetPriceId }],
+      billing_cycle_anchor: 'now',
+      proration_behavior: 'none',
+      payment_behavior: 'default_incomplete',
+      payment_settings: { save_default_payment_method: 'on_subscription' },
+    };
+
+    // If subscription is trialing, end trial immediately to avoid billing_cycle_anchor conflict
+    if (stripeSubscription.status === 'trialing') {
+      updateParams.trial_end = 'now';
+    }
+
     const updated = await stripe.subscriptions.update(
       subscription.stripeSubscriptionId,
-      {
-        cancel_at_period_end: false,
-        items: [{ id: subscriptionItemId, price: targetPriceId }],
-        billing_cycle_anchor: 'now',
-        proration_behavior: 'none',
-        payment_behavior: 'default_incomplete',
-        payment_settings: { save_default_payment_method: 'on_subscription' },
-      }
+      updateParams
     );
 
     console.log('[billing/change-plan] updated', { sub: updated.id, price: targetPriceId });
