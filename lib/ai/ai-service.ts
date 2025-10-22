@@ -100,6 +100,7 @@ export type ProfileData = {
   keywords: string[]
   website?: string | null
   rotation?: string | null
+  country?: string | null  // User's country for localized content
 }
 
 /**
