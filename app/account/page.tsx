@@ -907,11 +907,11 @@ function AccountPageInner() {
                   </div>
                  {!subscription?.pendingPlan && (
                    <button
-                     onClick={isTrialing ? handleSubscribe : handleChangePlan}
-                     disabled={actionLoading || (!isTrialing && selectedPlan === subscription?.plan)}
+                     onClick={handleChangePlan}
+                     disabled={actionLoading || selectedPlan === subscription?.plan}
                      className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                    >
-                     {actionLoading ? (isTrialing ? 'Loading...' : 'Changing...') : (isTrialing ? 'Subscribe' : 'Change Plan')}
+                     {actionLoading ? 'Changing...' : 'Change Plan'}
                    </button>
                  )}
                 </div>
