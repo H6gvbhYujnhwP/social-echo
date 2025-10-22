@@ -79,6 +79,7 @@ model Profile {
   usp               String   // Unique Selling Point
   keywords          String[] // Array of keywords
   rotation          String   // 'serious' | 'quirky'
+  country           String?  // User's country for localized content (UK, US, CA, AU, etc.)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
