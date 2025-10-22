@@ -60,17 +60,17 @@ export interface Planner {
   days: PlannerDay[];
 }
 
-// Default weekly schedule: 3 Advice, 3 Informational, 1 Selling
+// Default weekly schedule (v8.8): 3 Info/Advice, 2 Random, 1 News, 1 Selling
 const DEFAULT_PLANNER: Planner = {
   version: 1,
   days: [
-    { day: 'mon', type: 'informational', enabled: true },
-    { day: 'tue', type: 'advice', enabled: true },
-    { day: 'wed', type: 'informational', enabled: true },
-    { day: 'thu', type: 'advice', enabled: true },
+    { day: 'mon', type: 'information_advice', enabled: true },
+    { day: 'tue', type: 'random', enabled: true },
+    { day: 'wed', type: 'information_advice', enabled: true },
+    { day: 'thu', type: 'news', enabled: true },
     { day: 'fri', type: 'selling', enabled: true },
-    { day: 'sat', type: 'advice', enabled: true },
-    { day: 'sun', type: 'informational', enabled: true },
+    { day: 'sat', type: 'random', enabled: true },
+    { day: 'sun', type: 'information_advice', enabled: true },
   ]
 };
 
