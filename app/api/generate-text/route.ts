@@ -8,6 +8,10 @@ import {
   type TextGenerationResponse 
 } from '@/lib/contract'
 import { buildAndGenerateDraft, type LearningSignals, type ProfileData } from '@/lib/ai/ai-service'
+import { buildAndGenerateDraftV8 } from '@/lib/ai/ai-service-v8.8'
+
+// Feature flag for v8.8 generation (set to true to enable)
+const USE_V8_8_GENERATION = true
 
 // Force Node.js runtime (OpenAI SDK doesn't work well in Edge)
 export const runtime = 'nodejs'
@@ -252,25 +256,43 @@ export async function POST(request: NextRequest) {
       usp: profile.usp,
       keywords: profile.keywords,
       website: profile.website,
-      rotation: profile.rotation
+      rotation: profile.rotation,
+      country: profile.country || null  // v8.8: country for localized content
     }
     
-    console.log('[generate-text] Calling centralized AI service...')
+    console.log('[generate-text] Calling AI service...', USE_V8_8_GENERATION ? 'v8.8' : 'legacy')
     
-    // Call centralized AI service
+    // Call AI service (v8.8 or legacy based on feature flag)
     let draft
     try {
-      draft = await buildAndGenerateDraft({
-        userId,
-        postType: validatedRequest.post_type,
-        profile: profileData,
-        learningSignals,
-        twists: {
-          toneOverride: validatedRequest.tone !== profile.tone ? validatedRequest.tone : undefined,
-          extraKeywords: validatedRequest.keywords ? validatedRequest.keywords.split(',').map(k => k.trim()) : undefined,
-          note: validatedRequest.user_prompt || undefined
-        }
-      })
+      if (USE_V8_8_GENERATION) {
+        // Use new v8.8 generation with country awareness and diversity engine
+        draft = await buildAndGenerateDraftV8({
+          userId,
+          postType: validatedRequest.post_type,
+          profile: profileData,
+          learningSignals,
+          twists: {
+            toneOverride: validatedRequest.tone !== profile.tone ? validatedRequest.tone : undefined,
+            extraKeywords: validatedRequest.keywords ? validatedRequest.keywords.split(',').map(k => k.trim()) : undefined,
+            note: validatedRequest.user_prompt || undefined
+          },
+          useDiversityEngine: true
+        })
+      } else {
+        // Use legacy generation
+        draft = await buildAndGenerateDraft({
+          userId,
+          postType: validatedRequest.post_type,
+          profile: profileData,
+          learningSignals,
+          twists: {
+            toneOverride: validatedRequest.tone !== profile.tone ? validatedRequest.tone : undefined,
+            extraKeywords: validatedRequest.keywords ? validatedRequest.keywords.split(',').map(k => k.trim()) : undefined,
+            note: validatedRequest.user_prompt || undefined
+          }
+        })
+      }
       console.log('[generate-text] Draft generated successfully')
     } catch (aiError: any) {
       console.error('[generate-text] AI service error:', aiError)
