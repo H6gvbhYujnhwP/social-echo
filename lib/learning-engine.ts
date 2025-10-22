@@ -1,6 +1,7 @@
 'use client'
 
 import { getPostHistory, getFeedbackStats, UserProfile, PostType } from './localstore'
+import { normalizePostType } from './post-type-mapping'
 
 export interface LearningInsights {
   // Tone adjustments
@@ -60,8 +61,8 @@ export function analyzeFeedback(profile: UserProfile): LearningInsights {
     },
     postTypePerformance: {
       selling: { upvotes: 0, downvotes: 0, score: 0 },
-      informational: { upvotes: 0, downvotes: 0, score: 0 },
-      advice: { upvotes: 0, downvotes: 0, score: 0 },
+      information_advice: { upvotes: 0, downvotes: 0, score: 0 },
+      random: { upvotes: 0, downvotes: 0, score: 0 },
       news: { upvotes: 0, downvotes: 0, score: 0 }
     },
     totalFeedback: stats.totalFeedback,
@@ -71,12 +72,26 @@ export function analyzeFeedback(profile: UserProfile): LearningInsights {
   // Calculate post type performance
   Object.keys(stats.byPostType).forEach(type => {
     const postType = type as PostType
+    const normalizedType = normalizePostType(postType)
     const { up, down } = stats.byPostType[postType]
     const total = up + down
-    insights.postTypePerformance[postType] = {
-      upvotes: up,
-      downvotes: down,
-      score: total > 0 ? (up - down) / total : 0
+    
+    // Initialize if not exists
+    if (!insights.postTypePerformance[normalizedType]) {
+      insights.postTypePerformance[normalizedType] = { upvotes: 0, downvotes: 0, score: 0 }
+    }
+    
+    // Accumulate stats for normalized type (handles legacy types)
+    const currentUpvotes = insights.postTypePerformance[normalizedType].upvotes
+    const currentDownvotes = insights.postTypePerformance[normalizedType].downvotes
+    const newUpvotes = currentUpvotes + up
+    const newDownvotes = currentDownvotes + down
+    const newTotal = newUpvotes + newDownvotes
+    
+    insights.postTypePerformance[normalizedType] = {
+      upvotes: newUpvotes,
+      downvotes: newDownvotes,
+      score: newTotal > 0 ? (newUpvotes - newDownvotes) / newTotal : 0
     }
   })
   
