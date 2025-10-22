@@ -10,6 +10,7 @@ import { ImagePanel } from '../../components/ImagePanel'
 import { LearningProgress, type LearningProgressRef } from '../../components/LearningProgress'
 import HistoryDrawer from '../../components/HistoryDrawer'
 import TrialExhaustedModal from '../../components/TrialExhaustedModal'
+import { TrialCountdown } from '../../components/TrialCountdown'
 import { UserProfile, getProfile, getOrCreatePlanner, savePostHistory, type Planner, type PostType } from '../../lib/localstore'
 import Link from 'next/link'
 
@@ -622,18 +623,17 @@ export default function DashboardPage() {
                           style={{ width: `${Math.min((subscription.usageCount / subscription.usageLimit) * 100, 100)}%` }}
                         />
                       </div>
-                    </div>                   {subscription.trialEnd && (
+                    </div>
+                    {subscription.trialEnd && (
                       <>
                         <span className="hidden sm:block text-white/50">•</span>
                         <span className="text-white/90 text-sm">
                           {subscription.isTrialExpired ? (
                             <span className="text-red-200 font-semibold">Trial Expired</span>
                           ) : (
-                            <>Expires: {new Date(subscription.trialEnd).toLocaleDateString('en-GB', { 
-                              day: 'numeric', 
-                              month: 'short', 
-                              year: 'numeric'
-                            })}</>
+                            <>
+                              Ends in: <TrialCountdown trialEnd={subscription.trialEnd} className="text-white" />
+                            </>
                           )}
                         </span>
                       </>

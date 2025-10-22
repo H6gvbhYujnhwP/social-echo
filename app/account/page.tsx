@@ -9,6 +9,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import Container from '../../components/layout/Container'
 import UpgradeModal from '../../components/UpgradeModal'
+import { TrialCountdown } from '../../components/TrialCountdown'
 
 interface Subscription {
   plan: string
@@ -540,10 +541,12 @@ function AccountPageInner() {
               <span className="text-2xl">🎉</span>
               <div>
                 <p className="text-white font-semibold text-sm sm:text-base break-words min-w-0">
-                  Free trial active — You'll be billed on {trialEndDate.toLocaleDateString('en-GB', { 
+                  Free trial active — Ends in: <TrialCountdown trialEnd={trialEndDate} className="text-white" />
+                </p>
+                <p className="text-white/80 text-xs sm:text-sm mt-1">
+                  You'll be billed on {trialEndDate.toLocaleDateString('en-GB', { 
                     day: 'numeric', 
                     month: 'long', 
-                    year: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit'
                   })} unless you cancel.
