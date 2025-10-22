@@ -79,6 +79,9 @@ export async function syncSubscriptionFromStripe(
     const currentPeriodStart = new Date((sub.current_period_start || Date.now() / 1000) * 1000);
     const currentPeriodEnd = new Date((sub.current_period_end || (Date.now() / 1000 + 30 * 24 * 3600)) * 1000);
 
+    // Extract trial end timestamp if present
+    const trialEnd = sub.trial_end ? new Date(sub.trial_end * 1000) : null;
+
     // Check if this is a new billing period (reset usage)
     const existingSubscription = await prisma.subscription.findUnique({
       where: { userId }
@@ -105,6 +108,7 @@ export async function syncSubscriptionFromStripe(
           stripeSubscriptionId: subscription.id,
           currentPeriodStart,
           currentPeriodEnd,
+          trialEnd,
         },
         update: {
           plan,
@@ -117,6 +121,7 @@ export async function syncSubscriptionFromStripe(
           stripeSubscriptionId: subscription.id,
           currentPeriodStart,
           currentPeriodEnd,
+          trialEnd,
         }
       });
     });
