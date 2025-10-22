@@ -82,7 +82,12 @@ export function postTypeDisplay(postType: string): PostTypeDisplay {
 }
 
 /**
- * Map display label to post type key (for form submissions)
+ * Alias for postTypeDisplay (for backward compatibility)
+ */
+export const getPostTypeDisplayLabel = postTypeDisplay
+
+/**
+ * Map display label to post type key
  */
 export function displayToPostType(display: PostTypeDisplay): PostTypeKey {
   const config = POST_TYPE_CONFIGS.find(c => c.display === display)
