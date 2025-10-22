@@ -1,0 +1,9 @@
+ignoredBuiltDependencies:
+  - '@prisma/engines'
+  - bcrypt
+  - prisma
+  - tesseract.js
+  - unrs-resolver
+
+onlyBuiltDependencies:
+  - '@prisma/client'

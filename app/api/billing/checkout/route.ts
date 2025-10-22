@@ -176,7 +176,9 @@ export async function POST(request: NextRequest) {
           plan: plan,
           quantity: quantity.toString(),
           isAgencyPlan: isAgencyPlan.toString(),
-        }
+        },
+        // 24-hour trial for Starter plan only
+        trial_period_days: plan === 'SocialEcho_Starter' ? 1 : undefined,
       },
       allow_promotion_codes: true,
       billing_address_collection: 'required',

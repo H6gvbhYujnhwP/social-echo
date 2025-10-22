@@ -148,7 +148,9 @@ export async function POST(req: Request) {
           userId: user.id,
           plan: plan,
           priceId: priceId,
-        }
+        },
+        // 24-hour trial for Starter plan only
+        trial_period_days: plan === 'starter' ? 1 : undefined,
       },
       
       metadata: {
