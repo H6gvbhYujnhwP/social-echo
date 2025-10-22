@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
       select: { id: true, name: true, email: true }
     })
     
-    const userMap = new Map<string, { name: string | null; email: string | null }>(users.map(u => [u.id, { name: u.name, email: u.email }]))
+    const userMap = new Map(users.map(u => [u.id, u]))
     
     // Enrich history with user info
     const enrichedHistory = history.map(h => ({

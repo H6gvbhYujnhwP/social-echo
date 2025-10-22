@@ -248,8 +248,8 @@ export function getFeedbackStats(): {
     downvotes: withFeedback.filter(p => p.feedback?.feedback === 'down').length,
     byPostType: {
       selling: { up: 0, down: 0 },
-      information_advice: { up: 0, down: 0 },
-      random: { up: 0, down: 0 },
+      informational: { up: 0, down: 0 },
+      advice: { up: 0, down: 0 },
       news: { up: 0, down: 0 }
     } as Record<PostType, { up: number; down: number }>,
     byTone: {
@@ -257,27 +257,18 @@ export function getFeedbackStats(): {
       casual: { up: 0, down: 0 },
       funny: { up: 0, down: 0 },
       bold: { up: 0, down: 0 }
-    } as Record<UserProfile['tone'], { up: number; down: number }>
+    } as Record<UserProfile['tone'], { up: number; down: 0 }>
   };
   
   withFeedback.forEach(post => {
     if (!post.feedback) return;
     
-    // Normalize legacy post types to canonical
-    const rawType = post.postType as string;
-    let normalizedType: PostType;
-    if (rawType === 'informational' || rawType === 'advice') {
-      normalizedType = 'information_advice';
-    } else {
-      normalizedType = post.postType;
-    }
-    
     const feedbackType = post.feedback.feedback;
     if (feedbackType === 'up') {
-      stats.byPostType[normalizedType].up++;
+      stats.byPostType[post.postType].up++;
       stats.byTone[post.tone].up++;
     } else {
-      stats.byPostType[normalizedType].down++;
+      stats.byPostType[post.postType].down++;
       stats.byTone[post.tone].down++;
     }
   });

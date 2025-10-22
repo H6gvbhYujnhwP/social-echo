@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
       // Fetch full subscription details to check trial status
       let stripeSubscription;
       let subscriptionStatus = 'active';
-      let trialEnd: Date | null = null;
+      let trialEnd = null;
       
       if (subId) {
         try {
