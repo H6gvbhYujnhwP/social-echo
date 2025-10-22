@@ -17,7 +17,8 @@ const ProfileSchema = z.object({
   target_audience: z.string().min(1, 'Target audience is required'),
   usp: z.string().min(1, 'USP is required'),
   keywords: z.array(z.string()), // Allow empty array - keywords are optional
-  rotation: z.enum(['serious', 'quirky'])
+  rotation: z.enum(['serious', 'quirky']),
+  country: z.string().optional() // v8.8: optional country for localized content
 })
 
 // GET profile
@@ -56,7 +57,8 @@ export async function GET(request: NextRequest) {
       target_audience: profile.target_audience,
       usp: profile.usp,
       keywords: profile.keywords,
-      rotation: profile.rotation
+      rotation: profile.rotation,
+      country: profile.country || null  // v8.8: country for localized content
     }, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
@@ -101,7 +103,8 @@ export async function POST(request: NextRequest) {
       target_audience: validated.target_audience,
       usp: validated.usp,
       keywords: validated.keywords,
-      rotation: validated.rotation
+      rotation: validated.rotation,
+      country: validated.country || null  // v8.8: optional country
     }
     
     // Upsert profile (create if doesn't exist, update if exists)
@@ -116,7 +119,8 @@ export async function POST(request: NextRequest) {
         target_audience: profileData.target_audience,
         usp: profileData.usp,
         keywords: profileData.keywords,
-        rotation: profileData.rotation
+        rotation: profileData.rotation,
+        country: profileData.country  // v8.8: optional country
       },
       create: profileData
     })
@@ -134,7 +138,8 @@ export async function POST(request: NextRequest) {
         target_audience: profile.target_audience,
         usp: profile.usp,
         keywords: profile.keywords,
-        rotation: profile.rotation
+        rotation: profile.rotation,
+        country: profile.country || null  // v8.8: optional country
       }
     }, {
       headers: {
