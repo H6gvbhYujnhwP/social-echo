@@ -11,8 +11,15 @@
 
 /**
  * Post type keys (internal, stored in database)
+ * Includes both canonical and legacy types for backward compatibility
  */
 export type PostTypeKey = 'selling' | 'information_advice' | 'random' | 'news' | 'informational' | 'advice'
+
+/**
+ * Canonical post type keys (v8.8)
+ * These are the only types used in the application after normalization
+ */
+export type CanonicalPostTypeKey = 'selling' | 'information_advice' | 'random' | 'news'
 
 /**
  * Post type display labels (shown in UI)
@@ -130,8 +137,9 @@ export function isValidPostType(postType: string): boolean {
 
 /**
  * Normalize post type key (convert legacy to current)
+ * Always returns a canonical post type
  */
-export function normalizePostType(postType: string): PostTypeKey {
+export function normalizePostType(postType: string): CanonicalPostTypeKey {
   if (postType === 'informational' || postType === 'advice') {
     return 'information_advice'
   }
