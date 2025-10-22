@@ -453,6 +453,28 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
         <FieldHelp text="Serious = Professional business stories about growth, challenges, and solutions. Quirky = Light-hearted, funny business stories with relatable moments. You can change this anytime in your profile." />
       </div>
 
+      {/* Country */}
+      <div>
+        <Select
+          label="Country"
+          value={formData.country || ''}
+          onChange={(e) => updateField('country', e.target.value)}
+          options={[
+            { value: '', label: 'Not specified (neutral international)' },
+            { value: 'United Kingdom', label: '🇬🇧 United Kingdom' },
+            { value: 'United States', label: '🇺🇸 United States' },
+            { value: 'Canada', label: '🇨🇦 Canada' },
+            { value: 'Australia', label: '🇦🇺 Australia' },
+            { value: 'Ireland', label: '🇮🇪 Ireland' },
+            { value: 'New Zealand', label: '🇳🇿 New Zealand' },
+            { value: 'India', label: '🇮🇳 India' },
+            { value: 'South Africa', label: '🇿🇦 South Africa' },
+            { value: 'Other', label: 'Other' },
+          ]}
+        />
+        <FieldHelp text="Your country helps us generate content with the right spelling (colour vs color), currency (£ vs $), holidays, and cultural references. Leave blank for neutral international English." />
+      </div>
+
       {/* Submit Button */}
       <div className="pt-6 border-t border-white/10">
         <Button

@@ -10,6 +10,7 @@ export interface UserProfile {
   usp: string  // Unique Selling Point
   keywords: string[]
   rotation: 'serious' | 'quirky'
+  country?: string  // User's country for localized content (optional)
 }
 
 export function getProfile(): UserProfile | null {

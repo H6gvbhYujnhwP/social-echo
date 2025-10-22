@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { X, Clock, RotateCcw, Eye, Loader2 } from 'lucide-react'
+import { postTypeDisplay, getPostTypeIcon } from '@/lib/post-type-mapping'
 
 interface HistoryItem {
   id: string
@@ -229,7 +230,7 @@ export default function HistoryDrawer({
 
                     {/* Metadata */}
                     <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3">
-                      <span className="capitalize">{item.postType}</span>
+                      <span>{getPostTypeIcon(item.postType)} {postTypeDisplay(item.postType)}</span>
                       <span>•</span>
                       <span className="capitalize">{item.tone}</span>
                       <span>•</span>

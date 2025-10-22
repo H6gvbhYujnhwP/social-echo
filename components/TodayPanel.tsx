@@ -11,6 +11,7 @@ import { FeedbackButtons } from './FeedbackButtons'
 import { UserProfile, getTodayPostType, type PostType } from '../lib/localstore'
 import { GeneratedDraft } from '../app/dashboard/page'
 import UsageCounter from './UsageCounter'
+import { POST_TYPE_CONFIGS, postTypeDisplay, getPostTypeIcon } from '@/lib/post-type-mapping'
 
 interface TodayPanelProps {
   profile: UserProfile
@@ -96,11 +97,11 @@ export function TodayPanel({
             <div className="flex items-center space-x-2">
             <Badge className={`${
               effectivePostType === 'selling' ? 'bg-green-100 text-green-800 border-green-200' :
-              effectivePostType === 'informational' ? 'bg-blue-100 text-blue-800 border-blue-200' :
-              effectivePostType === 'advice' ? 'bg-purple-100 text-purple-800 border-purple-200' :
+              effectivePostType === 'information_advice' || effectivePostType === 'informational' || effectivePostType === 'advice' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+              effectivePostType === 'random' ? 'bg-purple-100 text-purple-800 border-purple-200' :
               'bg-orange-100 text-orange-800 border-orange-200'
             }`}>
-              {effectivePostType.charAt(0).toUpperCase() + effectivePostType.slice(1)}
+              {getPostTypeIcon(effectivePostType)} {postTypeDisplay(effectivePostType)}
             </Badge>
             {postTypeMode === 'auto' && todayPlan && (
               <Badge className="bg-gray-100 text-gray-800 border-gray-200">
@@ -157,17 +158,18 @@ export function TodayPanel({
             >
               Auto (Planner)
             </button>
-            {(['informational', 'advice', 'selling', 'news'] as PostType[]).map((type) => (
+            {POST_TYPE_CONFIGS.map((config) => (
               <button
-                key={type}
-                onClick={() => onPostTypeChange(type)}
+                key={config.key}
+                onClick={() => onPostTypeChange(config.key as PostType)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  postTypeMode === type
+                  postTypeMode === config.key
                     ? 'bg-purple-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
+                title={config.description}
               >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
+                {config.icon} {config.display}
               </button>
             ))}
           </div>

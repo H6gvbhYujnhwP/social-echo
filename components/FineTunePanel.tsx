@@ -6,6 +6,7 @@ import { Edit3, X, Sparkles } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Textarea } from './ui/Textarea'
 import { UserProfile, type PostType } from '../lib/localstore'
+import { POST_TYPE_CONFIGS } from '@/lib/post-type-mapping'
 
 interface FineTunePanelProps {
   profile: UserProfile
@@ -76,17 +77,18 @@ export function FineTunePanel({
             >
               Auto (Planner)
             </button>
-            {(['informational', 'advice', 'selling', 'news'] as PostType[]).map((type) => (
+            {POST_TYPE_CONFIGS.map((config) => (
               <button
-                key={type}
-                onClick={() => setPostType(type)}
+                key={config.key}
+                onClick={() => setPostType(config.key as PostType)}
                 className={`px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                  postType === type
+                  postType === config.key
                     ? 'bg-purple-600 text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
+                title={config.description}
               >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
+                {config.icon} {config.display}
               </button>
             ))}
           </div>
