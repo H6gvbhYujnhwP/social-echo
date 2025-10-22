@@ -145,7 +145,8 @@ export function normalizePostType(postType: string): CanonicalPostTypeKey {
   }
   
   const config = POST_TYPE_CONFIGS.find(c => c.key === postType)
-  return config?.key || 'information_advice'
+  const key = config?.key as CanonicalPostTypeKey | undefined
+  return key || 'information_advice'
 }
 
 /**
