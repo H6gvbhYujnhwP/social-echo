@@ -143,21 +143,18 @@ export function getDefaultImageTypeForPostType(postType: string, postText: strin
     return 'illustration'
   }
 
-  if (postType === 'advice') {
+  // Information & Advice (includes legacy 'advice' and 'informational')
+  if (postType === 'information_advice' || postType === 'advice' || postType === 'informational') {
     if (textLower.includes('step') || textLower.includes('how to') || textLower.includes('guide')) {
       return 'illustration'
     }
-    return 'conceptual'
-  }
-
-  if (postType === 'informational') {
     if (textLower.includes('data') || textLower.includes('stat') || textLower.includes('%')) {
       return 'infographic'
     }
     if (textLower.includes('funny') || textLower.includes('quirky') || textLower.includes('weird')) {
       return 'funny'
     }
-    return 'illustration'
+    return 'conceptual'
   }
 
   if (postType === 'news') {

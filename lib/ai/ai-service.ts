@@ -134,11 +134,19 @@ export async function buildAndGenerateDraft(opts: {
   const config = await loadAiConfig()
   console.log('[ai-service] Loaded config:', { model: config.textModel, temp: config.temperature })
   
-  // 2. Resolve post type (handle 'auto' from planner)
-  let effectivePostType = opts.postType
+  // 2. Normalize post type (handle legacy types)
+  // Legacy 'informational' and 'advice' map to 'information_advice'
+  let normalizedPostType = opts.postType
+  if (opts.postType === 'informational' || opts.postType === 'advice') {
+    normalizedPostType = 'information_advice' as PostType
+    console.log(`[ai-service] Normalized legacy type '${opts.postType}' -> 'information_advice'`)
+  }
+  
+  // 3. Resolve post type (handle 'auto' from planner)
+  let effectivePostType = normalizedPostType
   if (opts.plannerType === 'auto') {
     // This should already be resolved by the caller, but just in case
-    effectivePostType = opts.postType
+    effectivePostType = normalizedPostType
   }
   
   // Check if post type is allowed
@@ -264,13 +272,15 @@ export async function buildAndGenerateDraft(opts: {
     userPrompt += `\n\nSELLING FRAME:\n- Use PAS (Problem → Agitate → Solution).\n- Real pain: "${pain}"\n- Include a realistic, anonymised mini-story.\n- Present our solution (${opts.profile.products_services}) with 1 crisp benefit and 1 outcome metric.\n- Soft CTA (comment/DM for checklist/demo).`
   }
   
-  // ADVICE: practical steps and a measurable target
-  if (effectivePostType === 'advice') {
-    userPrompt += `\n\nADVICE FRAME:\n- Pick 1 concrete problem ${opts.profile.target_audience} faces.\n- Give 3 steps they can do THIS WEEK.\n- Include 1 small template/checklist line.\n- Include 1 measurable target (e.g., "cut response time from 2d → 2h").\n- Close with: "Reply 'GUIDE' and I'll DM the checklist."`
-  }
+  // INFORMATION & ADVICE: practical steps, insights, and measurable targets
+  const isInfoAdvice = effectivePostType === 'information_advice' || 
+                       effectivePostType === 'informational' || 
+                       effectivePostType === 'advice';
   
-  // INFORMATIONAL: switch among fun/quirky/serious and include a wow stat
-  if (effectivePostType === 'informational') {
+  if (isInfoAdvice) {
+    const mode = pickInfMode()
+    userPrompt += `\n\nINFORMATION & ADVICE FRAME:\n- Pick 1 concrete problem ${opts.profile.target_audience} faces.\n- Give 3 actionable steps they can do THIS WEEK.\n- Include one "wow" stat or insight (source if possible).\n- ${mode === 'serious' ? 'Use authoritative tone.' : ''}\n- ${mode === 'fun' ? 'Use playful language, metaphor or analogy.' : ''}\n- ${mode === 'quirky' ? 'Tell a strange-but-true micro-story.' : ''}\n- Include 1 measurable target (e.g., "cut response time from 2d → 2h").\n- Close with: "Reply 'GUIDE' and I'll DM the checklist."`
+  } else if (effectivePostType === 'informational' || effectivePostType === 'advice') {
     const mode = pickInfMode()
     userPrompt += `\n\nINFO MODE: ${mode.toUpperCase()}\nRules:\n- Include one "wow" stat (source if possible).\n- ${mode === 'serious' ? 'Use authoritative tone.' : ''}\n- ${mode === 'fun' ? 'Use playful language, metaphor or analogy.' : ''}\n- ${mode === 'quirky' ? 'Tell a strange-but-true micro-story.' : ''}\n- Keep it skimmable with short lines.\n- One "so what" for ${opts.profile.target_audience}.`
   }

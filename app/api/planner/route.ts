@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     })
     
     // Ensure all 7 days exist
-    const allDays = []
+    const allDays: Array<{ day: string; type: string; enabled: boolean }> = []
     const dayOrder = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
     
     for (const dayName of dayOrder) {
