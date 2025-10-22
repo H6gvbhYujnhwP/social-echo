@@ -199,7 +199,7 @@ export default function DashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           date: new Date().toISOString().split('T')[0],
-          postType: postTypeMode === 'auto' ? 'informational' : postTypeMode,
+          postType: postTypeMode === 'auto' ? 'information_advice' : postTypeMode,
           tone: profile.tone,
           headlineOptions: todayDraft.headline_options,
           postText: todayDraft.post_text,
@@ -271,7 +271,7 @@ export default function DashboardPage() {
           options?.customPrompt || ''
         ].filter(Boolean).join(', '),
         rotation: profile.rotation,
-        post_type: effectivePostType === 'auto' ? 'informational' : effectivePostType,
+        post_type: effectivePostType === 'auto' ? 'information_advice' : effectivePostType,
         platform: 'linkedin' as const,
         force: false, // Always false - new posts only
         user_prompt: userPrompt || '',
@@ -358,7 +358,7 @@ export default function DashboardPage() {
       
       savePostHistory({
         date: new Date().toISOString().split('T')[0],
-        postType: effectivePostType === 'auto' ? 'informational' : effectivePostType,
+        postType: effectivePostType === 'auto' ? 'information_advice' : effectivePostType,
         tone: (options?.tone as UserProfile['tone']) || profile.tone,
         headlineOptions: data.headline_options,
         postText: data.post_text,
@@ -706,7 +706,7 @@ export default function DashboardPage() {
               visualPrompt={todayDraft?.visual_prompt}
               industry={profile.industry}
               tone={profile.tone}
-              postType={postTypeMode === 'auto' ? 'informational' : postTypeMode}
+              postType={postTypeMode === 'auto' ? 'information_advice' : postTypeMode}
               postHeadline={todayDraft?.headline_options?.[0]}
               postText={todayDraft?.post_text}
               autoSelectedType={todayDraft ? undefined : undefined} // Will be calculated in ImagePanel

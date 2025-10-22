@@ -58,7 +58,7 @@ export function TodayPanel({
   // Get the effective post type
   const getEffectivePostType = (): PostType => {
     if (postTypeMode === 'auto') {
-      return todayPlan?.type || 'informational'
+      return todayPlan?.type || 'information_advice'
     }
     return postTypeMode
   }
@@ -97,7 +97,7 @@ export function TodayPanel({
             <div className="flex items-center space-x-2">
             <Badge className={`${
               effectivePostType === 'selling' ? 'bg-green-100 text-green-800 border-green-200' :
-              effectivePostType === 'information_advice' || effectivePostType === 'informational' || effectivePostType === 'advice' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+              effectivePostType === 'information_advice' ? 'bg-blue-100 text-blue-800 border-blue-200' :
               effectivePostType === 'random' ? 'bg-purple-100 text-purple-800 border-purple-200' :
               'bg-orange-100 text-orange-800 border-orange-200'
             }`}>
