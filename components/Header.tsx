@@ -17,7 +17,6 @@ export function Header() {
                          pathname === '/features' || 
                          pathname === '/pricing' || 
                          pathname === '/resellers' || 
-                         pathname === '/help' ||
                          pathname === '/signup' ||
                          pathname === '/signin'
 
