@@ -299,29 +299,37 @@ export async function buildAndGenerateDraftV8(opts: {
     return parsed as GeneratedDraft
     
   }, {
-    maxAttempts: 3,
-    fallbackAfterAttempts: 2,
-    baseDelay: 1000
+    maxRetries: 2,
+    timeoutMs: 45000,
+    backoffMultiplier: 2,
+    fallbackModel: 'gpt-4o-mini'
   })
   
-  const generationDuration = Date.now() - generationStartTime
-  console.log('[ai-service-v8.8] Generation completed in', generationDuration, 'ms')
+  // Check if generation succeeded
+  if (!result.success || !result.data) {
+    console.error('[ai-service-v8.8] Generation failed after all retries:', result.error?.message)
+    throw result.error || new Error('Generation failed')
+  }
+  
+  const draft = result.data
+  console.log('[ai-service-v8.8] Generation completed in', result.totalDurationMs, 'ms')
+  console.log('[ai-service-v8.8] Attempts:', result.attempts, 'Fallback used:', result.fallbackUsed)
   
   // 13. Apply diversity checks (if enabled)
   if (useDiversity) {
-    const diversityCheck = await checkRepetition(opts.userId, result.post_text, 20)
+    const diversityCheck = await checkRepetition(opts.userId, draft.post_text, 20)
     console.log('[ai-service-v8.8] Diversity check:', {
       isRepetitive: diversityCheck.isRepetitive,
       maxOverlap: diversityCheck.maxOverlap.toFixed(1) + '%',
       avgOverlap: diversityCheck.averageOverlap.toFixed(1) + '%'
     })
     
-    const bannedCheck = containsBannedPhrases(result.post_text)
+    const bannedCheck = containsBannedPhrases(draft.post_text)
     if (bannedCheck.hasBanned) {
       console.warn('[ai-service-v8.8] Contains banned phrases:', bannedCheck.found)
     }
   }
   
-  return result
+  return draft
 }
 
