@@ -9,21 +9,22 @@ export const runtime = 'nodejs'
 
 const PlannerDaySchema = z.object({
   day: z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']),
-  type: z.enum(['informational', 'advice', 'selling', 'news']),
+  // Support both legacy and new post types for backward compatibility
+  type: z.enum(['informational', 'advice', 'selling', 'news', 'information_advice', 'random']),
   enabled: z.boolean()
 })
 
 const PlannerUpdateSchema = z.array(PlannerDaySchema)
 
-// Default planner schedule
+// Default planner schedule (using new v8.8 post types)
 const DEFAULT_SCHEDULE = [
-  { day: 'mon', type: 'informational', enabled: true },
-  { day: 'tue', type: 'advice', enabled: true },
-  { day: 'wed', type: 'informational', enabled: true },
-  { day: 'thu', type: 'advice', enabled: true },
+  { day: 'mon', type: 'information_advice', enabled: true },
+  { day: 'tue', type: 'random', enabled: true },
+  { day: 'wed', type: 'information_advice', enabled: true },
+  { day: 'thu', type: 'news', enabled: true },
   { day: 'fri', type: 'selling', enabled: true },
-  { day: 'sat', type: 'advice', enabled: true },
-  { day: 'sun', type: 'informational', enabled: true }
+  { day: 'sat', type: 'information_advice', enabled: true },
+  { day: 'sun', type: 'random', enabled: true }
 ] as const
 
 // Get planner schedule

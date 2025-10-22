@@ -12,6 +12,7 @@ import {
   type PlannerDay, 
   type PostType 
 } from '../../lib/localstore'
+import { getPostTypeDisplayLabel, getPostTypeIcon, normalizePostType } from '../../lib/post-type-mapping'
 
 const dayLabels = {
   mon: 'Monday',
@@ -23,17 +24,15 @@ const dayLabels = {
   sun: 'Sunday'
 }
 
-const postTypeLabels = {
-  selling: 'Selling',
-  informational: 'Info',
-  advice: 'Advice',
-  news: 'News'
-}
+// Post type options for Planner (using new v8.8 types)
+const postTypeOptions: PostType[] = ['selling', 'information_advice', 'random', 'news']
 
 const postTypeColors = {
   selling: 'bg-green-500/20 text-green-300 border-green-400/30',
-  informational: 'bg-blue-500/20 text-blue-300 border-blue-400/30',
-  advice: 'bg-purple-500/20 text-purple-300 border-purple-400/30',
+  information_advice: 'bg-blue-500/20 text-blue-300 border-blue-400/30',
+  informational: 'bg-blue-500/20 text-blue-300 border-blue-400/30', // Legacy
+  advice: 'bg-purple-500/20 text-purple-300 border-purple-400/30', // Legacy
+  random: 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30',
   news: 'bg-orange-500/20 text-orange-300 border-orange-400/30'
 }
 
@@ -150,7 +149,7 @@ export default function PlannerPage() {
           </div>
           <p className="text-white/80 text-base sm:text-lg max-w-2xl mx-auto px-4 break-words">
             Plan your weekly content mix to build authority, deliver value, and drive sales. 
-            The perfect balance: 3 Advice, 3 Informational, 1 Selling post per week.
+            The perfect balance: 3 Information & Advice, 2 Random / Fun Facts, 1 News, 1 Selling post per week.
           </p>
         </div>
 
@@ -185,26 +184,34 @@ export default function PlannerPage() {
 
               {/* Post Type Pills */}
               <div className="space-y-2 mb-4">
-                {(['selling', 'informational', 'advice', 'news'] as PostType[]).map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => updateDay(day.day, { type })}
-                    className={`w-full px-4 py-2 rounded-lg border transition-all duration-200 text-sm font-medium min-w-0 break-words ${
-                      day.type === type
-                        ? postTypeColors[type]
-                        : 'bg-white/5 text-white/60 border-white/20 hover:bg-white/10 hover:text-white/80'
-                    }`}
-                  >
-                    {postTypeLabels[type]}
-                  </button>
-                ))}
+                {postTypeOptions.map((type) => {
+                  const normalizedType = normalizePostType(type)
+                  const isSelected = normalizePostType(day.type) === normalizedType
+                  const icon = getPostTypeIcon(type)
+                  const label = getPostTypeDisplayLabel(type)
+                  
+                  return (
+                    <button
+                      key={type}
+                      onClick={() => updateDay(day.day, { type })}
+                      className={`w-full px-4 py-2 rounded-lg border transition-all duration-200 text-sm font-medium min-w-0 break-words flex items-center justify-center gap-2 ${
+                        isSelected
+                          ? postTypeColors[type]
+                          : 'bg-white/5 text-white/60 border-white/20 hover:bg-white/10 hover:text-white/80'
+                      }`}
+                    >
+                      <span>{icon}</span>
+                      <span>{label}</span>
+                    </button>
+                  )
+                })}
               </div>
 
               {/* Status */}
               <div className="text-center">
                 {day.enabled ? (
                   <span className="text-green-300 text-sm break-words">
-                    ✓ {postTypeLabels[day.type]} post
+                    ✓ {getPostTypeIcon(day.type)} {getPostTypeDisplayLabel(day.type)} post
                   </span>
                 ) : (
                   <span className="text-red-300 text-sm break-words">
@@ -239,12 +246,21 @@ export default function PlannerPage() {
         <div className="mt-8 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-4 sm:p-6">
           <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 break-words">Weekly Summary</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-center">
-            {(['advice', 'informational', 'selling', 'news'] as PostType[]).map((type) => {
-              const count = planner.days.filter(d => d.enabled && d.type === type).length
+            {postTypeOptions.map((type) => {
+              // Count posts that match this type (including normalized matches)
+              const count = planner.days.filter(d => {
+                if (!d.enabled) return false
+                return normalizePostType(d.type) === normalizePostType(type)
+              }).length
+              const icon = getPostTypeIcon(type)
+              const label = getPostTypeDisplayLabel(type)
+              
               return (
                 <div key={type} className="bg-white/5 rounded-lg p-3 sm:p-4 min-w-0">
                   <div className="text-xl sm:text-2xl font-bold text-white">{count}</div>
-                  <div className="text-sm sm:text-base text-white/70 capitalize break-words">{type}</div>
+                  <div className="text-sm sm:text-base text-white/70 break-words">
+                    {icon} {label}
+                  </div>
                 </div>
               )
             })}
