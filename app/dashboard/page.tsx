@@ -653,12 +653,12 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                {isTrialExhausted && (
+                {(subscription.status === 'trialing' || subscription.status === 'trial' || isTrialExhausted) && (
                   <Link
                     href="/account?tab=billing"
                     className="px-4 py-2 bg-white text-purple-600 font-semibold rounded-lg hover:bg-white/90 transition-colors text-sm"
                   >
-                    Upgrade
+                    {isTrialExhausted ? 'Upgrade' : 'Upgrade to Pro'}
                   </Link>
                 )}
                 <button
