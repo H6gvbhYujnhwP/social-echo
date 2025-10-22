@@ -46,8 +46,8 @@ export function clearProfile(): void {
 }
 
 // Content Mix Planner types and utilities
-// Support both legacy and new v8.8 post types
-export type PostType = 'selling' | 'informational' | 'advice' | 'news' | 'information_advice' | 'random';
+// v8.8 canonical post types (legacy types normalized at runtime)
+export type PostType = 'selling' | 'information_advice' | 'random' | 'news'
 
 export interface PlannerDay {
   day: 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
