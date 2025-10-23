@@ -264,6 +264,7 @@ export async function POST(request: NextRequest) {
     
     // Fetch original post if this is a regeneration
     let originalPostText: string | undefined = undefined
+    let originalCustomisationsUsed = 0
     if (isRegeneration) {
       const originalPost = await prisma.postHistory.findUnique({
         where: { id: postId }
@@ -271,7 +272,8 @@ export async function POST(request: NextRequest) {
       
       if (originalPost) {
         originalPostText = originalPost.postText
-        console.log('[generate-text] Fetched original post for refinement:', postId)
+        originalCustomisationsUsed = originalPost.customisationsUsed || 0
+        console.log('[generate-text] Fetched original post for refinement:', postId, 'customisationsUsed:', originalCustomisationsUsed)
       } else {
         console.warn('[generate-text] Original post not found for refinement:', postId)
       }
@@ -422,7 +424,9 @@ export async function POST(request: NextRequest) {
         postText: draft.post_text || '',
         hashtags: draft.hashtags || [],
         visualPrompt: draft.visual_prompt || '',
-        isRegeneration
+        isRegeneration,
+        // Preserve customisation counter from original post during regeneration
+        customisationsUsed: isRegeneration ? originalCustomisationsUsed : 0
       }
     })
     
