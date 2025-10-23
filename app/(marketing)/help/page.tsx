@@ -3,11 +3,8 @@
 import { helpContent } from './content'
 import Link from 'next/link'
 import Container from '@/components/layout/Container'
-import { useSession } from 'next-auth/react'
 
 export default function HelpPage() {
-  const { data: session } = useSession()
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
       <Container className="py-8 sm:py-12">
@@ -69,35 +66,18 @@ export default function HelpPage() {
           ))}
         </div>
 
-        {/* Footer CTA - Different for authenticated vs unauthenticated */}
+        {/* Footer CTA */}
         <div className="mt-8 sm:mt-12 text-center bg-blue-600 text-white rounded-lg p-6 sm:p-8 min-w-0">
-          {session ? (
-            <>
-              <h3 className="text-xl sm:text-2xl font-bold mb-4 break-words">Ready to Get Started?</h3>
-              <p className="mb-6 break-words px-4">
-                Head to your dashboard and start creating amazing content with your Echo!
-              </p>
-              <Link
-                href="/dashboard"
-                className="inline-block bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition min-w-0"
-              >
-                Go to Dashboard
-              </Link>
-            </>
-          ) : (
-            <>
-              <h3 className="text-xl sm:text-2xl font-bold mb-4 break-words">Ready to Get Started?</h3>
-              <p className="mb-6 break-words px-4">
-                Sign up now and start creating amazing content with your Echo!
-              </p>
-              <Link
-                href="/signup"
-                className="inline-block bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition min-w-0"
-              >
-                Get Started
-              </Link>
-            </>
-          )}
+          <h3 className="text-xl sm:text-2xl font-bold mb-4 break-words">Ready to Get Started?</h3>
+          <p className="mb-6 break-words px-4">
+            Sign up now and start creating amazing content with your Echo!
+          </p>
+          <Link
+            href="/signup"
+            className="inline-block bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition min-w-0"
+          >
+            Get Started
+          </Link>
         </div>
 
         {/* Support Contact */}
