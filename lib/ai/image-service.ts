@@ -109,10 +109,17 @@ export async function generateImagePrompt({
     textRules = STRICT_NO_TEXT_OVERRIDE
   } else if (allowText) {
     textRules = `
-TEXT RULES (if needed):
-- If text is needed, use short English only (maximum 3-5 words).
-- Keep text legible, clean, and professional.
-- Avoid non-English or gibberish text.
+TEXT RULES - STRICT QUALITY REQUIREMENTS:
+- You MAY include text, but ONLY if it adds value to the image.
+- Maximum 5 words of text total.
+- Text MUST be in correct, properly-spelled English with NO spelling errors.
+- Text MUST be legible, clear, and professionally rendered.
+- Use clean, sans-serif fonts that are easy to read.
+- FORBIDDEN: Gibberish, pseudo-letters, misspelled words, lorem ipsum, non-English characters.
+- FORBIDDEN: Blurry, distorted, or illegible text.
+- If you cannot render text correctly, DO NOT include any text at all.
+- Examples of GOOD text: "BUDGET", "GROWTH", "SUCCESS", "INNOVATION"
+- Examples of BAD text: "BUDGT", "GRWOTH", "INSRUCCTION", "GPASABLE"
 `
   }
 
