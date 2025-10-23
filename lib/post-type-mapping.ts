@@ -42,12 +42,6 @@ export type PostTypeConfig = {
  */
 export const POST_TYPE_CONFIGS: PostTypeConfig[] = [
   {
-    key: 'selling',
-    display: 'Selling',
-    description: 'Persuasive posts with clear CTAs to drive action',
-    icon: '💰',
-  },
-  {
     key: 'information_advice',
     display: 'Information & Advice',
     description: 'Actionable tips and insights for your audience',
@@ -59,6 +53,12 @@ export const POST_TYPE_CONFIGS: PostTypeConfig[] = [
     display: 'Random / Fun Facts',
     description: 'Engaging content bridging interesting facts to business value',
     icon: '🎲',
+  },
+  {
+    key: 'selling',
+    display: 'Selling',
+    description: 'Persuasive posts with clear CTAs to drive action',
+    icon: '💰',
   },
   {
     key: 'news',
