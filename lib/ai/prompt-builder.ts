@@ -69,7 +69,7 @@ Style Guidelines:
 - Short sentences (4-12 words)
 - One vivid detail beats three vague claims
 - Persuasive but not pushy
-- Maximum 120 words
+- Maximum 160 words (aim for 140-160 for depth)
 - Use blank lines generously
 
 ${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}
@@ -117,7 +117,7 @@ Style Guidelines:
 - Use blank lines generously
 - One vivid detail or specific example
 - No generic fluff - be specific to ${inputs.sector}
-- Maximum 110 words
+- Maximum 160 words (aim for 140-160 for depth)
 
 ${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}
 
@@ -160,7 +160,7 @@ RANDOM / FUN FACTS POST REQUIREMENTS:
 2. **Bridge to business**: Connect it to ${inputs.sector} or ${inputs.audience} with a playful but useful takeaway
 3. **Keep it light but valuable**: Fun tone, but still provides insight or perspective
 4. **Country-appropriate**: If the source is country-specific, lean into it; otherwise keep it universal
-5. **Maximum 120 words**
+5. **Maximum 160 words** (aim for 140-160 for depth and context)
 
 Style Guidelines:
 - Playful, witty, or thought-provoking opening
@@ -212,7 +212,7 @@ NEWS POST REQUIREMENTS:
 2. **Summary**: 1-2 lines on what happened (accurate, no fabrication)
 3. **"What this means"**: Practical implication for ${inputs.audience}
 4. **Next step**: Actionable takeaway or thought-provoking question
-5. **Maximum 110 words**
+5. **Maximum 160 words** (aim for 140-160 for depth and analysis)
 6. **Neutral, practical tone** - informative, not sensational
 
 Style Guidelines:
