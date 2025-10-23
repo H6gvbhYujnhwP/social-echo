@@ -6,9 +6,12 @@
 
 export const IMAGE_BRIEFS: Record<string, string> = {
   "photo-real": `
-Generate a high-resolution, photo-realistic image with natural lighting and detail. 
-The scene should feel authentic, candid, and visually credible — as if taken by a professional photographer. 
-Avoid cartoonish or 3D rendering. Tone: believable, clean, professional.
+Generate a PHOTOREALISTIC image that looks like an actual photograph taken with a professional camera.
+Use natural lighting, realistic textures, depth of field, and authentic human expressions.
+The image MUST look like real photography - NOT illustration, NOT 3D render, NOT digital art, NOT cartoon.
+Think: Canon 5D Mark IV, 50mm lens, natural light, shallow depth of field, authentic moment.
+Style: Documentary photography, corporate photojournalism, professional headshot quality.
+Tone: Authentic, believable, real-world, professional photography.
 `,
 
   "illustration": `
