@@ -214,22 +214,20 @@ export function TodayPanel({
           )}
         </div>
 
-        {/* User Brief Input */}
-        {!todayDraft && (
-          <div className="mb-4">
-            <label htmlFor="user-brief" className="block text-sm font-medium text-slate-700 mb-2">
-              Brief the AI (optional)
-            </label>
-            <textarea
-              id="user-brief"
-              value={userPrompt}
-              onChange={(e) => onUserPromptChange?.(e.target.value)}
-              placeholder="e.g., 'Talk about our new product launch' or 'Focus on cost savings for SMEs'"
-              rows={2}
-              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-            />
-          </div>
-        )}
+        {/* User Brief Input - Always visible for custom instructions */}
+        <div className="mb-4">
+          <label htmlFor="user-brief" className="block text-sm font-medium text-slate-700 mb-2">
+            Brief the AI (optional)
+          </label>
+          <textarea
+            id="user-brief"
+            value={userPrompt}
+            onChange={(e) => onUserPromptChange?.(e.target.value)}
+            placeholder="e.g., 'Talk about our new product launch' or 'Focus on cost savings for SMEs'"
+            rows={2}
+            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+          />
+        </div>
 
 
 
