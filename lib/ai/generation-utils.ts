@@ -84,8 +84,9 @@ export function calculateMaxTokens(opts: {
   // Calculate available tokens for output
   const availableForOutput = opts.modelMaxTokens - inputTokens - safetyMargin
   
-  // Cap output at reasonable length for LinkedIn posts (1500 tokens ≈ 6000 chars)
-  const maxTokens = Math.min(availableForOutput, 1500)
+  // Cap output at reasonable length for LinkedIn posts (2000 tokens ≈ 8000 chars)
+  // Increased to accommodate 140-160 word posts + JSON structure + headlines + hashtags
+  const maxTokens = Math.min(availableForOutput, 2000)
   
   // Check if we're over budget
   const budgetUsed = (inputTokens / opts.modelMaxTokens) * 100
