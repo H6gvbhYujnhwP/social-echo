@@ -6,7 +6,10 @@
  * edited via the Master Admin panel at /admin/ai
  */
 
-export type PostType = 'selling' | 'informational' | 'advice' | 'news'
+// PostType includes both canonical (v8.8) and legacy types for backward compatibility
+// Canonical: selling, information_advice, random, news
+// Legacy: informational, advice (normalized to information_advice at runtime)
+export type PostType = 'selling' | 'information_advice' | 'random' | 'news' | 'informational' | 'advice'
 
 export type AiGlobalConfig = {
   // Model settings

@@ -16,7 +16,15 @@ export const TextGenerationRequestSchema = z.object({
     })
     .default(''),
   rotation: z.enum(['serious', 'quirky']),
-  post_type: z.enum(['selling', 'informational', 'advice', 'news']),
+  // Accept both canonical (v8.8) and legacy types for backward compatibility
+  post_type: z.enum(['selling', 'information_advice', 'random', 'news', 'informational', 'advice'])
+    .transform((val) => {
+      // Normalize legacy types to canonical
+      if (val === 'informational' || val === 'advice') {
+        return 'information_advice';
+      }
+      return val;
+    }),
   platform: z.enum(['linkedin', 'facebook']).optional().default('linkedin'),
   user_prompt: z.string().optional().default(''),
 })
@@ -36,7 +44,16 @@ export const ImageGenerationRequestSchema = z.object({
   tone: z.string().min(1),
   style: z.enum(['meme', 'illustration', 'photo-real', 'funny', 'controversial', 'conceptual', 'infographic']).optional(),
   // New fields for context-aware generation
-  post_type: z.enum(['selling', 'informational', 'advice', 'news']).optional(),
+  // Accept both canonical (v8.8) and legacy types for backward compatibility
+  post_type: z.enum(['selling', 'information_advice', 'random', 'news', 'informational', 'advice'])
+    .transform((val) => {
+      // Normalize legacy types to canonical
+      if (val === 'informational' || val === 'advice') {
+        return 'information_advice';
+      }
+      return val;
+    })
+    .optional(),
   post_headline: z.string().optional(),
   post_text: z.string().optional(),
   // Text inclusion option (default: false)
