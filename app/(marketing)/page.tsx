@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Sparkles, Zap, Target, TrendingUp } from 'lucide-react'
+import { Sparkles, Zap, Target, TrendingUp, Check, X, Brain, Repeat, Palette, Clock, BarChart3, Lightbulb } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { GradientText } from '@/components/ui/GradientText'
 import { FeatureCard } from '@/components/ui/FeatureCard'
@@ -19,9 +19,9 @@ export default function HomePage() {
     router.push(`/pricing?plan=${plan}`)
   }
 
-  const handleContactClick = () => {
-    // For demo purposes, redirect to sign-in
-    router.push('/signin')
+  const handleHowItWorks = () => {
+    // Scroll to how it works section
+    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
@@ -36,34 +36,30 @@ export default function HomePage() {
       {/* Main Content */}
       <div className="relative z-10">
         {/* Hero Section */}
-        <section className="px-6 py-16">
-          <div className="max-w-4xl mx-auto text-center">
+        <section className="px-6 py-20">
+          <div className="max-w-5xl mx-auto text-center">
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight"
+              className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight"
             >
-              Big Results for SMEs Without Big Marketing Teams
+              Your LinkedIn Marketing Team—
+              <br />
+              <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                Without the Team
+              </span>
             </motion.h1>
             
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-2xl text-white mb-4 font-semibold"
+              className="text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
             >
-              Stop paying £2,000+ per month.
-            </motion.p>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="text-xl text-gray-300 mb-16 max-w-3xl mx-auto leading-relaxed"
-            >
-              Get the visibility and leads your business deserves—at a fraction of the cost. Our streamlined marketing solutions are 
-              designed specifically for small and medium enterprises that need professional results without the enterprise-level investment.
+              Generate professional LinkedIn posts daily. Train your AI. Build your brand.
+              <br />
+              <span className="text-white font-semibold">From £29.99/month.</span>
             </motion.p>
             
             <motion.div
@@ -74,94 +70,416 @@ export default function HomePage() {
             >
               <button
                 onClick={handleGetStarted}
-                className="px-8 py-4 bg-blue-600 text-white rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+                className="px-10 py-5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-2xl hover:shadow-blue-500/50 transform hover:scale-105"
               >
-                Get Started Today
+                Start Free Trial
               </button>
-              <a
-                href="/features"
-                className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-lg text-lg font-semibold hover:bg-white/20 transition-colors border border-white/20"
+              <button
+                onClick={handleHowItWorks}
+                className="px-10 py-5 bg-white/10 backdrop-blur-sm text-white rounded-lg text-lg font-semibold hover:bg-white/20 transition-colors border border-white/20"
               >
                 See How It Works →
-              </a>
+              </button>
             </motion.div>
           </div>
         </section>
 
-        {/* Simple. Affordable. Effective. */}
-        <section className="px-6 py-8">
+        {/* Agency Comparison Section */}
+        <section className="px-6 py-16">
           <div className="max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-center mb-16"
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
             >
-              <h2 className="text-4xl font-bold text-white mb-4">
-                Simple. Affordable. Effective.
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                Stop Paying £2,000+/Month for What You Can Get for £49
               </h2>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                Traditional agencies charge enterprise prices for basic social media management. 
+                We give you professional results at SME-friendly pricing.
+              </p>
             </motion.div>
 
-            {/* Feature Cards */}
-            <div className="grid md:grid-cols-2 gap-8 mb-16">
-              <FeatureCard
-                icon={Zap}
-                title="Starter Plan"
-                price="£29.99 per month"
-                features={[
-                  "2 posts per week written in your voice",
-                  "Text + image generation",
-                  "Content Mix Planner (Selling / Info / Advice / News)",
-                  "Copy and download workflows",
-                  "Ideal for freelancers and solopreneurs"
-                ]}
-                buttonText="Get Started →"
-                onButtonClick={() => handleSignUp('SocialEcho_Starter')}
-                gradient="purple"
-                delay={0.8}
-              />
-
-              <FeatureCard
-                icon={Target}
-                title="Pro Plan"
-                price="£49.99 per month"
-                features={[
-                  "30 posts per month (2 regenerations each)",
-                  "Text + image generation",
-                  "Full Content Mix Planner (4 post types)",
-                  "Copy, download, and share workflows",
-                  "Perfect for SMEs who want daily visibility"
-                ]}
-                buttonText="Get Started →"
-                onButtonClick={() => handleSignUp('SocialEcho_Pro')}
-                gradient="blue"
-                delay={1.0}
-              />
-            </div>
-
-
-
-            {/* CTA Section */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1.4 }}
-              className="text-center mb-16"
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 overflow-hidden"
             >
-              <p className="text-2xl text-white mb-6 font-semibold">
-                Stop paying £2,000+ per month for agencies — get daily posts from just £29.99.
-              </p>
-              <button 
-                onClick={() => handleSignUp('SocialEcho_Starter')}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-8 py-3 rounded-full text-lg font-semibold shadow-xl transform hover:scale-105 transition-all duration-200 mb-6"
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-white/20">
+                      <th className="px-6 py-4 text-left text-gray-400 font-semibold">Feature</th>
+                      <th className="px-6 py-4 text-center text-gray-400 font-semibold">Traditional Agency</th>
+                      <th className="px-6 py-4 text-center text-blue-400 font-semibold">Social Echo</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-white">
+                    <tr className="border-b border-white/10">
+                      <td className="px-6 py-4">Monthly Cost</td>
+                      <td className="px-6 py-4 text-center text-red-400">£2,000-£5,000</td>
+                      <td className="px-6 py-4 text-center text-green-400 font-semibold">£29.99-£49.99</td>
+                    </tr>
+                    <tr className="border-b border-white/10">
+                      <td className="px-6 py-4">Posts Per Month</td>
+                      <td className="px-6 py-4 text-center">4-8 posts</td>
+                      <td className="px-6 py-4 text-center font-semibold">Up to 30 posts</td>
+                    </tr>
+                    <tr className="border-b border-white/10">
+                      <td className="px-6 py-4">Content Style</td>
+                      <td className="px-6 py-4 text-center">Generic templates</td>
+                      <td className="px-6 py-4 text-center font-semibold">AI trained on YOUR voice</td>
+                    </tr>
+                    <tr className="border-b border-white/10">
+                      <td className="px-6 py-4">Turnaround Time</td>
+                      <td className="px-6 py-4 text-center">3-5 days</td>
+                      <td className="px-6 py-4 text-center font-semibold">Instant</td>
+                    </tr>
+                    <tr className="border-b border-white/10">
+                      <td className="px-6 py-4">Revisions</td>
+                      <td className="px-6 py-4 text-center">Limited (1-2)</td>
+                      <td className="px-6 py-4 text-center font-semibold">2 refinements per post</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4">Control</td>
+                      <td className="px-6 py-4 text-center">Agency decides</td>
+                      <td className="px-6 py-4 text-center font-semibold">Full control</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              viewport={{ once: true }}
+              className="text-center mt-8"
+            >
+              <button
+                onClick={() => handleSignUp('SocialEcho_Pro')}
+                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-10 py-4 rounded-full text-lg font-semibold shadow-xl transform hover:scale-105 transition-all duration-200"
               >
-                Start Your Free Trial
+                Start Saving Today →
               </button>
             </motion.div>
           </div>
         </section>
 
-        {/* Why 7 Days of Posting Works */}
+        {/* How It Works Section */}
+        <section id="how-it-works" className="px-6 py-16 scroll-mt-20">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                How It Works: 3 Simple Steps
+              </h2>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                From zero to daily LinkedIn posts in minutes. No marketing experience required.
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                viewport={{ once: true }}
+              >
+                <GlassCard className="p-8 text-center h-full">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span className="text-3xl font-bold text-white">1</span>
+                  </div>
+                  <h3 className="text-2xl font-semibold text-white mb-4">Train Your Echo</h3>
+                  <p className="text-gray-300 leading-relaxed">
+                    Tell us about your business, tone, target audience, and what makes you unique. 
+                    Our AI learns your voice in minutes.
+                  </p>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                viewport={{ once: true }}
+              >
+                <GlassCard className="p-8 text-center h-full">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span className="text-3xl font-bold text-white">2</span>
+                  </div>
+                  <h3 className="text-2xl font-semibold text-white mb-4">Generate Daily</h3>
+                  <p className="text-gray-300 leading-relaxed">
+                    Click "Generate" and watch as professional posts appear in seconds. 
+                    Choose from 3 headline options and refine with custom instructions.
+                  </p>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <GlassCard className="p-8 text-center h-full">
+                  <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span className="text-3xl font-bold text-white">3</span>
+                  </div>
+                  <h3 className="text-2xl font-semibold text-white mb-4">Post & Grow</h3>
+                  <p className="text-gray-300 leading-relaxed">
+                    Copy to LinkedIn, add your image, and post. Give feedback to help your AI learn. 
+                    Watch your presence and authority soar.
+                  </p>
+                </GlassCard>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* v8.9 Features Showcase */}
+        <section className="px-6 py-16">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                Powered by AI That Learns from You
+              </h2>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                Social Echo v8.9 includes cutting-edge features that make content creation effortless and effective.
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+                viewport={{ once: true }}
+              >
+                <GlassCard className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Lightbulb className="h-6 w-6 text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-2">4 Post Types</h3>
+                      <p className="text-gray-300 text-sm">
+                        Information & Advice, Random/Fun Facts, Selling, and News posts—all optimized for engagement.
+                      </p>
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                viewport={{ once: true }}
+              >
+                <GlassCard className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Brain className="h-6 w-6 text-purple-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-2">AI Learning System</h3>
+                      <p className="text-gray-300 text-sm">
+                        Gets smarter with every "Good" or "Needs Work" feedback you give. Your AI evolves with you.
+                      </p>
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                viewport={{ once: true }}
+              >
+                <GlassCard className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-pink-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Repeat className="h-6 w-6 text-pink-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-2">Post Refinement</h3>
+                      <p className="text-gray-300 text-sm">
+                        Don't like something? Refine it with custom instructions. 2 refinement attempts per post.
+                      </p>
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                viewport={{ once: true }}
+              >
+                <GlassCard className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <BarChart3 className="h-6 w-6 text-green-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-2">Content Mix Planner</h3>
+                      <p className="text-gray-300 text-sm">
+                        Automatically balances your content types for maximum engagement and authority building.
+                      </p>
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+                viewport={{ once: true }}
+              >
+                <GlassCard className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Palette className="h-6 w-6 text-yellow-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-2">Image Generation</h3>
+                      <p className="text-gray-300 text-sm">
+                        Create eye-catching visuals for every post. Choose from 7 visual styles including memes and infographics.
+                      </p>
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <GlassCard className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Clock className="h-6 w-6 text-cyan-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-2">Best Time to Post</h3>
+                      <p className="text-gray-300 text-sm">
+                        AI-powered timing recommendations to maximize your reach and engagement on LinkedIn.
+                      </p>
+                    </div>
+                  </div>
+                </GlassCard>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section className="px-6 py-16">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                Simple, Transparent Pricing
+              </h2>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                Choose the plan that fits your business. All plans include our v8.9 AI features.
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              <FeatureCard
+                icon={Zap}
+                title="Starter"
+                price="£29.99/month"
+                features={[
+                  "8 posts per month (2/week)",
+                  "All 4 post types",
+                  "Text + image generation",
+                  "2 refinements per post",
+                  "AI learning system",
+                  "3 headline options"
+                ]}
+                buttonText="Start Free Trial"
+                onButtonClick={() => handleSignUp('SocialEcho_Starter')}
+                gradient="purple"
+                delay={0.2}
+              />
+
+              <div className="relative">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                  <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                    MOST POPULAR
+                  </span>
+                </div>
+                <FeatureCard
+                  icon={Target}
+                  title="Pro"
+                  price="£49.99/month"
+                  features={[
+                    "30 posts per month (daily)",
+                    "All 4 post types",
+                    "Text + image generation",
+                    "2 refinements per post",
+                    "Content Mix Planner",
+                    "Priority AI learning"
+                  ]}
+                  buttonText="Start Free Trial"
+                  onButtonClick={() => handleSignUp('SocialEcho_Pro')}
+                  gradient="blue"
+                  delay={0.4}
+                />
+              </div>
+
+              <FeatureCard
+                icon={TrendingUp}
+                title="Agency"
+                price="£149.99/month"
+                features={[
+                  "100 posts per month",
+                  "Multi-client management",
+                  "White-label options",
+                  "All Pro features",
+                  "Priority support",
+                  "Agency dashboard"
+                ]}
+                buttonText="Contact Sales"
+                onButtonClick={() => router.push('/signin')}
+                gradient="green"
+                delay={0.6}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Why It Works - 7 Day Method */}
         <section className="px-6 py-16">
           <div className="max-w-6xl mx-auto">
             <motion.div
@@ -172,107 +490,126 @@ export default function HomePage() {
               className="text-center mb-12"
             >
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
-                Why Posting Smart, Every Day, Wins
+                The 7-Day Posting Method That Builds Authority
               </h2>
               <p className="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed mb-12">
-                Our 7-day posting method ensures you're not just filling a feed — you're building authority, trust, and sales.
+                Our balanced content mix ensures you're not just filling a feed—you're building trust, authority, and sales.
               </p>
               
-              <div className="grid md:grid-cols-3 gap-8 mb-12">
-                <GlassCard className="p-8 text-center">
-                  <div className="text-4xl mb-4">📘</div>
-                  <h3 className="text-xl font-semibold text-white mb-4">Informational Posts</h3>
-                  <p className="text-gray-300">Position you as the expert in your field with valuable insights and industry knowledge.</p>
-                </GlassCard>
-                
-                <GlassCard className="p-8 text-center">
+              <div className="grid md:grid-cols-4 gap-6 mb-12">
+                <GlassCard className="p-6 text-center">
                   <div className="text-4xl mb-4">💡</div>
-                  <h3 className="text-xl font-semibold text-white mb-4">Advice Posts</h3>
-                  <p className="text-gray-300">Deliver quick wins and real value that your audience can implement immediately.</p>
+                  <h3 className="text-xl font-semibold text-white mb-3">Information Posts</h3>
+                  <p className="text-gray-300 text-sm">Position you as the expert with valuable insights and industry knowledge.</p>
                 </GlassCard>
                 
-                <GlassCard className="p-8 text-center">
+                <GlassCard className="p-6 text-center">
+                  <div className="text-4xl mb-4">📘</div>
+                  <h3 className="text-xl font-semibold text-white mb-3">Advice Posts</h3>
+                  <p className="text-gray-300 text-sm">Deliver quick wins and real value your audience can implement immediately.</p>
+                </GlassCard>
+                
+                <GlassCard className="p-6 text-center">
                   <div className="text-4xl mb-4">💰</div>
-                  <h3 className="text-xl font-semibold text-white mb-4">Selling Posts</h3>
-                  <p className="text-gray-300">Give clear CTAs without overwhelming your audience, perfectly timed for maximum impact.</p>
+                  <h3 className="text-xl font-semibold text-white mb-3">Selling Posts</h3>
+                  <p className="text-gray-300 text-sm">Convert when trust is built with clear CTAs at the perfect moment.</p>
+                </GlassCard>
+
+                <GlassCard className="p-6 text-center">
+                  <div className="text-4xl mb-4">🎲</div>
+                  <h3 className="text-xl font-semibold text-white mb-3">Fun/News Posts</h3>
+                  <p className="text-gray-300 text-sm">Keep your audience engaged with relatable moments and industry updates.</p>
                 </GlassCard>
               </div>
               
-              <p className="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed mb-8">
-                This balanced rhythm means your audience sees you as helpful, insightful, and credible — and when you do sell, they're ready to buy.
+              <p className="text-xl text-white max-w-4xl mx-auto leading-relaxed mb-8 font-semibold">
+                This rhythm means your audience sees you as helpful and credible—and when you do sell, they're ready to buy.
               </p>
               
               <motion.button
-                onClick={() => handleSignUp('SocialEcho_Starter')}
+                onClick={() => handleSignUp('SocialEcho_Pro')}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-10 py-4 rounded-full text-xl font-semibold shadow-xl transform transition-all duration-200"
               >
-                Start My Free Trial Today
+                Start Building Authority Today
               </motion.button>
             </motion.div>
           </div>
         </section>
 
-        {/* Why SMEs Love Our Approach */}
+        {/* Results & Social Proof */}
         <section className="px-6 py-16">
           <div className="max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1.4 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <h2 className="text-4xl font-bold text-white mb-8">
-                Why SMEs Love Our Approach
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                Results That Speak for Themselves
               </h2>
-              <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div className="text-left">
-                  <p className="text-xl text-gray-300 leading-relaxed mb-6">
-                    Our clients consistently achieve remarkable results that transform their business visibility and lead generation. 
-                    We understand that small and medium enterprises need marketing solutions that deliver measurable outcomes 
-                    without the complexity and cost of traditional agency relationships.
-                  </p>
-                  <p className="text-lg text-gray-300 leading-relaxed">
-                    The beauty of our system lies in its simplicity and effectiveness. You maintain complete control over your brand voice 
-                    while we handle the technical execution and strategic implementation. This approach allows you to focus on what you do best—running 
-                    your business—while we ensure your marketing works tirelessly to attract new customers and build your reputation as the go-to expert in your sector.
-                  </p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-                  <div className="w-full h-48 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="h-16 w-16 text-white/60" />
-                  </div>
-                </div>
-              </div>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                Our clients consistently achieve remarkable results that transform their business visibility and lead generation.
+              </p>
             </motion.div>
 
-            {/* Stats */}
             <div className="grid md:grid-cols-3 gap-8">
               <StatCard
                 value="350%"
                 title="Follower Growth"
-                description="Average increase in social media following within the first quarter."
+                description="Average increase in LinkedIn following within 90 days of consistent posting."
                 gradient="purple-pink"
-                delay={1.6}
+                delay={0.2}
               />
 
               <StatCard
                 value="1000s"
                 title="New Subscribers"
-                description="Email list growth through targeted outreach campaigns."
+                description="Email list growth through targeted content and engagement strategies."
                 gradient="blue-cyan"
-                delay={1.8}
+                delay={0.4}
               />
 
               <StatCard
                 value="100%"
                 title="Inbound Leads"
-                description="Recognition as sector experts driving qualified inquiries."
+                description="Recognition as sector experts driving qualified inquiries and opportunities."
                 gradient="green-emerald"
-                delay={2.0}
+                delay={0.6}
               />
             </div>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="px-6 py-20">
+          <div className="max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-12 text-center shadow-2xl"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                Start Your Free Trial Today
+              </h2>
+              <p className="text-xl text-white/90 mb-8">
+                No credit card required. Cancel anytime. See results in days, not months.
+              </p>
+              <button
+                onClick={handleGetStarted}
+                className="bg-white text-blue-600 px-12 py-5 rounded-full text-xl font-bold hover:bg-gray-100 transition-all shadow-xl transform hover:scale-105"
+              >
+                Get Started Free →
+              </button>
+              <p className="text-white/80 mt-6 text-sm">
+                Join hundreds of SMEs already growing their LinkedIn presence with Social Echo
+              </p>
+            </motion.div>
           </div>
         </section>
 
@@ -282,7 +619,7 @@ export default function HomePage() {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
               <div className="flex flex-wrap gap-6 justify-center md:justify-start">
                 <a href="/features" className="text-gray-400 hover:text-white transition-colors">
-                  Features
+                  How It Works
                 </a>
                 <a href="/pricing" className="text-gray-400 hover:text-white transition-colors">
                   Pricing
@@ -307,3 +644,4 @@ export default function HomePage() {
     </div>
   )
 }
+
