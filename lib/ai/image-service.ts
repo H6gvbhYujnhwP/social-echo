@@ -4,6 +4,27 @@
  * With strict no-text rules and English-only constraint
  */
 
+/**
+ * Extract meaningful keywords from a headline
+ * Filters out common words and returns important terms
+ */
+function extractKeywords(headline: string): string[] {
+  const commonWords = new Set([
+    'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+    'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'be', 'been',
+    'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+    'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those',
+    'your', 'you', 'need', 'think', 'when', 'how', 'why', 'what', 'who'
+  ])
+  
+  return headline
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '') // Remove punctuation
+    .split(/\s+/)
+    .filter(word => word.length > 2 && !commonWords.has(word))
+    .slice(0, 3) // Max 3 keywords
+}
+
 export const IMAGE_BRIEFS: Record<string, string> = {
   "photo-real": `
 Generate a PHOTOREALISTIC image that looks like an actual photograph taken with a professional camera.
@@ -108,20 +129,40 @@ export async function generateImagePrompt({
   if (strictMode) {
     textRules = STRICT_NO_TEXT_OVERRIDE
   } else if (allowText) {
+    // Extract key words from headline to provide exact text
+    const keywords = extractKeywords(postHeadline)
+    const suggestedText = keywords.slice(0, 2).join(" ").toUpperCase() // Max 2 words
+    
     textRules = `
-TEXT INCLUSION REQUESTED - QUALITY REQUIREMENTS:
-- PLEASE INCLUDE short, relevant text in the image (1-5 words maximum).
-- The text should relate to the topic and add visual impact.
-- Text MUST be in correct, properly-spelled English with NO spelling errors.
-- Text MUST be legible, clear, and professionally rendered using clean, bold, sans-serif fonts.
-- Make the text prominent and easy to read - use high contrast and appropriate sizing.
-- REQUIRED: Correct spelling - double-check every word before rendering.
-- FORBIDDEN: Gibberish, pseudo-letters, misspelled words, lorem ipsum, non-English characters, blurry text.
-- Examples of GOOD text: "BUDGET", "GROWTH", "SUCCESS", "INNOVATION", "STRATEGY"
-- Examples of BAD text: "BUDGT", "GRWOTH", "INSRUCCTION", "GPASABLE" (these are misspelled)
-- If the topic is about IT budgets, include text like "IT BUDGET" or "BUDGET".
-- If the topic is about growth, include text like "GROWTH" or "SCALE".
-- If the topic is about innovation, include text like "INNOVATION" or "IDEAS".
+TEXT INCLUSION REQUIRED:
+
+⚠️ CRITICAL: You MUST include text in this image. This is NOT optional.
+
+📝 EXACT TEXT TO RENDER:
+"${suggestedText}"
+
+✅ SPELLING REQUIREMENTS:
+- Render EXACTLY: "${suggestedText}" (letter-by-letter, no changes)
+- DO NOT modify, abbreviate, or "improve" this text
+- DO NOT add extra letters or remove letters
+- DO NOT use similar-looking words
+- Each letter must be correct: ${suggestedText.split('').join(', ')}
+
+🎨 VISUAL REQUIREMENTS:
+- Make the text PROMINENT and LARGE (at least 20% of image height)
+- Use clean, bold, sans-serif font (like Arial Black, Helvetica Bold)
+- High contrast: white text on dark background OR black text on light background
+- Make text the FOCAL POINT of the image
+- Position text in center or lower third for maximum visibility
+
+❌ ABSOLUTELY FORBIDDEN:
+- Misspelled versions like "${suggestedText.replace(/O/g, '0').replace(/I/g, '1')}" (WRONG!)
+- Gibberish like "BUDGT", "GRWOTH", "INSRUCCTION"
+- Blurry, distorted, or illegible text
+- Text with missing or extra letters
+
+✓ VERIFICATION:
+Before finalizing, verify each letter matches: "${suggestedText}"
 `
   }
 
