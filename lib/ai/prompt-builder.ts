@@ -5,6 +5,8 @@
  * Supports: Selling, Information & Advice, Random / Fun Facts, News
  */
 
+import { buildRefinementPrompt } from './prompt-builder-refinement'
+
 export type GenInputs = {
   businessName: string
   sector: string
@@ -16,6 +18,7 @@ export type GenInputs = {
   usp?: string
   productsServices?: string
   website?: string
+  originalPost?: string  // For refinement mode
 }
 
 /**
@@ -87,6 +90,11 @@ function getCountryGuidance(country?: string): string {
  * PAS structure with clear CTA
  */
 export function buildSellingPrompt(inputs: GenInputs): string {
+  // If originalPost is provided, this is a refinement request
+  if (inputs.originalPost) {
+    return buildRefinementPrompt(inputs, 'SELLING')
+  }
+  
   const countryGuidance = getCountryGuidance(inputs.country)
   
   // Parse and randomize products/services
@@ -163,6 +171,11 @@ Respond ONLY with valid JSON (no markdown, no commentary).`
  * Merged informational + advice: actionable tips with insights
  */
 export function buildInfoAdvicePrompt(inputs: GenInputs): string {
+  // If originalPost is provided, this is a refinement request
+  if (inputs.originalPost) {
+    return buildRefinementPrompt(inputs, 'INFORMATION & ADVICE')
+  }
+  
   const countryGuidance = getCountryGuidance(inputs.country)
   
   // Randomize products/services to avoid repetition
@@ -258,6 +271,11 @@ Respond ONLY with valid JSON (no markdown, no commentary).`
  * Uses random data sources (observances, pop culture, science, history)
  */
 export function buildRandomPrompt(inputs: GenInputs, randomSource: { title: string; blurb: string; tags: string[] }): string {
+  // If originalPost is provided, this is a refinement request
+  if (inputs.originalPost) {
+    return buildRefinementPrompt(inputs, 'RANDOM / FUN FACTS')
+  }
+  
   const countryGuidance = getCountryGuidance(inputs.country)
   
   return `Generate a RANDOM / FUN FACTS LinkedIn post that bridges an interesting fact to business value.
@@ -308,6 +326,11 @@ Respond ONLY with valid JSON (no markdown, no commentary).`
  * Country + sector aware news commentary
  */
 export function buildNewsPrompt(inputs: GenInputs, newsHeadlines: string[]): string {
+  // If originalPost is provided, this is a refinement request
+  if (inputs.originalPost) {
+    return buildRefinementPrompt(inputs, 'NEWS')
+  }
+  
   const countryGuidance = getCountryGuidance(inputs.country)
   
   const headlinesText = newsHeadlines.length > 0

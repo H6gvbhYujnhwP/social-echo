@@ -262,6 +262,21 @@ export async function POST(request: NextRequest) {
     
     console.log('[generate-text] Calling AI service...', USE_V8_8_GENERATION ? 'v8.8' : 'legacy')
     
+    // Fetch original post if this is a regeneration
+    let originalPostText: string | undefined = undefined
+    if (isRegeneration) {
+      const originalPost = await prisma.postHistory.findUnique({
+        where: { id: postId }
+      })
+      
+      if (originalPost) {
+        originalPostText = originalPost.postText
+        console.log('[generate-text] Fetched original post for refinement:', postId)
+      } else {
+        console.warn('[generate-text] Original post not found for refinement:', postId)
+      }
+    }
+    
     // Call AI service (v8.8 or legacy based on feature flag)
     let draft
     try {
@@ -275,7 +290,8 @@ export async function POST(request: NextRequest) {
           twists: {
             toneOverride: validatedRequest.tone !== profile.tone ? validatedRequest.tone : undefined,
             extraKeywords: validatedRequest.keywords ? validatedRequest.keywords.split(',').map(k => k.trim()) : undefined,
-            note: validatedRequest.user_prompt || undefined
+            note: validatedRequest.user_prompt || undefined,
+            originalPost: originalPostText  // Pass original post for refinement
           },
           useDiversityEngine: true
         })
@@ -289,7 +305,8 @@ export async function POST(request: NextRequest) {
           twists: {
             toneOverride: validatedRequest.tone !== profile.tone ? validatedRequest.tone : undefined,
             extraKeywords: validatedRequest.keywords ? validatedRequest.keywords.split(',').map(k => k.trim()) : undefined,
-            note: validatedRequest.user_prompt || undefined
+            note: validatedRequest.user_prompt || undefined,
+            originalPost: originalPostText  // Pass original post for refinement
           }
         })
       }
