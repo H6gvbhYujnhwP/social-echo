@@ -165,6 +165,17 @@ Respond ONLY with valid JSON (no markdown, no commentary).`
 export function buildInfoAdvicePrompt(inputs: GenInputs): string {
   const countryGuidance = getCountryGuidance(inputs.country)
   
+  // Randomize products/services to avoid repetition
+  const allProducts = parseProductsServices(inputs.productsServices)
+  const focusTopic = allProducts.length > 0 
+    ? randomSelect(allProducts, 1)[0] 
+    : inputs.sector
+  
+  // Randomize keywords
+  const focusKeywords = inputs.keywords && inputs.keywords.length > 0
+    ? randomSelect(inputs.keywords, 3)
+    : []
+  
   return `Generate an INFORMATION & ADVICE LinkedIn post that combines insight with actionable guidance.
 
 Business Context:
@@ -172,7 +183,20 @@ Business Context:
 - Sector: ${inputs.sector}
 - Target Audience: ${inputs.audience}
 - Tone: ${inputs.brandTone || 'professional'}
-${inputs.keywords ? `- Keywords: ${inputs.keywords.join(', ')}` : ''}
+
+🎯 FOCUS TOPIC FOR THIS POST: ${focusTopic}
+
+⚠️ CRITICAL RANDOMIZATION REQUIREMENT:
+This post MUST focus on "${focusTopic}" specifically.
+DO NOT repeat topics from previous posts.
+Provide educational content about THIS topic only.
+
+All Products/Services (for context only, DO NOT cover all):
+${allProducts.join(', ')}
+
+${focusKeywords.length > 0 ? `Keywords to naturally weave in: ${focusKeywords.join(', ')}` : ''}
+${inputs.keywords && inputs.keywords.length > 0 ? `
+All available keywords (for context): ${inputs.keywords.join(', ')}` : ''}
 
 Country/Localization:
 ${countryGuidance}
