@@ -158,6 +158,10 @@ export async function POST(request: NextRequest) {
     // Check if text is allowed (default: false)
     const allowText = validatedRequest.allow_text === true
     
+    // CRITICAL: When checkbox is unchecked, use strict mode to completely forbid text
+    // When checkbox is checked, allow text with quality controls
+    const strictMode = !allowText
+    
     // Generate context-aware prompt if we have post content
     let imagePrompt: string
     
@@ -168,7 +172,7 @@ export async function POST(request: NextRequest) {
         postHeadline: validatedRequest.post_headline,
         postText: validatedRequest.post_text,
         allowText,
-        strictMode: false
+        strictMode
       })
       console.log('[generate-image] Generated context-aware prompt for type:', imageType)
     } else {
