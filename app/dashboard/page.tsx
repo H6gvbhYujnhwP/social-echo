@@ -238,6 +238,12 @@ export default function DashboardPage() {
     
     if (!profile) return
 
+    // Set generating state IMMEDIATELY for instant visual feedback
+    setIsGenerating(true)
+
+    // Reset feedback UI immediately when generating/regenerating
+    setFeedbackResetKey(k => k + 1)
+
     // Save current draft to history before generating new one
     // Wrapped in try-catch to ensure generation continues even if history save fails
     try {
@@ -245,12 +251,6 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('[dashboard] History save failed, but continuing with generation:', error)
     }
-
-    // Reset feedback UI immediately when generating/regenerating
-    setFeedbackResetKey(k => k + 1)
-
-    // Set generating state to show spinner
-    setIsGenerating(true)
 
     // Get effective post type
     const effectivePostType = options?.postType || postTypeMode
