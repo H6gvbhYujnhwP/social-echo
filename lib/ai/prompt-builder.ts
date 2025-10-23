@@ -14,6 +14,50 @@ export type GenInputs = {
   notes?: string
   keywords?: string[]
   usp?: string
+  productsServices?: string
+  website?: string
+}
+
+/**
+ * Parse products/services text into individual items
+ */
+function parseProductsServices(text?: string): string[] {
+  if (!text) return []
+  
+  // Split by common delimiters: periods, commas, "and", newlines
+  const items = text
+    .split(/[.,]|\band\b|\n/)
+    .map(item => item.trim())
+    .filter(item => item.length > 10) // Filter out very short fragments
+    .filter(item => !item.toLowerCase().startsWith('we '))
+  
+  return items.length > 0 ? items : [text]
+}
+
+/**
+ * Parse USP text into individual selling points
+ */
+function parseUSPs(text?: string): string[] {
+  if (!text) return []
+  
+  // Split by common delimiters
+  const points = text
+    .split(/[.,]|\band\b|\n/)
+    .map(point => point.trim())
+    .filter(point => point.length > 10)
+  
+  return points.length > 0 ? points : [text]
+}
+
+/**
+ * Randomly select item(s) from array
+ */
+function randomSelect<T>(arr: T[], count: number = 1): T[] {
+  if (arr.length === 0) return []
+  if (count >= arr.length) return arr
+  
+  const shuffled = [...arr].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, count)
 }
 
 /**
@@ -45,23 +89,52 @@ function getCountryGuidance(country?: string): string {
 export function buildSellingPrompt(inputs: GenInputs): string {
   const countryGuidance = getCountryGuidance(inputs.country)
   
+  // Parse and randomize products/services
+  const allProducts = parseProductsServices(inputs.productsServices)
+  const focusProduct = allProducts.length > 0 
+    ? randomSelect(allProducts, 1)[0]
+    : inputs.sector
+  
+  // Parse and randomize USPs
+  const allUSPs = parseUSPs(inputs.usp)
+  const focusUSPs = allUSPs.length > 0
+    ? randomSelect(allUSPs, Math.min(2, allUSPs.length))
+    : [inputs.usp || 'Not specified']
+  
+  // Random keywords (if provided)
+  const focusKeywords = inputs.keywords && inputs.keywords.length > 0
+    ? randomSelect(inputs.keywords, Math.min(3, inputs.keywords.length))
+    : []
+  
   return `Generate a SELLING LinkedIn post using the PAS (Problem → Agitate → Solution) structure.
 
 Business Context:
 - Business: ${inputs.businessName}
 - Sector: ${inputs.sector}
 - Target Audience: ${inputs.audience}
-- USP: ${inputs.usp || 'Not specified'}
 - Tone: ${inputs.brandTone || 'professional'}
-${inputs.keywords ? `- Keywords: ${inputs.keywords.join(', ')}` : ''}
+${inputs.website ? `- Website: ${inputs.website} (use for additional context if needed)` : ''}
+
+⚠️ CRITICAL RANDOMIZATION REQUIREMENTS:
+This post MUST focus on a DIFFERENT product/service than previous posts to avoid repetition.
+
+🎯 FOCUS FOR THIS POST:
+- **Primary Product/Service**: ${focusProduct}
+- **Key Selling Points**: ${focusUSPs.join('; ')}
+${focusKeywords.length > 0 ? `- **Keywords to weave in**: ${focusKeywords.join(', ')}` : ''}
+
+${allProducts.length > 1 ? `
+📦 OTHER PRODUCTS/SERVICES AVAILABLE (for context, but DO NOT focus on these in this post):
+${allProducts.filter(p => p !== focusProduct).map(p => `- ${p}`).join('\n')}
+` : ''}
 
 Country/Localization:
 ${countryGuidance}
 
 SELLING POST REQUIREMENTS:
-1. **Problem**: Start with a specific pain point that ${inputs.audience} faces
+1. **Problem**: Start with a specific pain point related to ${focusProduct} that ${inputs.audience} faces
 2. **Agitate**: Use a brief anonymized mini-story or stat to make it real
-3. **Solution**: Present how your offering solves it with 1 crisp benefit and 1 outcome metric
+3. **Solution**: Present how ${focusProduct} solves it, emphasizing: ${focusUSPs.join(' and ')}
 4. **CTA**: Soft call-to-action (e.g., "Comment 'GUIDE' for the checklist" or "DM for a demo")
 
 Style Guidelines:
@@ -71,14 +144,15 @@ Style Guidelines:
 - Persuasive but not pushy
 - Maximum 160 words (aim for 140-160 for depth)
 - Use blank lines generously
+- VARY your angle: Don't repeat the same problem/story as recent posts
 
-${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}
+${inputs.notes ? `\n🎯 USER'S CUSTOM BRIEF (HIGHEST PRIORITY):\n${inputs.notes}\n\nIf the user has provided specific instructions above, prioritize those over the randomized focus.` : ''}
 
 Return STRICT JSON with fields:
 - "headline_options": array of 3 hooks (1 contrarian, 1 data-led, 1 story-first)
-- "post_text": full post following PAS structure
+- "post_text": full post following PAS structure, focused on ${focusProduct}
 - "hashtags": array of 5-8 relevant hashtags
-- "visual_prompt": detailed prompt for accompanying image
+- "visual_prompt": detailed prompt for accompanying image showing ${focusProduct}
 - "best_time_uk": optimal posting time in UK timezone (HH:MM, 24-hour)
 
 Respond ONLY with valid JSON (no markdown, no commentary).`

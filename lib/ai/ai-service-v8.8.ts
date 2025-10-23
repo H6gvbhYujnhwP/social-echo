@@ -80,7 +80,9 @@ function buildGenInputs(
     country: profile.country || undefined,
     brandTone: tone as StyleVariation,
     keywords,
-    usp: profile.usp
+    usp: profile.usp,
+    productsServices: profile.products_services,
+    website: profile.website || undefined
   }
 }
 
