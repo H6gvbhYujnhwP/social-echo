@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { assertOpenAIKey } from '@/lib/openai'
 import { z } from 'zod'
-import { buildAndGenerateDraft, type LearningSignals, type ProfileData } from '@/lib/ai/ai-service'
+import { buildAndGenerateDraftV8, type LearningSignals, type ProfileData } from '@/lib/ai/ai-service-v8.8'
 import { PostType } from '@/lib/ai/ai-config'
 import { checkUserAccess } from '@/lib/access-control'
 
@@ -162,16 +162,16 @@ export async function POST(
     
     console.log('[regenerate] Regenerating post with custom instruction:', validated.customInstruction)
     
-    // Generate new draft with custom instruction
-    // The AI service will use the custom instruction as a "note" to modify the existing content
-    const draft = await buildAndGenerateDraft({
+    // Generate new draft with custom instruction using v8.8 refinement
+    const draft = await buildAndGenerateDraftV8({
       userId,
       postType: existingPost.postType as PostType,
       profile: profileData,
       learningSignals,
       twists: {
         toneOverride: existingPost.tone !== profile.tone ? existingPost.tone : undefined,
-        note: `REGENERATION REQUEST: ${validated.customInstruction}\n\nOriginal post: ${existingPost.postText}`
+        note: validated.customInstruction,
+        originalPost: existingPost.postText  // Pass original post for refinement
       }
     })
     
