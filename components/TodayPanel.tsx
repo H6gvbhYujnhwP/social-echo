@@ -117,36 +117,36 @@ export function TodayPanel({
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Post Type Selector */}
         <div>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-            <label className="block text-sm font-medium text-gray-700">
-              Post Type
-            </label>
-            <div className="flex items-center gap-2 flex-wrap">
-              {onHistoryClick && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="inline-flex items-center gap-2"
-                  onClick={onHistoryClick}
-                >
-                  <Clock className="h-4 w-4" />
-                  History
-                </Button>
-              )}
-              <Link href="/planner">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="inline-flex items-center gap-2"
-                >
-                  <CalendarIcon className="h-4 w-4" />
-                  Open Planner
-                </Button>
-              </Link>
-            </div>
+          {/* History and Planner buttons row */}
+          <div className="flex items-center justify-end gap-2 flex-wrap mb-3">
+            {onHistoryClick && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="inline-flex items-center gap-2 text-gray-700 border-gray-400 hover:bg-gray-100 hover:border-gray-500"
+                onClick={onHistoryClick}
+              >
+                <Clock className="h-4 w-4" />
+                History
+              </Button>
+            )}
+            <Link href="/planner">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="inline-flex items-center gap-2 text-gray-700 border-gray-400 hover:bg-gray-100 hover:border-gray-500"
+              >
+                <CalendarIcon className="h-4 w-4" />
+                Open Planner
+              </Button>
+            </Link>
           </div>
+          {/* Post Type label directly above buttons */}
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Post Type
+          </label>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => onPostTypeChange('auto' as any)}
