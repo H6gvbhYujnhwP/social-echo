@@ -52,7 +52,7 @@ export default function ResellersPage() {
             },
             {
               title: 'AI Text + Image',
-              description: 'Full LinkedIn content generation with AI-powered text and images.',
+              description: 'Full social media content generation with AI-powered text and images.',
             },
             {
               title: 'Client Seat Controls',

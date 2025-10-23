@@ -37,7 +37,7 @@ export default function TrialExhaustedModal({ open, onClose }: TrialExhaustedMod
             You've reached the end of your trial
           </h3>
           <p className="text-sm text-gray-600 mb-4">
-            If you're enjoying Social Echo, upgrade your plan to keep creating posts and growing your LinkedIn presence.
+            If you're enjoying Social Echo, upgrade your plan to keep creating posts and growing your social media presence.
           </p>
           
           {/* Benefits */}

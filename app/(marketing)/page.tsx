@@ -44,7 +44,7 @@ export default function HomePage() {
               transition={{ duration: 0.8 }}
               className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight"
             >
-              Your LinkedIn Marketing Team—
+              Your Social Media Marketing Team—
               <br />
               <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 Without the Team
@@ -57,7 +57,7 @@ export default function HomePage() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
             >
-              Generate professional LinkedIn posts daily. Train your AI. Build your brand.
+              Generate professional social posts daily. Train your AI. Build your brand.
               <br />
               <span className="text-white font-semibold">From £29.99/month.</span>
             </motion.p>
@@ -186,7 +186,7 @@ export default function HomePage() {
                 How It Works: 3 Simple Steps
               </h2>
               <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                From zero to daily LinkedIn posts in minutes. No marketing experience required.
+                From zero to daily social posts in minutes. No marketing experience required.
               </p>
             </motion.div>
 
@@ -239,7 +239,7 @@ export default function HomePage() {
                   </div>
                   <h3 className="text-2xl font-semibold text-white mb-4">Post & Grow</h3>
                   <p className="text-gray-300 leading-relaxed">
-                    Copy to LinkedIn, add your image, and post. Give feedback to help your AI learn. 
+                    Copy to your platform, add your image, and post. Give feedback to help your AI learn. 
                     Watch your presence and authority soar.
                   </p>
                 </GlassCard>
@@ -386,7 +386,7 @@ export default function HomePage() {
                     <div>
                       <h3 className="text-lg font-semibold text-white mb-2">Best Time to Post</h3>
                       <p className="text-gray-300 text-sm">
-                        AI-powered timing recommendations to maximize your reach and engagement on LinkedIn.
+                        AI-powered timing recommendations to maximize your reach and engagement on social media.
                       </p>
                     </div>
                   </div>
@@ -542,7 +542,7 @@ export default function HomePage() {
               <StatCard
                 value="350%"
                 title="Follower Growth"
-                description="Average increase in LinkedIn following within 90 days of consistent posting."
+                description="Average increase in social media following within 90 days of consistent posting."
                 gradient="purple-pink"
                 delay={0.2}
               />
@@ -589,7 +589,7 @@ export default function HomePage() {
                 Get Started Free →
               </button>
               <p className="text-white/80 mt-6 text-sm">
-                Join hundreds of SMEs already growing their LinkedIn presence with Social Echo
+                Join hundreds of SMEs already growing their social media presence with Social Echo
               </p>
             </motion.div>
           </div>
@@ -618,7 +618,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="text-center text-gray-400">
-              <p>&copy; 2025 Social Echo. AI-powered LinkedIn content generation for SMEs.</p>
+              <p>&copy; 2025 Social Echo. AI-powered social media content generation for SMEs.</p>
             </div>
           </div>
         </footer>

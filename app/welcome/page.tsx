@@ -49,7 +49,7 @@ export default function WelcomePage() {
               transition={{ duration: 0.8 }}
               className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight"
             >
-              AI LinkedIn Content Generator
+              AI Social Media Content Generator
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
                 Without Big Marketing Teams
@@ -63,7 +63,7 @@ export default function WelcomePage() {
               className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed"
             >
               Stop paying £2,000+ per month. Get the visibility and leads your business deserves—at a fraction of the cost. 
-              Our AI-powered content generator creates professional LinkedIn posts in minutes, not hours.
+              Our AI-powered content generator creates professional social media posts in minutes, not hours.
             </motion.p>
 
             <motion.div
@@ -129,7 +129,7 @@ export default function WelcomePage() {
                   </li>
                   <li className="flex items-center">
                     <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
-                    Just 10 minutes a day to engage on LinkedIn
+                    Just 10 minutes a day to engage on social media
                   </li>
                   <li className="flex items-center">
                     <div className="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
@@ -190,7 +190,7 @@ export default function WelcomePage() {
                 Start Free Trial
               </button>
               <p className="text-gray-400 mt-4">
-                Start generating professional LinkedIn content today
+                Start generating professional social media content today
               </p>
             </motion.div>
           </div>
@@ -262,7 +262,7 @@ export default function WelcomePage() {
         {/* Footer */}
         <footer className="px-6 py-8 border-t border-white/10">
           <div className="max-w-7xl mx-auto text-center text-gray-400">
-            <p>&copy; 2025 Social Echo. AI-powered LinkedIn content generation for SMEs.</p>
+            <p>&copy; 2025 Social Echo. AI-powered social media content generation for SMEs.</p>
           </div>
         </footer>
       </div>

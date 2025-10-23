@@ -283,7 +283,7 @@ export function TodayPanel({
                 <Copyable text={todayDraft.post_text}>
                   <div className="p-6 bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg border border-gray-200/50 min-h-[200px] hover:shadow-md transition-all duration-200 cursor-pointer group">
                     <div className="flex items-start justify-between mb-4">
-                      <span className="text-sm font-medium text-gray-600">LinkedIn Post</span>
+                      <span className="text-sm font-medium text-gray-600">Social Post</span>
                       <Copy className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
                     </div>
                     <p className="whitespace-pre-wrap leading-relaxed text-gray-900">

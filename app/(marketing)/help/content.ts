@@ -13,7 +13,7 @@ Choose Starter or Pro. Starter includes a 1-day trial.
 **2) Train your Echo**  
 Open **Train** and add brand voice notes, audience, examples, and preferred topics. The more you add (even short snippets), the better the results.
 **3) Generate your first posts**  
-Go to **Planner → Generate**. Start with a short objective (e.g., "weekly tip about LinkedIn outreach for MSPs").
+Go to **Planner → Generate**. Start with a short objective (e.g., "weekly tip about social media outreach for MSPs").
 **4) Refine drafts quickly**  
 Use short instructions like:
 - "Add a stronger hook"

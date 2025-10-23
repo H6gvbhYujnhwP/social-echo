@@ -273,7 +273,7 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
           placeholder="e.g., Smith & Associates, Acme Solutions Ltd"
           required
         />
-        <FieldHelp text="Your official business name as it appears on LinkedIn. This helps personalize your posts and build brand recognition." />
+        <FieldHelp text="Your official business name for your social profiles. This helps personalize your posts and build brand recognition." />
       </div>
 
       {/* Website */}

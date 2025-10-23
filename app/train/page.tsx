@@ -116,7 +116,7 @@ export default function TrainPage() {
             </h1>
             <p className="text-base sm:text-lg lg:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed break-words px-4">
               These details shape your daily content. You can change them anytime.
-              Set up your business profile once and let AI generate personalized LinkedIn posts that sound exactly like you.
+              Set up your business profile once and let AI generate personalized social posts that sound exactly like you.
             </p>
           </motion.div>
 
@@ -165,7 +165,7 @@ export default function TrainPage() {
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Generate Daily</h3>
               <p className="text-gray-300">
-                Create professional LinkedIn posts in your voice with just one click
+                Create professional social media posts in your voice with just one click
               </p>
             </div>
             
@@ -175,7 +175,7 @@ export default function TrainPage() {
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Post & Grow</h3>
               <p className="text-gray-300">
-                Copy, paste, and watch your LinkedIn engagement soar
+                Copy, paste, and watch your social media engagement soar
               </p>
             </div>
           </motion.div>

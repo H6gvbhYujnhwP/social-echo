@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Features - How SocialEcho Works',
-  description: 'Discover how SocialEcho helps you create professional LinkedIn content in minutes. From training your Echo to publishing polished posts with AI-generated images.',
+  description: 'Discover how SocialEcho helps you create professional social media content in minutes. From training your Echo to publishing polished posts with AI-generated images.',
   openGraph: {
     title: 'Features - How SocialEcho Works',
     description: 'See how easy it is to create professional content with your personal AI assistant.',
