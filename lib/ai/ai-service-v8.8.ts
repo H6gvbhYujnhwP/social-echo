@@ -71,7 +71,8 @@ async function loadAiConfig(): Promise<AiGlobalConfig> {
 function buildGenInputs(
   profile: ProfileData,
   tone: string,
-  keywords: string[]
+  keywords: string[],
+  twists?: GenerationTwists
 ): GenInputs {
   return {
     businessName: profile.business_name,
@@ -82,7 +83,9 @@ function buildGenInputs(
     keywords,
     usp: profile.usp,
     productsServices: profile.products_services,
-    website: profile.website || undefined
+    website: profile.website || undefined,
+    notes: twists?.note,
+    originalPost: twists?.originalPost
   }
 }
 
@@ -127,7 +130,7 @@ export async function buildAndGenerateDraftV8(opts: {
   const uniqueKeywords = [...new Set(allKeywords)]
   
   // 5. Build generation inputs
-  const genInputs = buildGenInputs(opts.profile, effectiveTone, uniqueKeywords)
+  const genInputs = buildGenInputs(opts.profile, effectiveTone, uniqueKeywords, opts.twists)
   
   // 6. Get diversity parameters (if enabled)
   const useDiversity = opts.useDiversityEngine !== false
@@ -189,12 +192,7 @@ export async function buildAndGenerateDraftV8(opts: {
       finalPrompt = buildInfoAdvicePrompt(genInputs)
   }
   
-  // 8. Add user notes if provided
-  if (opts.twists?.note) {
-    finalPrompt += `\n\nADDITIONAL USER INSTRUCTIONS:\n${opts.twists.note}`
-  }
-  
-  // 9. Load model mapping utilities
+  // 8. Load model mapping utilities
   const { getModelId, getModelInfo } = await import('./model-mapping')
   const { calculateTemperature, calculateMaxTokens } = await import('./generation-utils')
   const { withRetry } = await import('./retry-utils')
@@ -211,7 +209,7 @@ export async function buildAndGenerateDraftV8(opts: {
     throw error
   }
   
-  // 10. Calculate temperature (use diversity params if available)
+  // 9. Calculate temperature (use diversity params if available)
   const temperature = diversityParams?.temperature || config.temperature
   const topP = diversityParams?.topP || 0.92
   
@@ -220,7 +218,7 @@ export async function buildAndGenerateDraftV8(opts: {
     topP: topP.toFixed(3)
   })
   
-  // 11. Calculate token budget
+  // 10. Calculate token budget
   const systemPrompt = 'You are an expert LinkedIn content strategist. Generate engaging, professional posts that drive engagement.'
   const tokenBudget = calculateMaxTokens({
     modelMaxTokens: modelInfo.maxTokens,
@@ -235,7 +233,7 @@ export async function buildAndGenerateDraftV8(opts: {
     budgetUsed: `${tokenBudget.budgetUsed.toFixed(1)}%`
   })
   
-  // 12. Call AI model with retry logic
+  // 11. Call AI model with retry logic
   const generationStartTime = Date.now()
   
   const result = await withRetry(async (attempt, useFallback) => {

@@ -85,6 +85,7 @@ export type GenerationTwists = {
   toneOverride?: string
   extraKeywords?: string[]
   note?: string
+  originalPost?: string  // For refinement: the original post text to modify
 }
 
 /**
