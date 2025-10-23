@@ -114,80 +114,6 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* Agency Plan */}
-        <div className="mb-20">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-4">Agency White Label Plan</h2>
-          <p className="text-center text-gray-700 text-lg mb-12 max-w-2xl mx-auto">
-            Grow as you go — £39/client/month with unlimited capacity
-          </p>
-          <div className="max-w-3xl mx-auto">
-            {/* Agency — Grow as You Go */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-purple-500 relative hover:shadow-2xl transition-shadow">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-1.5 rounded-full text-sm font-bold shadow-md">
-                  AGENCY PLAN
-                </span>
-              </div>
-              <div className="mb-6 text-center">
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">Agency — Grow as You Go</h3>
-                <div className="flex items-baseline gap-2 mb-4 justify-center">
-                  <span className="text-5xl font-bold text-gray-900">£39</span>
-                  <span className="text-gray-700 text-lg">/client/month</span>
-                </div>
-                <p className="text-gray-700 text-base">One simple rate. Unlimited potential.</p>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-3">
-                  <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
-                  <span className="text-gray-800 text-base"><strong className="font-semibold text-gray-900">Unlimited client accounts</strong> — add as many as you need</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
-                  <span className="text-gray-800 text-base"><strong className="font-semibold text-gray-900">Unlimited posts per client</strong> — no caps, no limits</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
-                  <span className="text-gray-800 text-base"><strong className="font-semibold text-gray-900">Branded white-label instance</strong> — your logo, your colors</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
-                  <span className="text-gray-800 text-base"><strong className="font-semibold text-gray-900">Admin dashboard</strong> — manage all clients in one place</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
-                  <span className="text-gray-800 text-base"><strong className="font-semibold text-gray-900">Custom domain support</strong> — use your own domain</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
-                  <span className="text-gray-800 text-base"><strong className="font-semibold text-gray-900">Auto-proration billing</strong> — only pay for what you use</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
-                  <span className="text-gray-800 text-base"><strong className="font-semibold text-gray-900">Priority support</strong> — dedicated help when you need it</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
-                  <span className="text-gray-800 text-base"><strong className="font-semibold text-gray-900">Export-ready content</strong> — CSV, PDF, and more</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => handleSelectPlan('SocialEcho_AgencyStarter')}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3.5 px-6 rounded-lg transition-all shadow-md hover:shadow-lg mb-4 text-base"
-              >
-                Get Started
-              </button>
-              <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
-                <p className="text-sm text-gray-800 font-medium">
-                  <strong className="text-gray-900">Revenue Example:</strong> Resell at £99/client = <strong className="text-green-700">£60 margin per client</strong>
-                </p>
-                <p className="text-xs text-gray-700 mt-1.5">
-                  With 25 clients: £2,475/mo revenue, £1,500/mo profit
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* FAQ */}
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-12">Frequently Asked Questions</h2>
@@ -198,7 +124,7 @@ export default function PricingPage() {
             </div>
             <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
               <h3 className="font-bold text-gray-900 text-lg mb-2">What happens when I reach my limit?</h3>
-              <p className="text-gray-700 text-base">On Starter (8/month) and Pro (30/month) plans, you'll be prompted to wait for your monthly reset or contact us for custom solutions. Agency plans have unlimited posts.</p>
+              <p className="text-gray-700 text-base">On Starter (8/month) and Pro (30/month) plans, you'll be prompted to wait for your monthly reset or contact us for custom solutions.</p>
             </div>
             <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
               <h3 className="font-bold text-gray-900 text-lg mb-2">Can I upgrade or downgrade?</h3>

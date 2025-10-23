@@ -414,7 +414,7 @@ export default function HomePage() {
               </p>
             </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               <FeatureCard
                 icon={Zap}
                 title="Starter"
@@ -457,24 +457,6 @@ export default function HomePage() {
                   delay={0.4}
                 />
               </div>
-
-              <FeatureCard
-                icon={TrendingUp}
-                title="Agency"
-                price="£149.99/month"
-                features={[
-                  "100 posts per month",
-                  "Multi-client management",
-                  "White-label options",
-                  "All Pro features",
-                  "Priority support",
-                  "Agency dashboard"
-                ]}
-                buttonText="Contact Sales"
-                onButtonClick={() => router.push('/signin')}
-                gradient="green"
-                delay={0.6}
-              />
             </div>
           </div>
         </section>
