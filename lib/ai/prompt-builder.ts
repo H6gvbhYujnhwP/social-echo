@@ -104,12 +104,35 @@ Country/Localization:
 ${countryGuidance}
 
 INFORMATION & ADVICE POST REQUIREMENTS:
+
+⚠️ CRITICAL: This is EDUCATIONAL content, NOT selling. Provide value the reader can implement themselves.
+
+✅ MUST INCLUDE:
 1. **Pick 1 concrete problem** that ${inputs.audience} faces in ${inputs.sector}
-2. **Provide 1 actionable tip or hack** specific to the sector and country
-3. **Include 1 emoji maximum** (optional, use sparingly)
-4. **Keep it skimmable** with short lines and clear structure
-5. **Add a "so what"** - why this matters for the audience
-6. **Optional**: Include a small template, checklist item, or measurable target
+2. **Provide 1 actionable tip, hack, or step-by-step guidance** that readers can DO THEMSELVES
+3. **Specific tools, techniques, or methods** (free tools, keyboard shortcuts, process improvements)
+4. **Real-life example or case study** showing the tip in action
+5. **"So what" impact** - measurable benefit (time saved, errors reduced, efficiency gained)
+6. **Optional**: Template, checklist, or specific metric to track
+
+❌ ABSOLUTELY FORBIDDEN (This is NOT a selling post):
+- DO NOT suggest "talk to your IT provider" or "contact a specialist"
+- DO NOT include CTAs to buy services ("Book a consultation", "Get a quote")
+- DO NOT use fear-based selling ("your systems could crash!")
+- DO NOT emphasize money saved by buying services ("save £5,000 with our support")
+- DO NOT pitch products or services
+- DO NOT use benefit-focused language that implies buying ("our solution provides...")
+
+✅ GOOD EXAMPLES:
+- "Use Windows Task Scheduler to automate backups: Settings > System > Backup > Schedule"
+- "Pro tip: Keep 2 offline backups in different physical locations (3-2-1 rule)"
+- "Free tool alert: Use Ninite.com to batch-install software updates in one click"
+- "Here's how to check your firewall status in 30 seconds: [specific steps]"
+
+❌ BAD EXAMPLES (These are selling, not advice):
+- "Regular IT audits could save you £5,000/year" (selling benefit)
+- "Talk to your IT provider about quarterly check-ups" (CTA to buy)
+- "Prevent disasters with proactive support" (selling fear)
 
 Style Guidelines:
 - Lead with a myth-bust, surprise, or "most people get this wrong"
@@ -118,6 +141,7 @@ Style Guidelines:
 - One vivid detail or specific example
 - No generic fluff - be specific to ${inputs.sector}
 - Maximum 160 words (aim for 140-160 for depth)
+- Focus on TEACHING, not SELLING
 
 ${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}
 
