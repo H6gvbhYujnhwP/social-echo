@@ -600,7 +600,7 @@ export default function DashboardPage() {
 
       {/* Trial Status Banner */}
       {showTrialBanner && subscription && (
-        <div className="relative z-10 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 pointer-events-auto">
+        <div className="relative z-10 px-3 sm:px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 pointer-events-auto">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-start space-x-3">
@@ -652,7 +652,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 {(subscription.status === 'trialing' || subscription.status === 'trial' || isTrialExhausted) && (
                   <Link
                     href="/account?tab=billing"
@@ -677,9 +677,9 @@ export default function DashboardPage() {
       )}
 
       {/* Main Content */}
-      <main className="relative z-10 px-4 sm:px-6 lg:px-8 py-8 pointer-events-auto">
-        <div className="w-full max-w-[95%] xl:max-w-[90%] 2xl:max-w-[85%] mx-auto">
-          <div className="grid lg:grid-cols-2 gap-6 xl:gap-8 2xl:gap-10">
+      <main className="relative z-10 px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pointer-events-auto">
+        <div className="w-full max-w-full sm:max-w-[95%] xl:max-w-[90%] 2xl:max-w-[85%] mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 xl:gap-8 2xl:gap-10">
             {/* Left Column: Today's Content */}
             <TodayPanel
               profile={profile}

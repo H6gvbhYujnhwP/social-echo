@@ -200,11 +200,11 @@ export function ImagePanel({
 
   return (
     <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20">
-      <div className="p-6 border-b border-gray-200/50">
+      <div className="p-4 sm:p-6 border-b border-gray-200/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Image className="h-6 w-6 text-green-600 mr-3" />
-            <h2 className="text-2xl font-bold text-gray-900">Create Image</h2>
+            <Image className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 mr-2 sm:mr-3 flex-shrink-0" />
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Create Image</h2>
           </div>
           {autoSelectedType && (
             <div className="flex items-center text-xs text-green-600 bg-green-50 px-3 py-1 rounded-full">
@@ -215,7 +215,7 @@ export function ImagePanel({
         </div>
       </div>
       
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
             <Palette className="h-4 w-4 mr-2" />

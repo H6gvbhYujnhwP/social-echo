@@ -83,18 +83,18 @@ export function TodayPanel({
 
   return (
     <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20">
-      <div className="p-6 border-b border-gray-200/50">
-        <div className="flex items-center justify-between">
+      <div className="p-4 sm:p-6 border-b border-gray-200/50">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center">
-            <Sparkles className="h-6 w-6 text-purple-600 mr-3" />
+            <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 mr-2 sm:mr-3 flex-shrink-0" />
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Today's Content</h2>
-              <p className="text-sm text-gray-600">{getTodayDayName()}</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Today's Content</h2>
+              <p className="text-xs sm:text-sm text-gray-600">{getTodayDayName()}</p>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
             <UsageCounter usage={usage} />
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
             <Badge className={`${
               effectivePostType === 'selling' ? 'bg-green-100 text-green-800 border-green-200' :
               effectivePostType === 'information_advice' ? 'bg-blue-100 text-blue-800 border-blue-200' :
@@ -114,14 +114,14 @@ export function TodayPanel({
         </div>
       </div>
 
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Post Type Selector */}
         <div>
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
             <label className="block text-sm font-medium text-gray-700">
               Post Type
             </label>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {onHistoryClick && (
                 <Button
                   type="button"
@@ -150,7 +150,7 @@ export function TodayPanel({
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => onPostTypeChange('auto' as any)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 postTypeMode === 'auto'
                   ? 'bg-gray-900 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -162,7 +162,7 @@ export function TodayPanel({
               <button
                 key={config.key}
                 onClick={() => onPostTypeChange(config.key as PostType)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                   postTypeMode === config.key
                     ? 'bg-purple-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
