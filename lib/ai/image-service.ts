@@ -109,17 +109,19 @@ export async function generateImagePrompt({
     textRules = STRICT_NO_TEXT_OVERRIDE
   } else if (allowText) {
     textRules = `
-TEXT RULES - STRICT QUALITY REQUIREMENTS:
-- You MAY include text, but ONLY if it adds value to the image.
-- Maximum 5 words of text total.
+TEXT INCLUSION REQUESTED - QUALITY REQUIREMENTS:
+- PLEASE INCLUDE short, relevant text in the image (1-5 words maximum).
+- The text should relate to the topic and add visual impact.
 - Text MUST be in correct, properly-spelled English with NO spelling errors.
-- Text MUST be legible, clear, and professionally rendered.
-- Use clean, sans-serif fonts that are easy to read.
-- FORBIDDEN: Gibberish, pseudo-letters, misspelled words, lorem ipsum, non-English characters.
-- FORBIDDEN: Blurry, distorted, or illegible text.
-- If you cannot render text correctly, DO NOT include any text at all.
-- Examples of GOOD text: "BUDGET", "GROWTH", "SUCCESS", "INNOVATION"
-- Examples of BAD text: "BUDGT", "GRWOTH", "INSRUCCTION", "GPASABLE"
+- Text MUST be legible, clear, and professionally rendered using clean, bold, sans-serif fonts.
+- Make the text prominent and easy to read - use high contrast and appropriate sizing.
+- REQUIRED: Correct spelling - double-check every word before rendering.
+- FORBIDDEN: Gibberish, pseudo-letters, misspelled words, lorem ipsum, non-English characters, blurry text.
+- Examples of GOOD text: "BUDGET", "GROWTH", "SUCCESS", "INNOVATION", "STRATEGY"
+- Examples of BAD text: "BUDGT", "GRWOTH", "INSRUCCTION", "GPASABLE" (these are misspelled)
+- If the topic is about IT budgets, include text like "IT BUDGET" or "BUDGET".
+- If the topic is about growth, include text like "GROWTH" or "SCALE".
+- If the topic is about innovation, include text like "INNOVATION" or "IDEAS".
 `
   }
 
