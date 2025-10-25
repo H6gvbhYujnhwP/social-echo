@@ -708,6 +708,7 @@ export default function DashboardPage() {
               usage={usage}
               customisationsLeft={customisationsLeft}
               isTrialExhausted={isTrialExhausted}
+              userPlan={subscription?.plan}
               onTrialExhausted={() => setShowTrialExhaustedModal(true)}
               onHistoryClick={() => setIsHistoryDrawerOpen(true)}
             />

@@ -12,6 +12,7 @@ import { UserProfile, getTodayPostType, type PostType } from '../lib/localstore'
 import { GeneratedDraft } from '../app/dashboard/page'
 import UsageCounter from './UsageCounter'
 import { POST_TYPE_CONFIGS, postTypeDisplay, getPostTypeIcon } from '@/lib/post-type-mapping'
+import { isUltimatePlan } from '@/lib/billing/isUltimate'
 
 interface TodayPanelProps {
   profile: UserProfile
@@ -31,6 +32,7 @@ interface TodayPanelProps {
   isTrialExhausted?: boolean
   onTrialExhausted?: () => void
   onHistoryClick?: () => void
+  userPlan?: string | null
 }
 
 export function TodayPanel({ 
@@ -50,10 +52,18 @@ export function TodayPanel({
   customisationsLeft = 2,
   isTrialExhausted = false,
   onTrialExhausted,
-  onHistoryClick
+  onHistoryClick,
+  userPlan
 }: TodayPanelProps) {
   const [customPrompt, setCustomPrompt] = useState('')
   const todayPlan = getTodayPostType()
+  
+  // Check if user is on Ultimate plan for unlimited regenerations
+  const isUltimate = isUltimatePlan(userPlan)
+  
+  // Normalize -1 sentinel to Infinity for internal logic
+  let normalizedCustomisationsLeft = customisationsLeft
+  if (customisationsLeft === -1) normalizedCustomisationsLeft = Infinity
 
   // Get the effective post type
   const getEffectivePostType = (): PostType => {
@@ -347,7 +357,7 @@ export function TodayPanel({
                           onRegenerate(customPrompt)
                         }
                       }}
-                      disabled={isGenerating || !customPrompt.trim() || (customisationsLeft !== Infinity && customisationsLeft !== -1 && customisationsLeft === 0) || !currentPostId || isTrialExhausted}
+                      disabled={isUltimate ? false : (isGenerating || !customPrompt.trim() || (normalizedCustomisationsLeft !== Infinity && normalizedCustomisationsLeft === 0) || !currentPostId || isTrialExhausted)}
                       size="sm"
                       variant="primary"
                       className="min-w-[220px] inline-flex items-center justify-center whitespace-nowrap bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md"
@@ -357,9 +367,11 @@ export function TodayPanel({
                           ? "Trial limit reached – upgrade to continue" 
                           : customisationsLeft === 0 
                             ? "No regenerations left today" 
-                            : (customisationsLeft === Infinity || customisationsLeft === -1)
+                            : isUltimate
                               ? "Updates this draft using your instructions (Unlimited)"
-                              : `Updates this draft using your instructions (${customisationsLeft}/2 left)`
+                              : Number.isFinite(normalizedCustomisationsLeft)
+                                ? `Updates this draft using your instructions (${normalizedCustomisationsLeft}/2 left)`
+                                : "Updates this draft using your instructions (Unlimited)"
                       }
                     >
                       {isGenerating ? (
@@ -370,10 +382,12 @@ export function TodayPanel({
                       ) : (
                         <>
                           <RefreshCw className="mr-2 h-4 w-4" />
-                          {(customisationsLeft === Infinity || customisationsLeft === -1) ? (
+                          {isUltimate ? (
                             <>Apply & Regenerate</>
+                          ) : Number.isFinite(normalizedCustomisationsLeft) ? (
+                            <>Apply & Regenerate ({normalizedCustomisationsLeft}/2 left)</>
                           ) : (
-                            <>Apply & Regenerate ({customisationsLeft}/2 left)</>
+                            <>Apply & Regenerate</>
                           )}
                         </>
                       )}
