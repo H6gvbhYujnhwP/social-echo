@@ -347,7 +347,7 @@ export function TodayPanel({
                           onRegenerate(customPrompt)
                         }
                       }}
-                      disabled={isGenerating || !customPrompt.trim() || (customisationsLeft !== Infinity && customisationsLeft === 0) || !currentPostId || isTrialExhausted}
+                      disabled={isGenerating || !customPrompt.trim() || (customisationsLeft !== Infinity && customisationsLeft !== -1 && customisationsLeft === 0) || !currentPostId || isTrialExhausted}
                       size="sm"
                       variant="primary"
                       className="min-w-[220px] inline-flex items-center justify-center whitespace-nowrap bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md"
@@ -357,7 +357,7 @@ export function TodayPanel({
                           ? "Trial limit reached – upgrade to continue" 
                           : customisationsLeft === 0 
                             ? "No regenerations left today" 
-                            : customisationsLeft === Infinity
+                            : (customisationsLeft === Infinity || customisationsLeft === -1)
                               ? "Updates this draft using your instructions (Unlimited)"
                               : `Updates this draft using your instructions (${customisationsLeft}/2 left)`
                       }
@@ -370,7 +370,7 @@ export function TodayPanel({
                       ) : (
                         <>
                           <RefreshCw className="mr-2 h-4 w-4" />
-                          {customisationsLeft === Infinity ? (
+                          {(customisationsLeft === Infinity || customisationsLeft === -1) ? (
                             <>Apply & Regenerate</>
                           ) : (
                             <>Apply & Regenerate ({customisationsLeft}/2 left)</>
