@@ -102,7 +102,9 @@ function AccountPageInner() {
       .then(res => res.json())
       .then(async (data) => {
         setSubscription(data)
-        setSelectedPlan(data.plan === 'pro' ? 'pro' : 'starter')
+        // Initialize selectedPlan with current plan (starter, pro, or ultimate)
+        const currentPlan = data.plan?.toLowerCase() || 'starter'
+        setSelectedPlan(currentPlan as 'starter' | 'pro' | 'ultimate')
         // Check for both Stripe trials ('trialing') and admin trials ('trial')
         setIsTrialing(data.status === 'trialing' || data.status === 'trial')
         
