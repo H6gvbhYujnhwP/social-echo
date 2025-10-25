@@ -18,7 +18,7 @@ const ProfileSchema = z.object({
   usp: z.string().min(1, 'USP is required'),
   keywords: z.array(z.string()), // Allow empty array - keywords are optional
   rotation: z.enum(['serious', 'quirky']),
-  country: z.string().optional() // v8.8: optional country for localized content
+  country: z.string().nullable().optional().or(z.literal('')) // v8.8: optional country for localized content
 })
 
 // GET profile
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       usp: validated.usp,
       keywords: validated.keywords,
       rotation: validated.rotation,
-      country: validated.country || null  // v8.8: optional country
+      country: validated.country && validated.country !== '' ? validated.country : null  // v8.8: optional country
     }
     
     // Upsert profile (create if doesn't exist, update if exists)
