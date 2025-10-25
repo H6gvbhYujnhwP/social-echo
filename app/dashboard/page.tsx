@@ -340,9 +340,11 @@ export default function DashboardPage() {
           });
           if (customisationResponse.ok) {
             const customisationData = await customisationResponse.json();
-            const customisationsLeft = customisationData.customisations_left ?? customisationData.customisationsLeft ?? 2;
+            let customisationsLeft = customisationData.customisations_left ?? customisationData.customisationsLeft ?? 2;
+            // Convert -1 back to Infinity (used to represent unlimited in JSON)
+            if (customisationsLeft === -1) customisationsLeft = Infinity;
             setCustomisationsLeft(customisationsLeft);
-            console.log('[dashboard] Customisations left:', customisationsLeft);
+            console.log('[dashboard] Customisations left:', customisationsLeft, customisationsLeft === Infinity ? '(Unlimited)' : '');
           }
         } catch (err) {
           console.error('[dashboard] Failed to fetch customisation usage:', err);
@@ -478,8 +480,10 @@ export default function DashboardPage() {
       
       // Update customisations left from server response (source of truth)
       if (typeof data.customisationsLeft === 'number') {
-        setCustomisationsLeft(data.customisationsLeft);
-        console.log('[dashboard] Customisations left:', data.customisationsLeft);
+        // Convert -1 back to Infinity (used to represent unlimited in JSON)
+        const customisationsLeft = data.customisationsLeft === -1 ? Infinity : data.customisationsLeft;
+        setCustomisationsLeft(customisationsLeft);
+        console.log('[dashboard] Customisations left:', customisationsLeft, customisationsLeft === Infinity ? '(Unlimited)' : '');
       } else {
         // Fallback: decrement using functional update
         setCustomisationsLeft((n) => Math.max(0, n - 1));

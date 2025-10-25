@@ -209,7 +209,19 @@ export async function POST(
     // Get updated customisation count
     const updatedCustomisation = await checkCustomisationAllowed(postId, userId)
     
+    console.log('[regenerate] Updated customisation:', {
+      allowed: updatedCustomisation.allowed,
+      customisationsUsed: updatedCustomisation.customisationsUsed,
+      customisationsLeft: updatedCustomisation.customisationsLeft,
+      isInfinity: updatedCustomisation.customisationsLeft === Infinity
+    });
+    
     // Return updated draft with customisations left
+    // Convert Infinity to -1 for JSON serialization (Infinity becomes null in JSON)
+    const customisationsLeftForJson = updatedCustomisation.customisationsLeft === Infinity 
+      ? -1 
+      : updatedCustomisation.customisationsLeft;
+    
     return NextResponse.json({
       headline_options: draft.headline_options,
       post_text: draft.post_text,
@@ -217,7 +229,7 @@ export async function POST(
       visual_prompt: draft.visual_prompt,
       best_time_uk: draft.best_time_uk,
       postId: updatedPost.id,
-      customisationsLeft: updatedCustomisation.customisationsLeft
+      customisationsLeft: customisationsLeftForJson
     })
     
   } catch (error: any) {

@@ -21,9 +21,14 @@ export async function GET(
     // Use centralized service with plan-based limits
     const customisation = await checkCustomisationAllowed(postId, userId);
 
+    // Convert Infinity to -1 for JSON serialization (Infinity becomes null in JSON)
+    const customisationsLeftForJson = customisation.customisationsLeft === Infinity
+      ? -1
+      : customisation.customisationsLeft;
+    
     return NextResponse.json({
       customisations_used: customisation.customisationsUsed,
-      customisations_left: customisation.customisationsLeft,
+      customisations_left: customisationsLeftForJson,
       allowed: customisation.allowed,
     });
   } catch (error) {
