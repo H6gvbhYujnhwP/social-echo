@@ -10,6 +10,7 @@ import Image from 'next/image'
 import Container from '../../components/layout/Container'
 import UpgradeModal from '../../components/UpgradeModal'
 import { TrialCountdown } from '../../components/TrialCountdown'
+import { PLAN_METADATA, getPlanMetadata, isUnlimitedPlan } from '@/lib/billing/plan-metadata'
 
 interface Subscription {
   plan: string
@@ -61,7 +62,7 @@ function AccountPageInner() {
   const [show2FASetup, setShow2FASetup] = useState(false)
   
   // Plan change
-  const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro'>('starter')
+  const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro' | 'ultimate'>('starter')
   
   // Upgrade modal
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
@@ -331,33 +332,84 @@ function AccountPageInner() {
   }
 
   const handleChangePlan = async () => {
-    // Check if this is an upgrade from Starter to Pro
-    if (subscription?.plan === 'starter' && selectedPlan === 'pro') {
-      // Show upgrade modal for custom upgrade flow
-      setShowUpgradeModal(true)
+    const currentPlanId = subscription?.plan?.toLowerCase() || 'starter'
+    const targetPlanId = selectedPlan
+    
+    // Get plan metadata
+    const currentMeta = getPlanMetadata(currentPlanId)
+    const targetMeta = getPlanMetadata(targetPlanId)
+    
+    // Determine if this is an upgrade or downgrade
+    const isUpgrade = targetMeta.priceValue > currentMeta.priceValue
+    const isDowngrade = targetMeta.priceValue < currentMeta.priceValue
+    
+    if (!isUpgrade && !isDowngrade) {
+      setMessage({ type: 'error', text: 'Invalid plan change' })
       return
     }
-
-    // Check if this is a downgrade from Pro to Starter
-    if (subscription?.plan === 'pro' && selectedPlan === 'starter') {
-      // Schedule downgrade at period end
+    
+    // Handle upgrades (immediate)
+    if (isUpgrade) {
       setActionLoading(true)
       setMessage(null)
-
+      
+      try {
+        const res = await fetch('/api/account/billing/change-plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ targetPlan: targetPlanId })
+        })
+        
+        const data = await res.json()
+        
+        // Handle SCA (3D Secure) if required
+        if (data.requiresAction && data.paymentIntentClientSecret) {
+          const { loadStripe } = await import('@stripe/stripe-js')
+          const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+          if (!stripe) {
+            throw new Error('Failed to load Stripe')
+          }
+          const { error } = await stripe.confirmCardPayment(data.paymentIntentClientSecret)
+          if (error) {
+            setMessage({ type: 'error', text: 'Card authentication failed. Please try again.' })
+            setActionLoading(false)
+            return
+          }
+        }
+        
+        if (!res.ok) {
+          throw new Error(data.error || 'Upgrade failed')
+        }
+        
+        setMessage({ type: 'success', text: `Upgraded to ${targetMeta.name}! ${targetMeta.price} charged today.` })
+        setTimeout(() => window.location.reload(), 1500)
+      } catch (err: any) {
+        setMessage({ type: 'error', text: err.message || 'Failed to upgrade plan' })
+        setActionLoading(false)
+      }
+      return
+    }
+    
+    // Handle downgrades (scheduled at period end)
+    if (isDowngrade) {
+      setActionLoading(true)
+      setMessage(null)
+      
       try {
         const res = await fetch('/api/account/billing/downgrade', {
-          method: 'POST'
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ targetPlan: targetPlanId })
         })
-
+        
         const data = await res.json()
-
+        
         if (res.ok) {
           const effectiveDate = new Date(data.effectiveAt).toLocaleDateString('en-GB')
           setMessage({ 
             type: 'success', 
-            text: `Downgrade scheduled. Your plan will switch to Starter on ${effectiveDate}. Next bill will be £29.99.` 
+            text: `Downgrade scheduled. Your plan will switch to ${targetMeta.name} on ${effectiveDate}. Next bill will be ${targetMeta.price}.` 
           })
-          // Refresh subscription data
           window.location.reload()
         } else {
           setMessage({ type: 'error', text: data.error || 'Failed to schedule downgrade' })
@@ -369,9 +421,6 @@ function AccountPageInner() {
       }
       return
     }
-
-    // No change or invalid change
-    setMessage({ type: 'error', text: 'Invalid plan change' })
   }
 
   const handleCancelDowngrade = async () => {
@@ -498,7 +547,10 @@ function AccountPageInner() {
     )
   }
 
-  const isPro = subscription?.plan?.toLowerCase().includes('pro')
+  const currentPlan = subscription?.plan?.toLowerCase() || 'starter'
+  const planMeta = getPlanMetadata(currentPlan)
+  const isPro = currentPlan === 'pro'
+  const isUltimate = currentPlan === 'ultimate'
   const trialEndDate = subscription?.trialEnd ? new Date(subscription.trialEnd) : null
   const renewalDate = subscription?.currentPeriodEnd ? new Date(subscription.currentPeriodEnd) : null
 
@@ -621,15 +673,20 @@ function AccountPageInner() {
                 <div className="flex items-start justify-between">
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-2">
-                      {subscription?.plan ? (subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)) : 'Starter'} Plan
+                      {planMeta.name} Plan
                     </h2>
                     <p className="text-white/70">
-                      {isPro ? '£49.99/month' : '£29.99/month'}
+                      {planMeta.price}
                     </p>
+                    {isUltimate && (
+                      <p className="text-purple-300 text-sm mt-1 font-medium">
+                        ✨ Unlimited Posts
+                      </p>
+                    )}
                     {renewalDate && (
                       <p className="text-white/60 text-sm mt-2">
-                        {subscription?.pendingPlan === 'starter' && subscription?.pendingAt
-                          ? `Scheduled downgrade to Starter from ${new Date(subscription.pendingAt).toLocaleDateString('en-GB')}`
+                        {subscription?.pendingPlan && subscription?.pendingAt
+                          ? `Scheduled downgrade to ${getPlanMetadata(subscription.pendingPlan).name} from ${new Date(subscription.pendingAt).toLocaleDateString('en-GB')}`
                           : subscription?.cancelAtPeriodEnd 
                           ? `Cancels on ${renewalDate.toLocaleDateString('en-GB')}`
                           : `Renews on ${renewalDate.toLocaleDateString('en-GB')}`
@@ -828,7 +885,7 @@ function AccountPageInner() {
           {activeTab === 'billing' && (
             <div className="space-y-6">
               {/* Pending Downgrade Banner (v8.6) */}
-              {subscription?.pendingPlan === 'starter' && subscription?.pendingAt && (
+              {subscription?.pendingPlan && subscription?.pendingAt && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -840,7 +897,7 @@ function AccountPageInner() {
                       <div>
                         <p className="text-white font-medium">Downgrade Scheduled</p>
                         <p className="text-white/80 text-sm mt-1">
-                          Your plan will switch to Starter on {new Date(subscription.pendingAt).toLocaleDateString('en-GB')}. You'll keep Pro benefits until then.
+                          Your plan will switch to {getPlanMetadata(subscription.pendingPlan).name} on {new Date(subscription.pendingAt).toLocaleDateString('en-GB')}. You'll keep {planMeta.name} benefits until then.
                         </p>
                       </div>
                     </div>
@@ -864,46 +921,40 @@ function AccountPageInner() {
                 <h3 className="text-xl font-bold text-white mb-4">Manage Plan</h3>
                 <div className="space-y-4">
                   <div className="space-y-3">
-                    <label className="flex items-center space-x-3 p-4 bg-white/5 rounded-lg border border-white/20 cursor-pointer hover:bg-white/10 transition-colors">
-                      <input
-                        type="radio"
-                        name="plan"
-                        value="starter"
-                        checked={selectedPlan === 'starter'}
-                        onChange={(e) => setSelectedPlan(e.target.value as 'starter' | 'pro')}
-                        disabled={!!subscription?.pendingPlan}
-                        className="w-4 h-4"
-                      />
-                      <div className="flex-1">
-                        <p className="text-white font-medium">
-                          Starter Plan
-                          {subscription?.pendingPlan === 'starter' && subscription?.pendingAt && (
-                            <span className="ml-2 text-yellow-400 text-sm">(scheduled at renewal)</span>
-                          )}
-                        </p>
-                        <p className="text-white/60 text-sm">£29.99/month • 8 posts per month</p>
-                      </div>
-                    </label>
-                    <label className="flex items-center space-x-3 p-4 bg-white/5 rounded-lg border border-white/20 cursor-pointer hover:bg-white/10 transition-colors">
-                      <input
-                        type="radio"
-                        name="plan"
-                        value="pro"
-                        checked={selectedPlan === 'pro'}
-                        onChange={(e) => setSelectedPlan(e.target.value as 'starter' | 'pro')}
-                        disabled={!!subscription?.pendingPlan}
-                        className="w-4 h-4"
-                      />
-                      <div className="flex-1">
-                        <p className="text-white font-medium">
-                          Pro Plan
-                          {subscription?.plan === 'pro' && subscription?.pendingPlan === 'starter' && subscription?.pendingAt && (
-                            <span className="ml-2 text-white/60 text-sm">(ends {new Date(subscription.pendingAt).toLocaleDateString('en-GB')})</span>
-                          )}
-                        </p>
-                        <p className="text-white/60 text-sm">£49.99/month • 30 posts per month</p>
-                      </div>
-                    </label>
+                    {/* Render all three plans */}
+                    {Object.values(PLAN_METADATA).map((plan) => {
+                      const isCurrent = currentPlan === plan.id
+                      const isPending = subscription?.pendingPlan === plan.id
+                      
+                      return (
+                        <label 
+                          key={plan.id}
+                          className="flex items-center space-x-3 p-4 bg-white/5 rounded-lg border border-white/20 cursor-pointer hover:bg-white/10 transition-colors"
+                        >
+                          <input
+                            type="radio"
+                            name="plan"
+                            value={plan.id}
+                            checked={selectedPlan === plan.id}
+                            onChange={(e) => setSelectedPlan(e.target.value as 'starter' | 'pro' | 'ultimate')}
+                            disabled={!!subscription?.pendingPlan}
+                            className="w-4 h-4"
+                          />
+                          <div className="flex-1">
+                            <p className="text-white font-medium">
+                              {plan.name} Plan
+                              {isCurrent && (
+                                <span className="ml-2 text-green-400 text-sm">(current)</span>
+                              )}
+                              {isPending && subscription?.pendingAt && (
+                                <span className="ml-2 text-yellow-400 text-sm">(scheduled at renewal)</span>
+                              )}
+                            </p>
+                            <p className="text-white/60 text-sm">{plan.price} • {plan.features}</p>
+                          </div>
+                        </label>
+                      )
+                    })}
                   </div>
                  {!subscription?.pendingPlan && (
                    <button
