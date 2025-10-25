@@ -371,7 +371,7 @@ export function TodayPanel({
                         <>
                           <RefreshCw className="mr-2 h-4 w-4" />
                           {customisationsLeft === Infinity ? (
-                            <>Apply & Regenerate (✨ Unlimited)</>
+                            <>Apply & Regenerate</>
                           ) : (
                             <>Apply & Regenerate ({customisationsLeft}/2 left)</>
                           )}
