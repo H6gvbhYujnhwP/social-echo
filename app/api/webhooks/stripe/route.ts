@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
               subscriptionId: subId
             }
           }
-        }).catch(err => console.error('[webhook] Failed to create audit log:', err));
+        }).catch((err: any) => console.error('[webhook] Failed to create audit log:', err));
       }
       
       // NOTE: Email sending removed from checkout.session.completed per v7.0 blueprint

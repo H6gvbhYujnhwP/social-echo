@@ -615,12 +615,18 @@ export default function DashboardPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-1">
                     <div className="flex items-center space-x-2">
                       <span className="text-white/90 text-sm font-medium">
-                        Posts: {subscription.usageCount}/{subscription.usageLimit}
+                        Posts: {subscription.usageLimit === null 
+                          ? `${subscription.usageCount} (Unlimited)` 
+                          : `${subscription.usageCount}/${subscription.usageLimit}`}
                       </span>
                       <div className="w-24 h-2 bg-white/20 rounded-full overflow-hidden">
                         <div 
                           className={`h-full transition-all duration-300 ${isTrialExhausted ? 'bg-red-400' : 'bg-white'}`}
-                          style={{ width: `${Math.min((subscription.usageCount / subscription.usageLimit) * 100, 100)}%` }}
+                          style={{ 
+                            width: subscription.usageLimit === null 
+                              ? '100%' 
+                              : `${Math.min((subscription.usageCount / subscription.usageLimit) * 100, 100)}%` 
+                          }}
                         />
                       </div>
                     </div>

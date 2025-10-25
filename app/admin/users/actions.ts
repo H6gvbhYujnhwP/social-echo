@@ -2,6 +2,7 @@
 
 import * as bcrypt from 'bcrypt'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { limitsFor, normalizePlan, type Plan } from '@/lib/billing/plan-map'
 import { sendWelcomeEmail, sendOnboardingEmail } from '@/lib/email/service'
 import { z } from 'zod'
@@ -87,7 +88,7 @@ export async function createUserWithTrial(input: CreateUserInput) {
     const usageLimit = limitsFor(plan)
     
     // Create user and subscription in a transaction
-    const user = await prisma.$transaction(async (tx) => {
+    const user = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Create user
       const newUser = await tx.user.create({
         data: {

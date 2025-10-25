@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
     if (feedback.length >= 5) {
       // Tone preference learning
       const toneStats: Record<string, { up: number; down: number }> = {}
-      feedback.forEach(f => {
+      feedback.forEach((f: any) => {
         const tone = f.post.tone || 'unknown'
         if (!toneStats[tone]) {
           toneStats[tone] = { up: 0, down: 0 }
@@ -224,12 +224,12 @@ export async function POST(request: NextRequest) {
       
       // Hashtag preference learning
       const hashtagCounts = feedback
-        .filter(f => f.feedback === 'up')
-        .map(f => f.hashtags.length)
+        .filter((f: any) => f.feedback === 'up')
+        .map((f: any) => f.hashtags.length)
       
       if (hashtagCounts.length >= 3) {
         const avgHashtags = Math.round(
-          hashtagCounts.reduce((sum, count) => sum + count, 0) / hashtagCounts.length
+          hashtagCounts.reduce((sum: number, count: number) => sum + count, 0) / hashtagCounts.length
         )
         learningSignals.preferredHashtagCount = avgHashtags
       }
@@ -237,9 +237,9 @@ export async function POST(request: NextRequest) {
       // Preferred terms from positive feedback
       const preferredKeywords = new Set<string>()
       feedback
-        .filter(f => f.feedback === 'up')
-        .forEach(f => {
-          f.keywords.forEach(kw => preferredKeywords.add(kw))
+        .filter((f: any) => f.feedback === 'up')
+        .forEach((f: any) => {
+          f.keywords.forEach((kw: string) => preferredKeywords.add(kw))
         })
       
       if (preferredKeywords.size > 0) {

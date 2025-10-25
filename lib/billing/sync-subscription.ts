@@ -6,6 +6,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { stripe } from '@/lib/billing/stripe';
 import { planFromPriceId, limitsFor, Plan } from '@/lib/billing/plan-map';
 import Stripe from 'stripe';
@@ -92,7 +93,7 @@ export async function syncSubscriptionFromStripe(
       currentPeriodEnd > existingSubscription.currentPeriodEnd;
 
     // Transactional update
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Upsert subscription (plan is stored here, not on User)
       await tx.subscription.upsert({
         where: { userId },

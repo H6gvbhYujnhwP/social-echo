@@ -13,7 +13,7 @@ export async function GET(req: Request) {
     const rows = [
       ['id','email','name','role','isSuspended','createdAt','plan','status','usageCount','usageLimit','periodEnd'].join(',')
     ].concat(
-      users.map(u => [
+      users.map((u: any) => [
         u.id, 
         u.email, 
         u.name,

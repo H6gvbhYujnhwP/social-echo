@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
       activeClientCount: agency.activeClientCount,
       stripeCustomerId: agency.stripeCustomerId,
       stripeSubscriptionId: agency.stripeSubscriptionId,
-      clients: agency.customers.map(c => ({
+      clients: agency.customers.map((c: any) => ({
         id: c.id,
         email: c.email,
         name: c.name,

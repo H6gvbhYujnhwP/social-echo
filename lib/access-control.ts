@@ -6,6 +6,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
+import { isUnlimitedMonthly, formatLimit } from '@/lib/billing/limits'
 
 export type AccessCheckResult = {
   allowed: boolean
@@ -150,11 +151,11 @@ export async function checkPostGenerationAccess(userId: string): Promise<AccessC
 
   const subscription = accessCheck.subscription!
 
-  // Check usage limit
-  if (subscription.usageCount >= subscription.usageLimit) {
+  // Check usage limit (unlimited plans bypass this check)
+  if (!isUnlimitedMonthly(subscription.usageLimit) && subscription.usageCount >= subscription.usageLimit) {
     return {
       allowed: false,
-      reason: `You've used all ${subscription.usageLimit} posts for this period. Upgrade your plan for more posts.`,
+      reason: `You've used all ${formatLimit(subscription.usageLimit)} posts for this period. Upgrade your plan for more posts.`,
       subscription
     }
   }

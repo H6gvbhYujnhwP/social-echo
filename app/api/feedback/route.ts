@@ -187,12 +187,12 @@ export async function GET(request: NextRequest) {
     
     // Calculate stats
     const totalFeedback = allFeedback.length
-    const upvotes = allFeedback.filter(f => f.feedback === 'up').length
-    const downvotes = allFeedback.filter(f => f.feedback === 'down').length
+    const upvotes = allFeedback.filter((f: any) => f.feedback === 'up').length
+    const downvotes = allFeedback.filter((f: any) => f.feedback === 'down').length
     
     // Group by post type
     const byPostType: Record<string, { up: number; down: number }> = {}
-    allFeedback.forEach(f => {
+    allFeedback.forEach((f: any) => {
       const postType = f.post.postType
       if (!byPostType[postType]) {
         byPostType[postType] = { up: 0, down: 0 }
@@ -206,7 +206,7 @@ export async function GET(request: NextRequest) {
     
     // Group by tone
     const byTone: Record<string, { up: number; down: number }> = {}
-    allFeedback.forEach(f => {
+    allFeedback.forEach((f: any) => {
       const tone = f.post.tone || 'unknown'
       if (!byTone[tone]) {
         byTone[tone] = { up: 0, down: 0 }

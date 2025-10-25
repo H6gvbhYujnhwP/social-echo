@@ -108,14 +108,14 @@ export async function POST(
     if (feedback.length >= 3) {
       // Tone preference learning
       const upvotedTones = feedback
-        .filter(f => f.feedback === 'up')
-        .map(f => f.tone)
-        .filter((tone, idx, arr) => arr.indexOf(tone) === idx)
+        .filter((f: any) => f.feedback === 'up')
+        .map((f: any) => f.tone)
+        .filter((tone: any, idx: number, arr: any[]) => arr.indexOf(tone) === idx)
       
       const downvotedTones = feedback
-        .filter(f => f.feedback === 'down')
-        .map(f => f.tone)
-        .filter((tone, idx, arr) => arr.indexOf(tone) === idx)
+        .filter((f: any) => f.feedback === 'down')
+        .map((f: any) => f.tone)
+        .filter((tone: any, idx: number, arr: any[]) => arr.indexOf(tone) === idx)
       
       // Only include downvoted tones (upvoted not in type)
       if (downvotedTones.length > 0) {
@@ -124,12 +124,12 @@ export async function POST(
       
       // Hashtag preference learning
       const hashtagCounts = feedback
-        .filter(f => f.feedback === 'up')
-        .map(f => f.hashtags.length)
+        .filter((f: any) => f.feedback === 'up')
+        .map((f: any) => f.hashtags.length)
       
       if (hashtagCounts.length >= 3) {
         const avgHashtags = Math.round(
-          hashtagCounts.reduce((sum, count) => sum + count, 0) / hashtagCounts.length
+          hashtagCounts.reduce((sum: number, count: number) => sum + count, 0) / hashtagCounts.length
         )
         learningSignals.preferredHashtagCount = avgHashtags
       }
@@ -137,9 +137,9 @@ export async function POST(
       // Preferred terms from positive feedback
       const preferredKeywords = new Set<string>()
       feedback
-        .filter(f => f.feedback === 'up')
-        .forEach(f => {
-          f.keywords.forEach(kw => preferredKeywords.add(kw))
+        .filter((f: any) => f.feedback === 'up')
+        .forEach((f: any) => {
+          f.keywords.forEach((kw: string) => preferredKeywords.add(kw))
         })
       
       if (preferredKeywords.size > 0) {
