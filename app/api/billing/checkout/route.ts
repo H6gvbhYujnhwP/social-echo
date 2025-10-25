@@ -19,7 +19,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
  * Creates a Stripe Checkout session for agency subscription
  * 
  * Body:
- * - plan: 'SocialEcho_Agency' | 'SocialEcho_Starter' | 'SocialEcho_Pro'
+ * - plan: 'SocialEcho_Agency' | 'SocialEcho_Starter' | 'SocialEcho_Pro' | 'SocialEcho_Ultimate'
  * - quantity: number (for agency plans, defaults to 1 for individual plans)
  * - coupon?: string (optional coupon code)
  */
@@ -80,6 +80,8 @@ export async function POST(request: NextRequest) {
       priceId = process.env.STRIPE_STARTER_PRICE_ID;
     } else if (plan === 'SocialEcho_Pro') {
       priceId = process.env.STRIPE_PRO_PRICE_ID;
+    } else if (plan === 'SocialEcho_Ultimate') {
+      priceId = process.env.STRIPE_ULTIMATE_PRICE_ID;
     } else if (plan === 'SocialEcho_Agency') {
       priceId = process.env.STRIPE_AGENCY_PRICE_ID;
     }
@@ -177,7 +179,7 @@ export async function POST(request: NextRequest) {
           quantity: quantity.toString(),
           isAgencyPlan: isAgencyPlan.toString(),
         },
-        // 24-hour trial for Starter plan only
+        // 24-hour trial for Starter plan only (no trial for Pro/Ultimate)
         trial_period_days: plan === 'SocialEcho_Starter' ? 1 : undefined,
       },
       allow_promotion_codes: true,

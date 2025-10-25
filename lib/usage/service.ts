@@ -45,8 +45,8 @@ export async function trackPostGeneration(params: {
         const plan = subscription.plan.toLowerCase() as Plan;
         const maxRegenerations = getRegenerationLimit(plan);
         
-        // Check customisation limit
-        if (post.customisationsUsed >= maxRegenerations) {
+        // Check customisation limit (skip check if unlimited)
+        if (Number.isFinite(maxRegenerations) && post.customisationsUsed >= maxRegenerations) {
           return { 
             success: false, 
             error: 'CUSTOMISATIONS_EXHAUSTED',
@@ -157,6 +157,7 @@ export async function checkPostsRemaining(userId: string): Promise<{
 
     const plan = subscription.plan.toLowerCase() as Plan;
     const postsAllowance = getUsageLimit(plan);
+    const isUnlimited = !Number.isFinite(postsAllowance);
 
     const cycleStart = subscription.currentPeriodStart;
     const cycleEnd = subscription.currentPeriodEnd;
@@ -173,6 +174,19 @@ export async function checkPostsRemaining(userId: string): Promise<{
     });
 
     const postsUsed = usageCounter?.postsUsed || 0;
+    
+    // For unlimited plans, always allowed
+    if (isUnlimited) {
+      return {
+        allowed: true,
+        postsUsed,
+        postsAllowance,
+        postsLeft: Number.POSITIVE_INFINITY,
+        cycleEnd: subscription.currentPeriodEnd || undefined,
+      };
+    }
+    
+    // For limited plans, calculate remaining
     const postsLeft = Math.max(0, postsAllowance - postsUsed);
 
     return {
@@ -220,6 +234,17 @@ export async function checkCustomisationAllowed(postId: string, userId: string):
     const plan = subscription.plan.toLowerCase() as Plan;
     const maxRegenerations = getRegenerationLimit(plan);
     const customisationsUsed = post.customisationsUsed || 0;
+    
+    // Check if plan has unlimited regenerations
+    if (!Number.isFinite(maxRegenerations)) {
+      return {
+        allowed: true,
+        customisationsUsed,
+        customisationsLeft: Number.POSITIVE_INFINITY,
+      };
+    }
+    
+    // For limited plans, calculate remaining
     const customisationsLeft = Math.max(0, maxRegenerations - customisationsUsed);
 
     return {

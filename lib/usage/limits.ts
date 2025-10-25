@@ -3,7 +3,7 @@
  * Single source of truth for plan-based usage limits
  */
 
-export type Plan = 'starter' | 'pro' | 'agency';
+export type Plan = 'starter' | 'pro' | 'ultimate' | 'agency';
 
 export interface PlanLimits {
   postsPerMonth: number | null;        // null = unlimited
@@ -13,13 +13,15 @@ export interface PlanLimits {
 /**
  * Plan usage limits
  * - Starter: 8 posts/month, 2 regenerations per post
- * - Pro: 30 posts/month, 2 regenerations per post (NEW)
+ * - Pro: 30 posts/month, 2 regenerations per post
+ * - Ultimate: Unlimited posts/month, unlimited regenerations per post
  * - Agency: Unlimited
  */
 export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
-  starter: { postsPerMonth: 8,    regenerationsPerPost: 2 },
-  pro:     { postsPerMonth: 30,   regenerationsPerPost: 2 }, // NEW: Pro capped at 30/month
-  agency:  { postsPerMonth: null, regenerationsPerPost: null },
+  starter:  { postsPerMonth: 8,    regenerationsPerPost: 2 },
+  pro:      { postsPerMonth: 30,   regenerationsPerPost: 2 },
+  ultimate: { postsPerMonth: null, regenerationsPerPost: null }, // Unlimited everything
+  agency:   { postsPerMonth: null, regenerationsPerPost: null },
 };
 
 /**

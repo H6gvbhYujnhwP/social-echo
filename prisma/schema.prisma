@@ -103,12 +103,12 @@ model Subscription {
   userId     String   @unique
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  plan       String   @default("starter") // "starter" | "pro" | "enterprise"
+  plan       String   @default("starter") // "starter" | "pro" | "ultimate" | "agency"
   status     String   @default("active")  // "active" | "canceled" | "trialing"
   
   // Usage tracking
   usageCount Int      @default(0)  // Posts generated this month
-  usageLimit Int      @default(8)  // 8 for starter, higher for pro/enterprise
+  usageLimit Int?     @default(8)  // 8 for starter, 30 for pro, null for unlimited (ultimate/agency)
   
   // Billing period
   currentPeriodStart DateTime @default(now())

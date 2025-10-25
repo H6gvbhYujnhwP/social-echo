@@ -1,12 +1,13 @@
 import { prisma } from './prisma'
 
 export interface UsageInfo {
-  remaining: number
+  remaining: number | null  // null = unlimited
   isTrial: boolean
   plan: string
   status: string
   usageCount: number
-  usageLimit: number
+  usageLimit: number | null  // null = unlimited
+  unlimited: boolean  // true if plan has unlimited posts
 }
 
 /**
@@ -30,12 +31,21 @@ export async function getRemainingPosts(userId: string): Promise<UsageInfo> {
       plan: 'none',
       status: 'none',
       usageCount: 0,
-      usageLimit: 0
+      usageLimit: 0,
+      unlimited: false
     }
   }
 
-  const remaining = Math.max(0, (sub.usageLimit ?? 0) - (sub.usageCount ?? 0))
-  const isTrial = sub.status === 'trial'
+  // Check if plan has unlimited posts (usageLimit is null)
+  const unlimited = sub.usageLimit === null
+  
+  // For unlimited plans, remaining is null
+  // For limited plans, calculate remaining posts
+  const remaining = unlimited 
+    ? null 
+    : Math.max(0, (sub.usageLimit ?? 0) - (sub.usageCount ?? 0))
+  
+  const isTrial = sub.status === 'trialing'
   
   return { 
     remaining, 
@@ -43,7 +53,8 @@ export async function getRemainingPosts(userId: string): Promise<UsageInfo> {
     plan: sub.plan,
     status: sub.status,
     usageCount: sub.usageCount,
-    usageLimit: sub.usageLimit
+    usageLimit: sub.usageLimit,
+    unlimited
   }
 }
 
@@ -64,9 +75,13 @@ export async function assertTrialAllowance(userId: string): Promise<void> {
 
 /**
  * Check if user has any remaining posts (trial or active)
+ * Returns true for unlimited plans
  */
 export async function hasRemainingPosts(userId: string): Promise<boolean> {
-  const { remaining } = await getRemainingPosts(userId)
-  return remaining > 0
+  const { remaining, unlimited } = await getRemainingPosts(userId)
+  // Unlimited plans always have remaining posts
+  if (unlimited) return true
+  // Limited plans check remaining count
+  return remaining !== null && remaining > 0
 }
 

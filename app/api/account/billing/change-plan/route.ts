@@ -12,7 +12,7 @@ export const runtime = 'nodejs';
 // Social Echo Blueprint v8.3 — unified Stripe API version (2024-06-20)
 
 const ChangePlanSchema = z.object({
-  targetPlan: z.enum(['starter', 'pro']),
+  targetPlan: z.enum(['starter', 'pro', 'ultimate']),
 });
 
 export async function POST(request: NextRequest) {
@@ -52,9 +52,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Get target price ID
-    const targetPriceId = validated.targetPlan === 'starter'
-      ? process.env.STRIPE_STARTER_PRICE_ID
-      : process.env.STRIPE_PRO_PRICE_ID;
+    let targetPriceId: string | undefined;
+    if (validated.targetPlan === 'starter') {
+      targetPriceId = process.env.STRIPE_STARTER_PRICE_ID;
+    } else if (validated.targetPlan === 'pro') {
+      targetPriceId = process.env.STRIPE_PRO_PRICE_ID;
+    } else if (validated.targetPlan === 'ultimate') {
+      targetPriceId = process.env.STRIPE_ULTIMATE_PRICE_ID;
+    }
 
     if (!targetPriceId) {
       return NextResponse.json(
