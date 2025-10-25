@@ -4,11 +4,12 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-const CORRECT_LIMITS = {
+const CORRECT_LIMITS: Record<string, number | null> = {
   starter: 8,
-  pro: 10_000_000,
-  agency: 10_000_000,
-  enterprise: 10_000_000,
+  pro: 30,
+  ultimate: null, // Unlimited
+  agency: null,   // Unlimited
+  enterprise: null, // Unlimited
 };
 
 export async function POST() {
@@ -37,11 +38,11 @@ export async function POST() {
     let fixed = 0;
     let alreadyCorrect = 0;
     const errors: string[] = [];
-    const fixedUsers: Array<{ email: string; plan: string; oldLimit: number; newLimit: number }> = [];
+    const fixedUsers: Array<{ email: string; plan: string; oldLimit: number | null; newLimit: number | null }> = [];
 
     for (const sub of subscriptions) {
       const plan = sub.plan.toLowerCase();
-      const correctLimit = CORRECT_LIMITS[plan as keyof typeof CORRECT_LIMITS] || 8;
+      const correctLimit: number | null = CORRECT_LIMITS[plan] ?? 8;
 
       if (sub.usageLimit !== correctLimit) {
         try {

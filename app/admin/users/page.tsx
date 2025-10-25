@@ -24,7 +24,7 @@ type UserRow = {
     plan: string;
     status: string;
     usageCount: number;
-    usageLimit: number;
+    usageLimit: number | null;
     currentPeriodEnd: string | null;
     stripeCustomerId?: string | null;
   } | null;

@@ -14,7 +14,7 @@ export type AccessCheckResult = {
     status: string
     plan: string
     usageCount: number
-    usageLimit: number
+    usageLimit: number | null
     trialEnd?: Date | null
     currentPeriodEnd: Date
   }
