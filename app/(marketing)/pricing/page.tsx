@@ -26,7 +26,7 @@ export default function PricingPage() {
         {/* Individual Plans */}
         <div className="mb-20">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-12">Individual Plans</h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Starter */}
             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 hover:shadow-xl transition-shadow">
               <div className="mb-6">
@@ -107,6 +107,55 @@ export default function PricingPage() {
               <button
                 onClick={() => handleSelectPlan('SocialEcho_Pro')}
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3.5 px-6 rounded-lg transition-all shadow-md hover:shadow-lg text-base"
+              >
+                Get Started
+              </button>
+            </div>
+
+            {/* Ultimate */}
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-xl p-8 border-2 border-purple-500 relative hover:shadow-2xl transition-shadow">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-1.5 rounded-full text-sm font-bold shadow-md">
+                  ✨ POWER USER
+                </span>
+              </div>
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Ultimate</h3>
+                <div className="flex items-baseline gap-2 mb-4">
+                  <span className="text-5xl font-bold text-gray-900">£179</span>
+                  <span className="text-gray-700 text-lg">/month</span>
+                </div>
+                <p className="text-gray-700 text-base">For power users who need unlimited content</p>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start gap-3">
+                  <span className="text-purple-600 text-xl mt-0.5 flex-shrink-0">✨</span>
+                  <span className="text-gray-900 text-base font-semibold">Unlimited monthly posts</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-purple-600 text-xl mt-0.5 flex-shrink-0">✨</span>
+                  <span className="text-gray-900 text-base font-semibold">Unlimited regenerations</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
+                  <span className="text-gray-800 text-base">All Pro features included</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
+                  <span className="text-gray-800 text-base">Priority support</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
+                  <span className="text-gray-800 text-base">Advanced analytics</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
+                  <span className="text-gray-800 text-base">Custom branding options</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => handleSelectPlan('SocialEcho_Ultimate')}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3.5 px-6 rounded-lg transition-all shadow-md hover:shadow-lg text-base"
               >
                 Get Started
               </button>

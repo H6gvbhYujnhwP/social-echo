@@ -347,7 +347,7 @@ export function TodayPanel({
                           onRegenerate(customPrompt)
                         }
                       }}
-                      disabled={isGenerating || !customPrompt.trim() || customisationsLeft === 0 || !currentPostId || isTrialExhausted}
+                      disabled={isGenerating || !customPrompt.trim() || (customisationsLeft !== Infinity && customisationsLeft === 0) || !currentPostId || isTrialExhausted}
                       size="sm"
                       variant="primary"
                       className="min-w-[220px] inline-flex items-center justify-center whitespace-nowrap bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md"
@@ -357,7 +357,9 @@ export function TodayPanel({
                           ? "Trial limit reached – upgrade to continue" 
                           : customisationsLeft === 0 
                             ? "No regenerations left today" 
-                            : `Updates this draft using your instructions (${customisationsLeft}/2 left)`
+                            : customisationsLeft === Infinity
+                              ? "Updates this draft using your instructions (Unlimited)"
+                              : `Updates this draft using your instructions (${customisationsLeft}/2 left)`
                       }
                     >
                       {isGenerating ? (
@@ -368,7 +370,11 @@ export function TodayPanel({
                       ) : (
                         <>
                           <RefreshCw className="mr-2 h-4 w-4" />
-                          Apply & Regenerate ({customisationsLeft}/2 left)
+                          {customisationsLeft === Infinity ? (
+                            <>Apply & Regenerate (✨ Unlimited)</>
+                          ) : (
+                            <>Apply & Regenerate ({customisationsLeft}/2 left)</>
+                          )}
                         </>
                       )}
                     </Button>
