@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateImage } from '../../../lib/openai'
+import { generateImage, analyzeImageForText } from '../../../lib/openai'
 import { 
   ImageGenerationRequestSchema,
   type ImageGenerationResponse 
@@ -7,9 +7,8 @@ import {
 import { generateImagePrompt, getDefaultImageTypeForPostType } from '../../../lib/ai/image-service'
 
 /**
- * Detect text in image using OCR
- * TEMPORARILY DISABLED: OCR library causes worker-script MODULE_NOT_FOUND errors in production
- * TODO: Implement alternative text detection solution (e.g., OpenAI Vision API)
+ * Detect text in image using OpenAI Vision API
+ * Replaces the disabled OCR library to enable proper text detection and retry logic
  * 
  * Returns detected text and whether it's acceptable
  */
@@ -20,16 +19,9 @@ async function detectTextInImage(imageBase64: string): Promise<{
   wordCount: number
   hasNonEnglish: boolean
 }> {
-  // OCR DISABLED - Return acceptable by default to allow image generation
-  // Prompt engineering (strict no-text rules) still enforces minimal text
-  console.log('[OCR] Skipped (disabled to fix MODULE_NOT_FOUND error)')
-  return {
-    hasText: false,
-    detectedText: '',
-    isAcceptable: true,
-    wordCount: 0,
-    hasNonEnglish: false
-  }
+  // Use OpenAI Vision API for text detection
+  console.log('[vision-api] Analyzing image for text...')
+  return await analyzeImageForText(imageBase64)
   
   /* ORIGINAL OCR CODE - DISABLED DUE TO WORKER ISSUES
   try {
@@ -195,23 +187,25 @@ If text is absolutely unavoidable, use short English only (max 3-5 words).`
     // Generate image with OpenAI (first attempt)
     let imageBase64 = await generateImage(imagePrompt)
     
-    // Perform OCR check
-    const ocrStartTime = Date.now()
-    const textCheck = await detectTextInImage(imageBase64)
-    telemetry.ocrDuration = Date.now() - ocrStartTime
-    telemetry.textDetected = textCheck.hasText
-    telemetry.firstAttemptText = textCheck.detectedText
-    
-    console.log('[generate-image] OCR result:', {
-      hasText: textCheck.hasText,
-      wordCount: textCheck.wordCount,
-      hasNonEnglish: textCheck.hasNonEnglish,
-      isAcceptable: textCheck.isAcceptable,
-      detectedText: textCheck.detectedText.substring(0, 100)
-    })
-    
-    // If text is detected and not acceptable, retry with strict mode
-    if (textCheck.hasText && !textCheck.isAcceptable) {
+    // Only perform text detection if text is NOT allowed (checkbox unchecked)
+    // When allowText=true, user wants text, so skip detection to save API calls
+    if (!allowText) {
+      const ocrStartTime = Date.now()
+      const textCheck = await detectTextInImage(imageBase64)
+      telemetry.ocrDuration = Date.now() - ocrStartTime
+      telemetry.textDetected = textCheck.hasText
+      telemetry.firstAttemptText = textCheck.detectedText
+      
+      console.log('[generate-image] Vision API result:', {
+        hasText: textCheck.hasText,
+        wordCount: textCheck.wordCount,
+        hasNonEnglish: textCheck.hasNonEnglish,
+        isAcceptable: textCheck.isAcceptable,
+        detectedText: textCheck.detectedText.substring(0, 100)
+      })
+      
+      // If text is detected and not acceptable, retry with strict mode
+      if (textCheck.hasText && !textCheck.isAcceptable) {
       console.log('[generate-image] Text not acceptable, retrying with strict mode...')
       telemetry.retry = true
       
@@ -237,13 +231,18 @@ If text is absolutely unavoidable, use short English only (max 3-5 words).`
       telemetry.secondAttemptText = secondCheck.detectedText
       telemetry.finalHasText = secondCheck.hasText
       
-      console.log('[generate-image] Second attempt OCR result:', {
-        hasText: secondCheck.hasText,
-        wordCount: secondCheck.wordCount,
-        detectedText: secondCheck.detectedText.substring(0, 100)
-      })
+        console.log('[generate-image] Second attempt Vision API result:', {
+          hasText: secondCheck.hasText,
+          wordCount: secondCheck.wordCount,
+          detectedText: secondCheck.detectedText.substring(0, 100)
+        })
+      } else {
+        telemetry.finalHasText = textCheck.hasText
+      }
     } else {
-      telemetry.finalHasText = textCheck.hasText
+      // Text is allowed, skip detection
+      console.log('[generate-image] Text detection skipped (allowText=true)')
+      telemetry.finalHasText = false
     }
     
     telemetry.totalDuration = Date.now() - startTime
