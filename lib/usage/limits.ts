@@ -41,11 +41,11 @@ export function getUsageLimit(plan: Plan): number {
 
 /**
  * Get regeneration limit for a plan
- * Returns actual limit or sentinel for unlimited plans
+ * Returns actual limit or Infinity for unlimited plans
  */
 export function getRegenerationLimit(plan: Plan): number {
   const limit = PLAN_LIMITS[plan].regenerationsPerPost;
-  return limit === null ? UNLIMITED_SENTINEL : limit;
+  return limit === null ? Infinity : limit;
 }
 
 /**
