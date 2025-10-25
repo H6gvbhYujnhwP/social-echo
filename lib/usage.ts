@@ -65,7 +65,7 @@ export async function getRemainingPosts(userId: string): Promise<UsageInfo> {
 export async function assertTrialAllowance(userId: string): Promise<void> {
   const { remaining, isTrial } = await getRemainingPosts(userId)
   
-  if (isTrial && remaining <= 0) {
+  if (isTrial && remaining !== null && remaining <= 0) {
     const err: any = new Error('TRIAL_EXHAUSTED')
     err.code = 402 // Payment Required
     err.statusCode = 402

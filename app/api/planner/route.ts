@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     const dayOrder = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
     
     for (const dayName of dayOrder) {
-      const existing = plannerDays.find(d => d.day === dayName)
+      const existing = plannerDays.find((d: any) => d.day === dayName)
       if (existing) {
         allDays.push({
           day: existing.day,
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
         })
       } else {
         // Create default day
-        const defaultDay = DEFAULT_SCHEDULE.find(d => d.day === dayName)!
+        const defaultDay = DEFAULT_SCHEDULE.find((d: any) => d.day === dayName)!
         const newDay = await prisma.plannerDay.create({
           data: {
             userId,

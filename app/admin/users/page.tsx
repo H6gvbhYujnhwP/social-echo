@@ -387,7 +387,9 @@ export default function AdminUsersPage() {
                 {(data?.items ?? []).map(u => {
                   const sel = selected.has(u.id);
                   const usage = u.subscription ? 
-                    `${u.subscription.usageCount}/${u.subscription.usageLimit}` : 
+                    (u.subscription.usageLimit === null 
+                      ? `${u.subscription.usageCount}/Unlimited` 
+                      : `${u.subscription.usageCount}/${u.subscription.usageLimit}`) : 
                     'N/A';
                   
                   return (
@@ -515,7 +517,7 @@ export default function AdminUsersPage() {
                         <span className="text-gray-600">Status:</span> {detail.subscription.status}
                       </div>
                       <div>
-                        <span className="text-gray-600">Usage:</span> {detail.subscription.usageCount}/{detail.subscription.usageLimit}
+                        <span className="text-gray-600">Usage:</span> {detail.subscription.usageCount}/{detail.subscription.usageLimit ?? 'Unlimited'}
                       </div>
                       <div>
                         <span className="text-gray-600">Period End:</span>{' '}

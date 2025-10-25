@@ -40,16 +40,16 @@ export async function GET(request: NextRequest) {
     })
     
     // Fetch user names for updatedBy IDs
-    const userIds = [...new Set(history.map(h => h.updatedBy))]
+    const userIds = [...new Set(history.map((h: { updatedBy: string }) => h.updatedBy))]
     const users = await prisma.user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, name: true, email: true }
     })
     
-    const userMap = new Map(users.map(u => [u.id, u]))
+    const userMap = new Map<string, { id: string; name: string; email: string }>(users.map((u: { id: string; name: string; email: string }) => [u.id, u]))
     
     // Enrich history with user info
-    const enrichedHistory = history.map(h => ({
+    const enrichedHistory = history.map((h: { id: string; json: any; updatedBy: string; reason: string | null; createdAt: Date }) => ({
       id: h.id,
       config: h.json,
       updatedBy: {

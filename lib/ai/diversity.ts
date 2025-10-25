@@ -194,10 +194,10 @@ export async function checkRepetition(
   }
   
   // Calculate overlap with each recent post
-  const overlaps = recentPosts.map(post => calculateTrigramOverlap(newText, post.postText))
+  const overlaps = recentPosts.map((post: any) => calculateTrigramOverlap(newText, post.postText))
   
   const maxOverlap = Math.max(...overlaps)
-  const averageOverlap = overlaps.reduce((sum, val) => sum + val, 0) / overlaps.length
+  const averageOverlap = overlaps.reduce((sum: number, val: number) => sum + val, 0) / overlaps.length
   
   // Consider repetitive if max overlap > 30% or average > 15%
   const isRepetitive = maxOverlap > 30 || averageOverlap > 15
@@ -221,7 +221,7 @@ export async function getRecentStyles(userId: string, maxPosts: number = 10): Pr
     select: { tone: true }
   })
   
-  return recentPosts.map(p => p.tone)
+  return recentPosts.map((p: any) => p.tone)
 }
 
 /**

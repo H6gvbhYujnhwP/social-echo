@@ -60,8 +60,8 @@ async function main() {
 
     // Find Pro plans that need migration
     const proSubs = byPlan['pro'] || [];
-    const proUnlimited = proSubs.filter(s => s.usageLimit >= 1000000);
-    const proMissingPeriod = proSubs.filter(s => !s.currentPeriodStart || !s.currentPeriodEnd);
+    const proUnlimited = proSubs.filter((s: any) => s.usageLimit !== null && s.usageLimit >= 1000000);
+    const proMissingPeriod = proSubs.filter((s: any) => !s.currentPeriodStart || !s.currentPeriodEnd);
 
     console.log('Pro plan analysis:');
     console.log(`  Total Pro subscriptions: ${proSubs.length}`);

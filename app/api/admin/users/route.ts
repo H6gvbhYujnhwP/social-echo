@@ -46,7 +46,7 @@ export async function GET(req: Request) {
 
     // Fetch accurate usage from UsageCounter for each user
     const itemsWithUsage = await Promise.all(
-      items.map(async (user) => {
+      items.map(async (user: any) => {
         if (!user.subscription) return user;
 
         const cycleStart = user.subscription.currentPeriodStart;

@@ -9,7 +9,7 @@ interface Subscription {
   plan: string;
   status: string;
   usageCount: number;
-  usageLimit: number;
+  usageLimit: number | null;
   currentPeriodEnd: string;
 }
 
@@ -57,8 +57,8 @@ export function UsageDisplay() {
     );
   }
 
-  const usagePercentage = (subscription.usageCount / subscription.usageLimit) * 100;
-  const isUnlimited = subscription.usageLimit >= 1000000;
+  const isUnlimited = subscription.usageLimit === null;
+  const usagePercentage = isUnlimited || subscription.usageLimit === null ? 0 : (subscription.usageCount / subscription.usageLimit) * 100;
   const isNearLimit = usagePercentage >= 80 && !isUnlimited;
   const isPro = subscription.plan.toLowerCase() === 'pro';
 
@@ -82,7 +82,7 @@ export function UsageDisplay() {
             <div className="flex justify-between text-sm mb-1">
               <span>Posts this month</span>
               <span className="font-bold">
-                {subscription.usageCount} / {subscription.usageLimit}
+                {subscription.usageCount} / {subscription.usageLimit ?? 'Unlimited'}
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">

@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/billing/stripe';
+import { limitsFor, Plan } from '@/lib/billing/plan-map';
 import { z } from 'zod';
 import Stripe from 'stripe';
 
@@ -119,7 +120,7 @@ export async function POST(request: NextRequest) {
         console.log('[billing/change-plan] invoice paid', { invoice: paid.id, status: paid.status });
         
         // Update our database
-        const newUsageLimit = validated.targetPlan === 'starter' ? 8 : 30;
+        const newUsageLimit = limitsFor(validated.targetPlan as Plan);
         await prisma.subscription.update({
           where: { id: subscription.id },
           data: {
@@ -157,7 +158,7 @@ export async function POST(request: NextRequest) {
 
     // Fallback: if no invoice (shouldn't happen)
     // Update database anyway
-    const newUsageLimit = validated.targetPlan === 'starter' ? 8 : 30;
+    const newUsageLimit = limitsFor(validated.targetPlan as Plan);
     await prisma.subscription.update({
       where: { id: subscription.id },
       data: {
