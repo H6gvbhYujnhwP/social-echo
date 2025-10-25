@@ -340,8 +340,9 @@ export default function DashboardPage() {
           });
           if (customisationResponse.ok) {
             const customisationData = await customisationResponse.json();
-            setCustomisationsLeft(customisationData.customisationsLeft || 2);
-            console.log('[dashboard] Customisations left:', customisationData.customisationsLeft);
+            const customisationsLeft = customisationData.customisations_left ?? customisationData.customisationsLeft ?? 2;
+            setCustomisationsLeft(customisationsLeft);
+            console.log('[dashboard] Customisations left:', customisationsLeft);
           }
         } catch (err) {
           console.error('[dashboard] Failed to fetch customisation usage:', err);
