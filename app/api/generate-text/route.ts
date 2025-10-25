@@ -137,7 +137,8 @@ export async function POST(request: NextRequest) {
     
     // Check usage limit (only for new posts, not regenerations)
     if (!force) {
-      if (subscription.usageCount >= subscription.usageLimit) {
+      // Unlimited plans (usageLimit === null) should never block
+      if (subscription.usageLimit !== null && subscription.usageCount >= subscription.usageLimit) {
         // Special error for trial users
         if (subscription.status === 'trial') {
           return NextResponse.json(
