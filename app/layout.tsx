@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import '../styles/globals.css'
 import { Providers } from '@/components/Providers'
 import { Header } from '@/components/Header'
 import { ImpersonationBanner } from '@/components/ImpersonationBanner'
 import HelpAssistant from '@/components/ai/HelpAssistant'
+import GAPageview from './ga-pageview'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://socialecho.ai'),
@@ -69,6 +71,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  
   return (
     <html lang="en">
       <head>
@@ -82,7 +86,25 @@ export default function RootLayout({
             {children}
           </main>
           <HelpAssistant />
+          <GAPageview />
         </Providers>
+        
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}', { send_page_view: false });
+              `}
+            </Script>
+          </>
+        )}
       </body>
     </html>
   )
