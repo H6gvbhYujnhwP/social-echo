@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
+import { Suspense } from 'react'
 import '../styles/globals.css'
 import { Providers } from '@/components/Providers'
 import { Header } from '@/components/Header'
@@ -86,7 +87,9 @@ export default function RootLayout({
             {children}
           </main>
           <HelpAssistant />
-          <GAPageview />
+          <Suspense fallback={null}>
+            <GAPageview />
+          </Suspense>
         </Providers>
         
         {gaId && (
