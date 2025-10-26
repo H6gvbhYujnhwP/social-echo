@@ -446,6 +446,26 @@ export async function POST(req: NextRequest) {
         amount: inv.amount_due,
       });
       
+      // Check if payment intent is still in progress (3D Secure authentication)
+      // Don't send failure emails if payment is just waiting for customer action
+      let paymentIntentStatus = null;
+      if (paymentIntentId) {
+        try {
+          const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+          paymentIntentStatus = paymentIntent.status;
+          console.log('[webhook] Payment intent status:', paymentIntentStatus);
+          
+          // If payment requires action (3D Secure), don't treat as failed yet
+          if (paymentIntentStatus === 'requires_action' || paymentIntentStatus === 'requires_payment_method') {
+            console.log('[webhook] Payment requires action - not sending failure email yet');
+            break; // Exit early, don't send failure notification
+          }
+        } catch (err) {
+          console.error('[webhook] Failed to retrieve payment intent:', err);
+          // Continue with failure handling if we can't check status
+        }
+      }
+      
       const userSub = await prisma.subscription.findFirst({ 
         where: { stripeCustomerId: customerId },
         include: { user: true }
@@ -480,14 +500,22 @@ export async function POST(req: NextRequest) {
       const customerId = typeof pi.customer === 'string' ? pi.customer : pi.customer?.id || '';
       const invoiceId = typeof pi.invoice === 'string' ? pi.invoice : pi.invoice?.id;
       const paymentIntentId = pi.id;
+      const paymentIntentStatus = pi.status;
       
       console.log('[webhook] Payment intent failed:', {
         customer: customerId,
         invoice: invoiceId,
         paymentIntent: paymentIntentId,
         amount: pi.amount,
+        status: paymentIntentStatus,
         error: pi.last_payment_error?.message,
       });
+      
+      // Don't send failure emails if payment is just waiting for customer action (3D Secure)
+      if (paymentIntentStatus === 'requires_action' || paymentIntentStatus === 'requires_payment_method') {
+        console.log('[webhook] Payment intent requires action - not sending failure email yet');
+        break; // Exit early
+      }
       
       // Only send email if we haven't already sent one for the invoice
       // (invoice.payment_failed will also fire, so we use idempotency to prevent duplicates)
