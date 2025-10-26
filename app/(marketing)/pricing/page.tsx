@@ -2,11 +2,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { trackPlanSelected } from '@/lib/analytics/track-event';
 
 export default function PricingPage() {
   const router = useRouter();
 
-  const handleSelectPlan = (planKey: string) => {
+  const handleSelectPlan = (planKey: string, planName: string, price: number) => {
+    // Track plan selection in GA4
+    trackPlanSelected(planName, price, 'pricing_page');
+    
     router.push(`/signup?plan=${planKey}`);
   };
 
@@ -60,7 +64,7 @@ export default function PricingPage() {
                 </li>
               </ul>
               <button
-                onClick={() => handleSelectPlan('SocialEcho_Starter')}
+                onClick={() => handleSelectPlan('SocialEcho_Starter', 'Starter', 29.99)}
                 className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold py-3.5 px-6 rounded-lg transition-all shadow-md hover:shadow-lg text-base"
               >
                 Start 1-Day Free Trial
@@ -105,7 +109,7 @@ export default function PricingPage() {
                 </li>
               </ul>
               <button
-                onClick={() => handleSelectPlan('SocialEcho_Pro')}
+                onClick={() => handleSelectPlan('SocialEcho_Pro', 'Pro', 49.99)}
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3.5 px-6 rounded-lg transition-all shadow-md hover:shadow-lg text-base"
               >
                 Get Started
@@ -154,7 +158,7 @@ export default function PricingPage() {
                 </li>
               </ul>
               <button
-                onClick={() => handleSelectPlan('SocialEcho_Ultimate')}
+                onClick={() => handleSelectPlan('SocialEcho_Ultimate', 'Ultimate', 179)}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3.5 px-6 rounded-lg transition-all shadow-md hover:shadow-lg text-base"
               >
                 Get Started

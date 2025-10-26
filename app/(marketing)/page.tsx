@@ -7,19 +7,23 @@ import { GradientText } from '@/components/ui/GradientText'
 import { FeatureCard } from '@/components/ui/FeatureCard'
 import { StatCard } from '@/components/ui/StatCard'
 import { GlassCard } from '@/components/ui/GlassCard'
+import { trackCTAClick } from '@/lib/analytics/track-event'
 
 export default function HomePage() {
   const router = useRouter()
 
   const handleGetStarted = () => {
+    trackCTAClick('Start Free Trial', 'hero_section');
     router.push('/pricing')
   }
 
   const handleSignUp = (plan: string) => {
+    trackCTAClick(`Get Started - ${plan}`, 'pricing_section');
     router.push(`/pricing?plan=${plan}`)
   }
 
   const handleHowItWorks = () => {
+    trackCTAClick('How It Works', 'hero_section');
     // Scroll to how it works section
     document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })
   }

@@ -7,6 +7,7 @@ import { Header } from '@/components/Header'
 import { ImpersonationBanner } from '@/components/ImpersonationBanner'
 import HelpAssistant from '@/components/ai/HelpAssistant'
 import GAPageview from './ga-pageview'
+import GAClickTracker from './ga-click-tracker'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://socialecho.ai'),
@@ -90,6 +91,7 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <GAPageview />
           </Suspense>
+          <GAClickTracker />
         </Providers>
         
         {gaId && (
