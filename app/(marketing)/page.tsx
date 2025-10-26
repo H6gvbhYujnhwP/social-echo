@@ -414,7 +414,7 @@ export default function HomePage() {
               </p>
             </motion.div>
 
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
               <FeatureCard
                 icon={Zap}
                 title="Starter"
@@ -455,6 +455,32 @@ export default function HomePage() {
                   onButtonClick={() => handleSignUp('SocialEcho_Pro')}
                   gradient="blue"
                   delay={0.4}
+                />
+              </div>
+
+              <div className="relative">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                  <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                    NEW
+                  </span>
+                </div>
+                <FeatureCard
+                  icon={Sparkles}
+                  title="Ultimate"
+                  price="£179/month"
+                  features={[
+                    "Unlimited posts per month",
+                    "All 4 post types",
+                    "Text + image generation",
+                    "Unlimited refinements per post",
+                    "Content Mix Planner",
+                    "Priority AI learning",
+                    "Planner & scheduling tools"
+                  ]}
+                  buttonText="Get Started"
+                  onButtonClick={() => handleSignUp('SocialEcho_Ultimate')}
+                  gradient="pink"
+                  delay={0.6}
                 />
               </div>
             </div>
