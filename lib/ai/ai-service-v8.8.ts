@@ -74,6 +74,17 @@ function buildGenInputs(
   keywords: string[],
   twists?: GenerationTwists
 ): GenInputs {
+  // Randomly select a document snippet (30% chance if documents exist)
+  let documentSnippet: string | undefined = undefined
+  if (profile.documents && profile.documents.length > 0 && Math.random() < 0.3) {
+    const randomDoc = profile.documents[Math.floor(Math.random() * profile.documents.length)]
+    // Extract a random snippet (500-1000 characters)
+    const snippetLength = Math.floor(Math.random() * 500) + 500
+    const maxStart = Math.max(0, randomDoc.content.length - snippetLength)
+    const startPos = Math.floor(Math.random() * maxStart)
+    documentSnippet = randomDoc.content.substring(startPos, startPos + snippetLength).trim()
+  }
+
   return {
     businessName: profile.business_name,
     sector: profile.industry,
@@ -85,7 +96,8 @@ function buildGenInputs(
     productsServices: profile.products_services,
     website: profile.website || undefined,
     notes: twists?.note,
-    originalPost: twists?.originalPost
+    originalPost: twists?.originalPost,
+    documentSnippet
   }
 }
 

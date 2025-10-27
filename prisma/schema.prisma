@@ -80,6 +80,7 @@ model Profile {
   keywords          String[] // Array of keywords
   rotation          String   // 'serious' | 'quirky'
   country           String?  // User's country for localized content (UK, US, CA, AU, etc.)
+  documents         Json?    // Array of uploaded document objects {filename, content, uploadedAt}
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -102,6 +102,7 @@ export type ProfileData = {
   website?: string | null
   rotation?: string | null
   country?: string | null  // User's country for localized content
+  documents?: Array<{filename: string; content: string; uploadedAt: string; fileType: string}> | null  // Uploaded technical documents
 }
 
 /**

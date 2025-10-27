@@ -258,7 +258,8 @@ export async function POST(request: NextRequest) {
       keywords: profile.keywords,
       website: profile.website,
       rotation: profile.rotation,
-      country: profile.country || null  // v8.8: country for localized content
+      country: profile.country || null,  // v8.8: country for localized content
+      documents: profile.documents as any || null  // v8.8: uploaded technical documents
     }
     
     console.log('[generate-text] Calling AI service...', USE_V8_8_GENERATION ? 'v8.8' : 'legacy')

@@ -19,6 +19,7 @@ export type GenInputs = {
   productsServices?: string
   website?: string
   originalPost?: string  // For refinement mode
+  documentSnippet?: string  // Random snippet from uploaded documents
 }
 
 /**
@@ -114,6 +115,11 @@ export function buildSellingPrompt(inputs: GenInputs): string {
     ? randomSelect(inputs.keywords, Math.min(3, inputs.keywords.length))
     : []
   
+  // Add document snippet if available
+  const documentContext = inputs.documentSnippet 
+    ? `\n- Technical Reference: Use the following material to inform product details and benefits:\n${inputs.documentSnippet.substring(0, 800)}...`
+    : ''
+
   return `Generate a SELLING LinkedIn post using the PAS (Problem → Agitate → Solution) structure.
 
 Business Context:
@@ -121,7 +127,7 @@ Business Context:
 - Sector: ${inputs.sector}
 - Target Audience: ${inputs.audience}
 - Tone: ${inputs.brandTone || 'professional'}
-${inputs.website ? `- Website: ${inputs.website} (use for additional context if needed)` : ''}
+${inputs.website ? `- Website: ${inputs.website} (use for additional context if needed)` : ''}${documentContext}
 
 ⚠️ CRITICAL RANDOMIZATION REQUIREMENTS:
 This post MUST focus on a DIFFERENT product/service than previous posts to avoid repetition.
@@ -189,13 +195,18 @@ export function buildInfoAdvicePrompt(inputs: GenInputs): string {
     ? randomSelect(inputs.keywords, 3)
     : []
   
+  // Add document snippet if available
+  const documentContext = inputs.documentSnippet 
+    ? `\n\n📄 REFERENCE MATERIAL (use this to inform your advice if relevant):\n${inputs.documentSnippet}\n\nYou may incorporate insights from this reference material naturally, but DO NOT quote it directly. Use it to inform your expertise.`
+    : ''
+
   return `Generate an INFORMATION & ADVICE LinkedIn post that combines insight with actionable guidance.
 
 Business Context:
 - Business: ${inputs.businessName}
 - Sector: ${inputs.sector}
 - Target Audience: ${inputs.audience}
-- Tone: ${inputs.brandTone || 'professional'}
+- Tone: ${inputs.brandTone || 'professional'}${documentContext}
 
 🎯 FOCUS TOPIC FOR THIS POST: ${focusTopic}
 

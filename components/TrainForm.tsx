@@ -8,6 +8,7 @@ import { Textarea } from './ui/Textarea'
 import { Select } from './ui/Select'
 import { TagsInput } from './TagsInput'
 import { KeywordSuggestions } from './KeywordSuggestions'
+import { DocumentUpload } from './DocumentUpload'
 import { UserProfile, setProfile } from '../lib/localstore'
 import { HelpCircle } from 'lucide-react'
 
@@ -451,6 +452,14 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
           </label>
         </div>
         <FieldHelp text="Serious = Professional business stories about growth, challenges, and solutions. Quirky = Light-hearted, funny business stories with relatable moments. You can change this anytime in your profile." />
+      </div>
+
+      {/* Technical Documents (Optional) */}
+      <div className="space-y-3">
+        <label className="block text-sm font-medium text-white mb-3">
+          Technical Documents (Optional)
+        </label>
+        <DocumentUpload />
       </div>
 
       {/* Country */}
