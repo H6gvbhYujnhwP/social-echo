@@ -13,15 +13,15 @@ const CreateUserSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   plan: z.enum(['starter', 'pro', 'ultimate']).default('pro'),
-  trialAmount: z.number().min(0.001).max(365, 'Trial amount must be between 0.001 and 365'),
-  trialUnit: z.enum(['minutes', 'hours', 'days']).default('days'),
+  trialAmount: z.number().min(0.001),
+  trialUnit: z.enum(['minutes', 'hours', 'days', 'months', 'years']).default('days'),
   sendEmail: z.boolean().default(false),
 })
 
 type CreateUserInput = z.infer<typeof CreateUserSchema>
 
 // Convert trial duration to milliseconds
-function trialToMilliseconds(amount: number, unit: 'minutes' | 'hours' | 'days'): number {
+function trialToMilliseconds(amount: number, unit: 'minutes' | 'hours' | 'days' | 'months' | 'years'): number {
   switch (unit) {
     case 'minutes':
       return amount * 60_000
@@ -29,6 +29,10 @@ function trialToMilliseconds(amount: number, unit: 'minutes' | 'hours' | 'days')
       return amount * 3_600_000
     case 'days':
       return amount * 86_400_000
+    case 'months':
+      return amount * 30 * 86_400_000 // 30 days per month
+    case 'years':
+      return amount * 365 * 86_400_000 // 365 days per year
     default:
       return amount * 86_400_000 // Default to days
   }

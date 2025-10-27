@@ -45,7 +45,7 @@ export default function AdminUsersPage() {
     password: '',
     plan: 'pro' as 'starter' | 'pro' | 'ultimate',
     trialAmount: 7,
-    trialUnit: 'days' as 'minutes' | 'hours' | 'days',
+    trialUnit: 'days' as 'minutes' | 'hours' | 'days' | 'months' | 'years',
     sendEmail: false,
   });
   const [creating, setCreating] = useState(false);
@@ -780,23 +780,24 @@ export default function AdminUsersPage() {
                   onChange={(e) => setCreateForm({ ...createForm, trialAmount: parseFloat(e.target.value) })}
                   placeholder="7"
                   min="0.001"
-                  max="365"
                   step="0.001"
                   required
                   className="flex-1"
                 />
                 <select
                   value={createForm.trialUnit}
-                  onChange={(e) => setCreateForm({ ...createForm, trialUnit: e.target.value as 'minutes' | 'hours' | 'days' })}
+                  onChange={(e) => setCreateForm({ ...createForm, trialUnit: e.target.value as 'minutes' | 'hours' | 'days' | 'months' | 'years' })}
                   className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="minutes">Minutes</option>
                   <option value="hours">Hours</option>
                   <option value="days">Days</option>
+                  <option value="months">Months</option>
+                  <option value="years">Years</option>
                 </select>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Decimals allowed (e.g., 0.5 hours = 30 minutes)
+                Decimals allowed (e.g., 0.5 hours = 30 minutes). Use large numbers (e.g., 999 years) for indefinite trials.
               </p>
             </div>
 
