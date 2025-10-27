@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import pdf from 'pdf-parse/lib/pdf-parse'
+import pdf from 'pdf-parse'
 
 // Maximum file size: 5MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024
