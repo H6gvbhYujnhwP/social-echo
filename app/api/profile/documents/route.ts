@@ -3,9 +3,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-// Import pdf-parse using require for CommonJS compatibility
-const pdfParse = require('pdf-parse')
-
 // Maximum file size: 5MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 
@@ -27,7 +24,10 @@ interface DocumentData {
 // Extract text from PDF buffer
 async function extractPdfText(buffer: Buffer): Promise<string> {
   try {
-    const data = await pdfParse(buffer)
+    // Use dynamic import to handle both dev and production builds
+    const pdfParseModule = await import('pdf-parse')
+    const pdfParse = pdfParseModule.default || pdfParseModule
+    const data = await (pdfParse as any)(buffer)
     return data.text
   } catch (error) {
     console.error('PDF extraction error:', error)
