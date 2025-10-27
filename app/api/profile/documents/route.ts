@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import pdf from 'pdf-parse'
+
+// Import pdf-parse using require for CommonJS compatibility
+const pdfParse = require('pdf-parse')
 
 // Maximum file size: 5MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -25,7 +27,7 @@ interface DocumentData {
 // Extract text from PDF buffer
 async function extractPdfText(buffer: Buffer): Promise<string> {
   try {
-    const data = await pdf(buffer)
+    const data = await pdfParse(buffer)
     return data.text
   } catch (error) {
     console.error('PDF extraction error:', error)
@@ -54,16 +56,18 @@ function extractTextFile(buffer: Buffer): string {
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const userId = (session.user as any).id
+
     const profile = await prisma.profile.findUnique({
-      where: { userId: session.user.id },
+      where: { userId },
       select: { documents: true }
     })
 
-    const documents = (profile?.documents as DocumentData[]) || []
+    const documents = (profile?.documents as any as DocumentData[]) || []
 
     return NextResponse.json({ documents })
   } catch (error) {
@@ -79,9 +83,11 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const userId = (session.user as any).id
 
     const formData = await req.formData()
     const file = formData.get('file') as File
@@ -119,7 +125,7 @@ export async function POST(req: NextRequest) {
         extractedText = extractTextFile(buffer)
       } else {
         // DOC/DOCX
-        extractedText = extractDocText(buffer)
+        extractedText = await extractDocText(buffer)
       }
     } catch (error) {
       console.error('Text extraction error:', error)
@@ -142,11 +148,11 @@ export async function POST(req: NextRequest) {
 
     // Get existing profile
     const profile = await prisma.profile.findUnique({
-      where: { userId: session.user.id },
+      where: { userId },
       select: { documents: true }
     })
 
-    const existingDocs = (profile?.documents as DocumentData[]) || []
+    const existingDocs = (profile?.documents as any as DocumentData[]) || []
 
     // Check if user already has 10 documents (limit)
     if (existingDocs.length >= 10) {
@@ -168,7 +174,7 @@ export async function POST(req: NextRequest) {
     const updatedDocs = [...existingDocs, newDocument]
 
     await prisma.profile.update({
-      where: { userId: session.user.id },
+      where: { userId },
       data: { documents: updatedDocs as any }
     })
 
@@ -194,9 +200,11 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const userId = (session.user as any).id
 
     const { searchParams } = new URL(req.url)
     const filename = searchParams.get('filename')
@@ -207,11 +215,11 @@ export async function DELETE(req: NextRequest) {
 
     // Get existing profile
     const profile = await prisma.profile.findUnique({
-      where: { userId: session.user.id },
+      where: { userId },
       select: { documents: true }
     })
 
-    const existingDocs = (profile?.documents as DocumentData[]) || []
+    const existingDocs = (profile?.documents as any as DocumentData[]) || []
 
     // Filter out the document to delete
     const updatedDocs = existingDocs.filter(doc => doc.filename !== filename)
@@ -222,7 +230,7 @@ export async function DELETE(req: NextRequest) {
 
     // Update profile
     await prisma.profile.update({
-      where: { userId: session.user.id },
+      where: { userId },
       data: { documents: updatedDocs as any }
     })
 
