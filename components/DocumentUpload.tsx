@@ -48,14 +48,13 @@ export function DocumentUpload() {
 
     // Validate file type
     const allowedTypes = [
-      'application/pdf',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'text/plain'
     ]
 
     if (!allowedTypes.includes(file.type)) {
-      setMessage({ type: 'error', text: 'Only PDF, DOC, DOCX, and TXT files are allowed' })
+      setMessage({ type: 'error', text: 'Only DOC, DOCX, and TXT files are allowed' })
       return
     }
 
@@ -134,7 +133,7 @@ export function DocumentUpload() {
           type="file"
           id="document-upload"
           className="hidden"
-          accept=".pdf,.doc,.docx,.txt"
+          accept=".doc,.docx,.txt"
           onChange={handleFileUpload}
           disabled={uploading || documents.length >= 10}
         />
@@ -147,7 +146,7 @@ export function DocumentUpload() {
             {uploading ? 'Uploading...' : 'Click to upload or drag and drop'}
           </p>
           <p className="text-xs text-gray-500">
-            PDF, DOC, DOCX, or TXT (max 5MB)
+            DOC, DOCX, or TXT (max 5MB)
           </p>
           {documents.length >= 10 && (
             <p className="text-xs text-red-600 mt-2">

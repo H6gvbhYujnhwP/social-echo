@@ -6,9 +6,8 @@ import { prisma } from '@/lib/prisma'
 // Maximum file size: 5MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 
-// Allowed file types
+// Allowed file types (PDF removed due to compatibility issues)
 const ALLOWED_TYPES = [
-  'application/pdf',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'text/plain'
@@ -19,43 +18,6 @@ interface DocumentData {
   content: string
   uploadedAt: string
   fileType: string
-}
-
-// Extract text from PDF buffer
-async function extractPdfText(buffer: Buffer): Promise<string> {
-  try {
-    // Use dynamic import with multiple fallback strategies
-    const pdfParseModule: any = await import('pdf-parse')
-    
-    // Try different ways to get the callable function
-    let pdfParse: any
-    if (typeof pdfParseModule === 'function') {
-      pdfParse = pdfParseModule
-    } else if (typeof pdfParseModule.default === 'function') {
-      pdfParse = pdfParseModule.default
-    } else if (typeof pdfParseModule.default?.default === 'function') {
-      pdfParse = pdfParseModule.default.default
-    } else {
-      // Last resort: look for any function in the module
-      const keys = Object.keys(pdfParseModule)
-      for (const key of keys) {
-        if (typeof pdfParseModule[key] === 'function') {
-          pdfParse = pdfParseModule[key]
-          break
-        }
-      }
-    }
-    
-    if (!pdfParse || typeof pdfParse !== 'function') {
-      throw new Error('Could not find pdf-parse function in module')
-    }
-    
-    const data = await pdfParse(buffer)
-    return data.text
-  } catch (error) {
-    console.error('PDF extraction error:', error)
-    throw new Error('Failed to extract text from PDF')
-  }
 }
 
 // Extract text from DOC/DOCX (simplified - just get text content)
@@ -142,9 +104,7 @@ export async function POST(req: NextRequest) {
     // Extract text based on file type
     let extractedText: string
     try {
-      if (file.type === 'application/pdf') {
-        extractedText = await extractPdfText(buffer)
-      } else if (file.type === 'text/plain') {
+      if (file.type === 'text/plain') {
         extractedText = extractTextFile(buffer)
       } else {
         // DOC/DOCX
