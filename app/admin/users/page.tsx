@@ -43,7 +43,7 @@ export default function AdminUsersPage() {
     name: '',
     email: '',
     password: '',
-    plan: 'pro' as 'starter' | 'pro',
+    plan: 'pro' as 'starter' | 'pro' | 'ultimate',
     trialAmount: 7,
     trialUnit: 'days' as 'minutes' | 'hours' | 'days',
     sendEmail: false,
@@ -738,7 +738,7 @@ export default function AdminUsersPage() {
                     name="plan"
                     value="starter"
                     checked={createForm.plan === 'starter'}
-                    onChange={(e) => setCreateForm({ ...createForm, plan: e.target.value as 'starter' | 'pro' })}
+                    onChange={(e) => setCreateForm({ ...createForm, plan: e.target.value as 'starter' | 'pro' | 'ultimate' })}
                     className="w-4 h-4"
                   />
                   <span>Starter (8 posts/month)</span>
@@ -749,10 +749,21 @@ export default function AdminUsersPage() {
                     name="plan"
                     value="pro"
                     checked={createForm.plan === 'pro'}
-                    onChange={(e) => setCreateForm({ ...createForm, plan: e.target.value as 'starter' | 'pro' })}
+                    onChange={(e) => setCreateForm({ ...createForm, plan: e.target.value as 'starter' | 'pro' | 'ultimate' })}
                     className="w-4 h-4"
                   />
                   <span>Pro (30 posts/month)</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="plan"
+                    value="ultimate"
+                    checked={createForm.plan === 'ultimate'}
+                    onChange={(e) => setCreateForm({ ...createForm, plan: e.target.value as 'starter' | 'pro' | 'ultimate' })}
+                    className="w-4 h-4"
+                  />
+                  <span>Ultimate (Unlimited posts/month)</span>
                 </label>
               </div>
             </div>

@@ -12,7 +12,7 @@ const CreateUserSchema = z.object({
   name: z.string().optional(),
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  plan: z.enum(['starter', 'pro']).default('pro'),
+  plan: z.enum(['starter', 'pro', 'ultimate']).default('pro'),
   trialAmount: z.number().min(0.001).max(365, 'Trial amount must be between 0.001 and 365'),
   trialUnit: z.enum(['minutes', 'hours', 'days']).default('days'),
   sendEmail: z.boolean().default(false),
