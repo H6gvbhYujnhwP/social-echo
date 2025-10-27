@@ -24,10 +24,33 @@ interface DocumentData {
 // Extract text from PDF buffer
 async function extractPdfText(buffer: Buffer): Promise<string> {
   try {
-    // Use dynamic import to handle both dev and production builds
-    const pdfParseModule = await import('pdf-parse')
-    const pdfParse = pdfParseModule.default || pdfParseModule
-    const data = await (pdfParse as any)(buffer)
+    // Use dynamic import with multiple fallback strategies
+    const pdfParseModule: any = await import('pdf-parse')
+    
+    // Try different ways to get the callable function
+    let pdfParse: any
+    if (typeof pdfParseModule === 'function') {
+      pdfParse = pdfParseModule
+    } else if (typeof pdfParseModule.default === 'function') {
+      pdfParse = pdfParseModule.default
+    } else if (typeof pdfParseModule.default?.default === 'function') {
+      pdfParse = pdfParseModule.default.default
+    } else {
+      // Last resort: look for any function in the module
+      const keys = Object.keys(pdfParseModule)
+      for (const key of keys) {
+        if (typeof pdfParseModule[key] === 'function') {
+          pdfParse = pdfParseModule[key]
+          break
+        }
+      }
+    }
+    
+    if (!pdfParse || typeof pdfParse !== 'function') {
+      throw new Error('Could not find pdf-parse function in module')
+    }
+    
+    const data = await pdfParse(buffer)
     return data.text
   } catch (error) {
     console.error('PDF extraction error:', error)
