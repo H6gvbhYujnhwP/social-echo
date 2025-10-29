@@ -156,10 +156,7 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
     if (!formData.business_name.trim()) {
       newErrors.business_name = 'Business name is required'
     }
-    const website = formData.website.trim()
-    if (website && !isValidUrl(website)) {
-      newErrors.website = 'Please enter a valid website URL'
-    }
+    // Website is optional - no validation needed
     if (!formData.industry.trim()) {
       newErrors.industry = 'Industry is required'
     }
