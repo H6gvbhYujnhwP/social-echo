@@ -429,7 +429,7 @@ export default function AdminUsersPage() {
                       <td className="p-3">
                         {u.cancellationReason ? (
                           <div className="text-xs">
-                            <Badge variant="outline" className="mb-1">
+                            <Badge variant="secondary" className="mb-1">
                               {u.cancellationReason.replace(/_/g, ' ')}
                             </Badge>
                             {u.cancellationComment && (
