@@ -96,9 +96,11 @@ export default function DashboardPage() {
           setShowTrialBanner(subData.isTrial === true)
           
           // Check if trial is exhausted
+          // Admin-created trial accounts (status='trial') should NEVER be exhausted
+          // Only real Starter trials (status='trialing') should check limits
           const remaining = Math.max(0, (subData.usageLimit ?? 0) - (subData.usageCount ?? 0))
-          const isTrial = subData.status === 'trial'
-          setIsTrialExhausted(isTrial && remaining === 0)
+          const isRealStarterTrial = subData.status === 'trialing'
+          setIsTrialExhausted(isRealStarterTrial && remaining === 0)
           
           console.log('Subscription loaded:', subData.status, subData.plan, 'isTrial:', subData.isTrial, 'remaining:', remaining)
         }
