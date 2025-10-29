@@ -1127,9 +1127,8 @@ function AccountPageInner() {
               </motion.div>
 
               {/* Cancel/Reactivate Subscription */}
-              {/* Only show if not a scheduled downgrade */}
-              {!subscription?.pendingPlan && (
-                <motion.div
+              {/* Always show - users can cancel even with scheduled downgrades */}
+              <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
@@ -1179,10 +1178,8 @@ function AccountPageInner() {
                     >
                       {actionLoading ? 'Processing...' : 'Cancel Subscription'}
                     </button>
-                  </>
-                  )}
+                  </>                  )}
                 </motion.div>
-              )}
             </div>
           )}
         </Container>
