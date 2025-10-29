@@ -110,8 +110,8 @@ function AccountPageInner() {
         // Initialize selectedPlan with current plan (starter, pro, or ultimate)
         const currentPlan = data.plan?.toLowerCase() || 'starter'
         setSelectedPlan(currentPlan as 'starter' | 'pro' | 'ultimate')
-        // Check for both Stripe trials ('trialing') and admin trials ('trial')
-        setIsTrialing(data.status === 'trialing' || data.status === 'trial')
+        // Only show trial banner for real Starter trials ('trialing'), not admin trials ('trial')
+        setIsTrialing(data.status === 'trialing')
         
         // v8.6: Reconcile pending downgrade state from Stripe if not in database
         if (!data.pendingPlan && data.plan === 'pro') {
