@@ -63,8 +63,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if already cancelled
-    if (subscription.cancelAtPeriodEnd || subscription.status === 'canceled') {
+    // Check if already cancelled (but allow if it's a scheduled downgrade)
+    // If pendingPlan exists, it means cancel_at_period_end is set for a downgrade, not a cancellation
+    if ((subscription.cancelAtPeriodEnd && !subscription.pendingPlan) || subscription.status === 'canceled') {
       return NextResponse.json(
         { error: 'Subscription is already cancelled' },
         { status: 400 }
