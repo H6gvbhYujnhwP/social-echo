@@ -52,6 +52,18 @@ export async function GET(req: Request) {
         const cycleStart = user.subscription.currentPeriodStart;
         const cycleEnd = user.subscription.currentPeriodEnd;
 
+        // Ensure cycleStart and cycleEnd are valid Date objects
+        if (!cycleStart || !cycleEnd) {
+          console.warn(`[admin/users] User ${user.id} has invalid cycle dates`);
+          return {
+            ...user,
+            subscription: {
+              ...user.subscription,
+              usageCount: 0 // Default to 0 if no valid cycle
+            }
+          };
+        }
+
         // Get usage counter for current cycle
         const usageCounter = await prisma.usageCounter.findUnique({
           where: {
@@ -64,11 +76,12 @@ export async function GET(req: Request) {
         });
 
         // Replace usageCount with accurate value from UsageCounter
+        // If no UsageCounter exists, default to 0 (not subscription.usageCount which is stale)
         return {
           ...user,
           subscription: {
             ...user.subscription,
-            usageCount: usageCounter?.postsUsed || 0
+            usageCount: usageCounter?.postsUsed ?? 0
           }
         };
       })
