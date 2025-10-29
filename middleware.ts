@@ -16,8 +16,23 @@ export async function middleware(request: NextRequest) {
   if (protectedRoutes.includes(pathname) && token) {
     // Check subscription status from token
     const subscriptionStatus = token.subscriptionStatus as string | undefined;
+    const currentPeriodEnd = token.currentPeriodEnd as string | undefined;
     
-    if (!subscriptionStatus || subscriptionStatus === 'canceled' || subscriptionStatus === 'cancelled') {
+    // Allow access if subscription is active (even if cancelAtPeriodEnd is true)
+    if (subscriptionStatus === 'active' || subscriptionStatus === 'trialing') {
+      return NextResponse.next();
+    }
+    
+    // Block access if subscription is canceled AND period has ended
+    if (subscriptionStatus === 'canceled' || subscriptionStatus === 'cancelled') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/account';
+      url.searchParams.set('error', 'subscription_expired');
+      return NextResponse.redirect(url);
+    }
+    
+    // Block access if no subscription status
+    if (!subscriptionStatus) {
       const url = request.nextUrl.clone();
       url.pathname = '/account';
       url.searchParams.set('error', 'subscription_required');

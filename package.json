@@ -12,7 +12,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.65.0",
     "@auth/prisma-adapter": "^2.10.0",
-    "@prisma/client": "^6.17.1",
+    "@prisma/client": "6.18.0",
     "@stripe/stripe-js": "^8.0.0",
     "@types/bcrypt": "^6.0.0",
     "@types/node": "20.11.30",
@@ -30,7 +30,6 @@
     "openai": "4.56.0",
     "otplib": "^12.0.1",
     "postcss": "8.4.49",
-    "prisma": "^6.17.1",
     "qrcode": "^1.5.4",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -46,6 +45,7 @@
     "@prisma/config": "^6.18.0",
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.15",
+    "prisma": "6.18.0",
     "ts-node": "^10.9.2"
   },
   "prisma": {

@@ -36,7 +36,13 @@ export async function GET(req: Request) {
     const [items, total] = await Promise.all([
       prisma.user.findMany({
         where,
-        include: { subscription: true },
+        include: { 
+          subscription: true,
+          cancellationFeedback: {
+            orderBy: { createdAt: 'desc' },
+            take: 1 // Get most recent cancellation feedback
+          }
+        },
         orderBy: { createdAt: 'desc' },
         skip, 
         take: pageSize
@@ -82,7 +88,9 @@ export async function GET(req: Request) {
           subscription: {
             ...user.subscription,
             usageCount: usageCounter?.postsUsed ?? 0
-          }
+          },
+          cancellationReason: user.cancellationFeedback?.[0]?.reason || null,
+          cancellationComment: user.cancellationFeedback?.[0]?.comment || null
         };
       })
     );

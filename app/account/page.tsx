@@ -67,6 +67,11 @@ function AccountPageInner() {
   // Upgrade modal
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [isTrialing, setIsTrialing] = useState(false)
+  
+  // Cancellation feedback modal
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [cancelReason, setCancelReason] = useState('')
+  const [cancelComment, setCancelComment] = useState('')
 
   useEffect(() => {
     if (status === 'loading') return
@@ -266,7 +271,13 @@ function AccountPageInner() {
   }
 
   const handleCancelSubscription = async () => {
-    if (!confirm('Are you sure you want to cancel your subscription? You will lose access at the end of your billing period.')) {
+    // Show feedback modal instead of browser confirm
+    setShowCancelModal(true)
+  }
+  
+  const handleCancelWithFeedback = async () => {
+    if (!cancelReason) {
+      setMessage({ type: 'error', text: 'Please select a reason for cancellation' })
       return
     }
 
@@ -275,29 +286,85 @@ function AccountPageInner() {
 
     try {
       const res = await fetch('/api/account/billing/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reason: cancelReason,
+          comment: cancelComment
+        })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setShowCancelModal(false)
+        
+        // Show success message WITHOUT logging out
+        setMessage({ 
+          type: 'success', 
+          text: data.message || (data.immediate 
+            ? 'Your subscription has been cancelled immediately.' 
+            : 'Your subscription will remain active until the end of your billing period. You can continue using Social Echo until then.')
+        })
+        
+        // Refresh subscription data to show cancelled status
+        const subRes = await fetch('/api/subscription', {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        })
+        if (subRes.ok) {
+          const subData = await subRes.json()
+          setSubscription(subData)
+        }
+        
+        // Reset modal state
+        setCancelReason('')
+        setCancelComment('')
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Failed to cancel subscription' })
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Failed to cancel subscription' })
+    } finally {
+      setActionLoading(false)
+    }
+  }
+  
+  const handleReactivateSubscription = async () => {
+    if (!confirm('Reactivate your subscription? You will continue to be charged at the end of your billing period.')) {
+      return
+    }
+
+    setActionLoading(true)
+    setMessage(null)
+
+    try {
+      const res = await fetch('/api/account/billing/reactivate', {
         method: 'POST'
       })
 
       const data = await res.json()
 
       if (res.ok) {
-        // Show success message
         setMessage({ 
           type: 'success', 
-          text: data.immediate 
-            ? 'Your plan has been cancelled. You\'ve been logged out.' 
-            : 'Your plan will cancel at the end of your billing period. You\'ve been logged out.'
+          text: data.message || 'Your subscription has been reactivated successfully!'
         })
         
-        // Wait 2 seconds for user to see the message, then logout
-        setTimeout(async () => {
-          await signOut({ callbackUrl: '/signin?cancelled=true' })
-        }, 2000)
+        // Refresh subscription data
+        const subRes = await fetch('/api/subscription', {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        })
+        if (subRes.ok) {
+          const subData = await subRes.json()
+          setSubscription(subData)
+        }
       } else {
-        setMessage({ type: 'error', text: data.error || 'Failed to cancel subscription' })
+        setMessage({ type: 'error', text: data.error || 'Failed to reactivate subscription' })
       }
     } catch (err) {
-      setMessage({ type: 'error', text: 'Failed to cancel subscription' })
+      setMessage({ type: 'error', text: 'Failed to reactivate subscription' })
     } finally {
       setActionLoading(false)
     }
@@ -1059,30 +1126,59 @@ function AccountPageInner() {
                 )}
               </motion.div>
 
-              {/* Cancel Subscription */}
+              {/* Cancel/Reactivate Subscription */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-red-500/10 backdrop-blur-lg rounded-xl p-6 border border-red-500/30"
+                className={`backdrop-blur-lg rounded-xl p-6 border ${
+                  subscription?.cancelAtPeriodEnd
+                    ? 'bg-yellow-500/10 border-yellow-500/30'
+                    : 'bg-red-500/10 border-red-500/30'
+                }`}
               >
-                <h3 className="text-xl font-bold text-white mb-2">Cancel Subscription</h3>
-                <p className="text-white/70 mb-4">
-                  {subscription?.status === 'trialing'
-                    ? 'Cancelling will end your trial immediately.'
-                    : 'You will retain access until the end of your billing period.'}
-                </p>
-                <button
-                  onClick={handleCancelSubscription}
-                  disabled={actionLoading || subscription?.cancelAtPeriodEnd}
-                  className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-                >
-                  {subscription?.cancelAtPeriodEnd 
-                    ? 'Already Cancelled' 
-                    : actionLoading 
-                    ? 'Cancelling...' 
-                    : 'Cancel Subscription'}
-                </button>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  {subscription?.cancelAtPeriodEnd ? 'Subscription Cancelled' : 'Cancel Subscription'}
+                </h3>
+                
+                {subscription?.cancelAtPeriodEnd ? (
+                  <>
+                    <div className="bg-yellow-500/20 border border-yellow-500/40 rounded-lg p-4 mb-4">
+                      <p className="text-yellow-300 font-medium mb-2">
+                        Your subscription will end on {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-GB', { 
+                          day: 'numeric', 
+                          month: 'long', 
+                          year: 'numeric' 
+                        })}
+                      </p>
+                      <p className="text-white/70 text-sm">
+                        You can continue using Social Echo until then. Changed your mind?
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleReactivateSubscription}
+                      disabled={actionLoading}
+                      className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                    >
+                      {actionLoading ? 'Reactivating...' : 'Reactivate Subscription'}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-white/70 mb-4">
+                      {subscription?.status === 'trialing'
+                        ? 'Cancelling will end your trial immediately.'
+                        : 'You will retain access until the end of your billing period.'}
+                    </p>
+                    <button
+                      onClick={handleCancelSubscription}
+                      disabled={actionLoading}
+                      className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                    >
+                      {actionLoading ? 'Processing...' : 'Cancel Subscription'}
+                    </button>
+                  </>
+                )}
               </motion.div>
             </div>
           )}
@@ -1096,6 +1192,71 @@ function AccountPageInner() {
         onConfirm={handleUpgradeConfirm}
         isTrialing={isTrialing}
       />
+      
+      {/* Cancellation Feedback Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 sm:p-8 max-w-md w-full border border-white/10 shadow-2xl"
+          >
+            <h3 className="text-2xl font-bold text-white mb-2">We're Sorry to See You Go</h3>
+            <p className="text-white/70 mb-6">Before you cancel, please help us improve by sharing why you're leaving:</p>
+            
+            <div className="space-y-3 mb-6">
+              {[
+                { value: 'too_expensive', label: '💰 Too expensive' },
+                { value: 'not_using', label: '⏰ Not using it enough' },
+                { value: 'missing_features', label: '🔧 Missing features I need' },
+                { value: 'switching', label: '🔄 Switching to another service' },
+                { value: 'other', label: '📝 Other reason' }
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setCancelReason(option.value)}
+                  className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                    cancelReason === option.value
+                      ? 'border-purple-500 bg-purple-500/20 text-white'
+                      : 'border-white/10 bg-white/5 text-white/70 hover:border-white/20 hover:bg-white/10'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            
+            <textarea
+              placeholder="Any additional feedback? (optional)"
+              value={cancelComment}
+              onChange={(e) => setCancelComment(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white placeholder-white/40 mb-6 focus:outline-none focus:border-purple-500 resize-none"
+              rows={3}
+            />
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowCancelModal(false)
+                  setCancelReason('')
+                  setCancelComment('')
+                }}
+                disabled={actionLoading}
+                className="flex-1 bg-white/10 hover:bg-white/20 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Keep Subscription
+              </button>
+              <button
+                onClick={handleCancelWithFeedback}
+                disabled={!cancelReason || actionLoading}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {actionLoading ? 'Cancelling...' : 'Confirm Cancellation'}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }

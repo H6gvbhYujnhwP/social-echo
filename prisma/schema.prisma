@@ -56,6 +56,7 @@ model User {
   passwordResetTokens  PasswordResetToken[]
   usageCounters        UsageCounter[]
   emailLogs            EmailLog[]
+  cancellationFeedback CancellationFeedback[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -309,6 +310,21 @@ model UsageCounter {
 }
 
 
+
+// Cancellation feedback tracking
+model CancellationFeedback {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  reason    String   // "too_expensive" | "not_using" | "missing_features" | "switching" | "other"
+  comment   String?  @db.Text
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([reason])
+}
 
 // Email sending log for idempotency and audit trail
 model EmailLog {

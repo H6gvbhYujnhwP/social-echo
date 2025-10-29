@@ -28,6 +28,8 @@ type UserRow = {
     currentPeriodEnd: string | null;
     stripeCustomerId?: string | null;
   } | null;
+  cancellationReason?: string | null;
+  cancellationComment?: string | null;
 };
 
 export default function AdminUsersPage() {
@@ -379,6 +381,7 @@ export default function AdminUsersPage() {
                   <th className="p-3">Plan</th>
                   <th className="p-3">Status</th>
                   <th className="p-3">Usage</th>
+                  <th className="p-3">Cancellation</th>
                   <th className="p-3">Created</th>
                   <th className="p-3"></th>
                 </tr>
@@ -423,6 +426,22 @@ export default function AdminUsersPage() {
                         )}
                       </td>
                       <td className="p-3">{usage}</td>
+                      <td className="p-3">
+                        {u.cancellationReason ? (
+                          <div className="text-xs">
+                            <Badge variant="outline" className="mb-1">
+                              {u.cancellationReason.replace(/_/g, ' ')}
+                            </Badge>
+                            {u.cancellationComment && (
+                              <div className="text-gray-500 italic truncate max-w-[150px]" title={u.cancellationComment}>
+                                {u.cancellationComment}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
                       <td className="p-3 text-gray-500">
                         {new Date(u.createdAt).toLocaleDateString()}
                       </td>

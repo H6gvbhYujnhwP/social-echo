@@ -61,7 +61,9 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role || 'USER',
           plan: user.subscription?.plan || 'starter',
-          subscriptionStatus: user.subscription?.status || null
+          subscriptionStatus: user.subscription?.status || null,
+          cancelAtPeriodEnd: user.subscription?.cancelAtPeriodEnd || false,
+          currentPeriodEnd: user.subscription?.currentPeriodEnd?.toISOString() || null
         }
       }
     })
@@ -76,13 +78,31 @@ export const authOptions: NextAuthOptions = {
     error: '/signin',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id
         token.role = (user as any).role
         token.plan = (user as any).plan
         token.subscriptionStatus = (user as any).subscriptionStatus
+        token.cancelAtPeriodEnd = (user as any).cancelAtPeriodEnd
+        token.currentPeriodEnd = (user as any).currentPeriodEnd
       }
+      
+      // Refresh subscription data on update trigger (after cancellation/reactivation)
+      if (trigger === 'update' && token.id) {
+        const userWithSub = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          include: { subscription: true }
+        })
+        
+        if (userWithSub?.subscription) {
+          token.subscriptionStatus = userWithSub.subscription.status
+          token.plan = userWithSub.subscription.plan
+          token.cancelAtPeriodEnd = userWithSub.subscription.cancelAtPeriodEnd
+          token.currentPeriodEnd = userWithSub.subscription.currentPeriodEnd.toISOString()
+        }
+      }
+      
       return token
     },
     async session({ session, token }) {
