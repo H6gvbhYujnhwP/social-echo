@@ -15,6 +15,8 @@ interface ImagePanelProps {
   postHeadline?: string
   postText?: string
   autoSelectedType?: string
+  savedImageUrl?: string | null
+  savedImageStyle?: string | null
   onImageGenerated?: (imageUrl: string, imageStyle: string) => void
 }
 
@@ -26,6 +28,8 @@ export function ImagePanel({
   postHeadline,
   postText,
   autoSelectedType,
+  savedImageUrl,
+  savedImageStyle,
   onImageGenerated
 }: ImagePanelProps) {
   const imageTypes = getAvailableImageTypes()
@@ -33,9 +37,9 @@ export function ImagePanel({
   // Use auto-selected type as default, or fallback to 'illustration'
   const [selectedStyle, setSelectedStyle] = useState<string>(autoSelectedType || 'illustration')
   const [isGenerating, setIsGenerating] = useState(false)
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null)
+  const [generatedImage, setGeneratedImage] = useState<string | null>(savedImageUrl || null)
   const [error, setError] = useState<string | null>(null)
-  const [usedImageType, setUsedImageType] = useState<string | null>(null)
+  const [usedImageType, setUsedImageType] = useState<string | null>(savedImageStyle || null)
   const [allowText, setAllowText] = useState(false)
 
   // Update selected style when auto-selected type changes
@@ -45,6 +49,15 @@ export function ImagePanel({
       console.log('[ImagePanel] Auto-selected image type:', autoSelectedType)
     }
   }, [autoSelectedType])
+
+  // Restore saved image when props change (e.g., when loading a saved post)
+  React.useEffect(() => {
+    if (savedImageUrl) {
+      setGeneratedImage(savedImageUrl)
+      setUsedImageType(savedImageStyle || null)
+      console.log('[ImagePanel] Restored saved image, style:', savedImageStyle)
+    }
+  }, [savedImageUrl, savedImageStyle])
 
   // Debug: Log visual prompt changes
   React.useEffect(() => {

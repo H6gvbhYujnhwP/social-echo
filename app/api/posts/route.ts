@@ -59,6 +59,8 @@ export async function GET(request: NextRequest) {
       post_text: post.postText,
       hashtags: post.hashtags,
       visual_prompt: post.visualPrompt,
+      imageUrl: post.imageUrl,
+      imageStyle: post.imageStyle,
       isRegeneration: post.isRegeneration,
       createdAt: post.createdAt.toISOString(),
       feedback: post.feedback ? {

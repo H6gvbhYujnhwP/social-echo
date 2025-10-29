@@ -143,6 +143,12 @@ export default function DashboardPage() {
           } else {
             console.warn('[dashboard] No postId found in database response:', postData)
           }
+          // Restore saved image if available
+          if (postData.imageUrl) {
+            setGeneratedImageUrl(postData.imageUrl)
+            setGeneratedImageStyle(postData.imageStyle)
+            console.log('[dashboard] Restored saved image, style:', postData.imageStyle)
+          }
         } else {
           console.log('[dashboard] No post found for today:', today)
         }
@@ -724,9 +730,29 @@ export default function DashboardPage() {
               postHeadline={todayDraft?.headline_options?.[0]}
               postText={todayDraft?.post_text}
               autoSelectedType={todayDraft ? undefined : undefined} // Will be calculated in ImagePanel
-              onImageGenerated={(imageUrl, imageStyle) => {
+              savedImageUrl={generatedImageUrl}
+              savedImageStyle={generatedImageStyle}
+              onImageGenerated={async (imageUrl, imageStyle) => {
                 setGeneratedImageUrl(imageUrl)
                 setGeneratedImageStyle(imageStyle)
+                
+                // Save image to database if we have a current post
+                if (currentPostId) {
+                  try {
+                    const response = await fetch(`/api/posts/${currentPostId}/image`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ imageUrl, imageStyle })
+                    })
+                    if (response.ok) {
+                      console.log('[dashboard] Saved image to database, style:', imageStyle)
+                    } else {
+                      console.error('[dashboard] Failed to save image to database')
+                    }
+                  } catch (error) {
+                    console.error('[dashboard] Error saving image:', error)
+                  }
+                }
               }}
             />
           </div>
