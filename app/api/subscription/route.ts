@@ -34,7 +34,8 @@ export async function GET() {
     currentPeriodStart: user.subscription.currentPeriodStart,
     currentPeriodEnd: user.subscription.currentPeriodEnd,
     trialEnd: user.subscription.trialEnd,
-    isTrial: isTrial || isTrialing,
+    // Only show trial banner for real Starter trials (status='trialing'), not admin-created trial accounts (status='trial')
+    isTrial: isTrialing,
     isTrialExpired,
     // v8.6: Pending downgrade state
     pendingPlan: user.subscription.pendingPlan,
