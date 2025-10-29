@@ -37,6 +37,18 @@ function extractTextFile(buffer: Buffer): string {
   return buffer.toString('utf-8')
 }
 
+// Sanitize text for PostgreSQL storage
+function sanitizeText(text: string): string {
+  return text
+    // Remove null bytes (\u0000) - PostgreSQL cannot store these
+    .replace(/\u0000/g, '')
+    // Remove other control characters except newlines, tabs, and carriage returns
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    // Normalize whitespace
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 // GET - Retrieve user's uploaded documents
 export async function GET(req: NextRequest) {
   try {
@@ -118,16 +130,19 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Validate extracted text
-    if (!extractedText || extractedText.trim().length < 10) {
+    // Sanitize text: remove null bytes and control characters that PostgreSQL cannot store
+    const sanitizedText = sanitizeText(extractedText)
+    
+    // Validate extracted text (after sanitization)
+    if (!sanitizedText || sanitizedText.length < 10) {
       return NextResponse.json(
         { error: 'Document appears to be empty or text could not be extracted' },
         { status: 400 }
       )
     }
-
+    
     // Limit text length to prevent database bloat (max 50,000 characters)
-    const truncatedText = extractedText.slice(0, 50000)
+    const truncatedText = sanitizedText.slice(0, 50000)
 
     // Get existing profile
     const profile = await prisma.profile.findUnique({
