@@ -1133,16 +1133,16 @@ function AccountPageInner() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                   className={`backdrop-blur-lg rounded-xl p-6 border ${
-                    subscription?.cancelAtPeriodEnd
+                    subscription?.cancelAtPeriodEnd && !subscription?.pendingPlan
                       ? 'bg-yellow-500/10 border-yellow-500/30'
                       : 'bg-red-500/10 border-red-500/30'
                   }`}
                 >
                   <h3 className="text-xl font-bold text-white mb-2">
-                    {subscription?.cancelAtPeriodEnd ? 'Subscription Cancelled' : 'Cancel Subscription'}
+                    {subscription?.cancelAtPeriodEnd && !subscription?.pendingPlan ? 'Subscription Cancelled' : 'Cancel Subscription'}
                   </h3>
                   
-                  {subscription?.cancelAtPeriodEnd ? (
+                  {subscription?.cancelAtPeriodEnd && !subscription?.pendingPlan ? (
                   <>
                     <div className="bg-yellow-500/20 border border-yellow-500/40 rounded-lg p-4 mb-4">
                       <p className="text-yellow-300 font-medium mb-2">
