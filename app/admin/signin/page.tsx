@@ -17,6 +17,15 @@ export default function AdminSignInPage() {
   const [loading, setLoading] = useState(false)
   const [needs2FA, setNeeds2FA] = useState(false)
 
+  // Check for error in URL params
+  useEffect(() => {
+    const errorParam = searchParams.get('error')
+    const messageParam = searchParams.get('message')
+    if (errorParam === 'access_denied' && messageParam) {
+      setError(messageParam)
+    }
+  }, [searchParams])
+
   // Redirect if already logged in as MASTER_ADMIN
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {

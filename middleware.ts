@@ -54,18 +54,13 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
     
-    // If authenticated but not MASTER_ADMIN, show 403
+    // If authenticated but not MASTER_ADMIN, redirect to signin with error
     if (token.role !== 'MASTER_ADMIN') {
-      return new NextResponse(
-        JSON.stringify({ 
-          error: 'Forbidden', 
-          message: 'Master Admin access required' 
-        }), 
-        {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
+      const url = request.nextUrl.clone()
+      url.pathname = '/admin/signin'
+      url.searchParams.set('error', 'access_denied')
+      url.searchParams.set('message', 'Master Admin access required')
+      return NextResponse.redirect(url)
     }
     
     // User is MASTER_ADMIN, allow access
