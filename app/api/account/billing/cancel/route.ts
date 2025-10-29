@@ -87,6 +87,25 @@ export async function POST(request: NextRequest) {
       hasComment: !!comment
     });
 
+    // If there's a pending plan change (downgrade), cancel it first
+    if (subscription.pendingPlan) {
+      console.log('[billing] Cancelling scheduled downgrade before subscription cancellation', {
+        userId: user.id,
+        pendingPlan: subscription.pendingPlan
+      });
+      
+      // Get the subscription from Stripe to find the schedule ID
+      const stripeSubscription = await stripe.subscriptions.retrieve(
+        subscription.stripeSubscriptionId
+      );
+      
+      // If there's a schedule, release it (cancel the downgrade)
+      if (stripeSubscription.schedule) {
+        await stripe.subscriptionSchedules.release(stripeSubscription.schedule as string);
+        console.log('[billing] Subscription schedule released');
+      }
+    }
+
     // Cancel subscription in Stripe
     let canceledSubscription: any;
     const isTrialing = subscription.status === 'trialing';
@@ -109,7 +128,8 @@ export async function POST(request: NextRequest) {
       where: { id: subscription.id },
       data: {
         status: canceledSubscription.cancel_at_period_end ? 'active' : 'canceled',
-        cancelAtPeriodEnd: !!canceledSubscription.cancel_at_period_end
+        cancelAtPeriodEnd: !!canceledSubscription.cancel_at_period_end,
+        pendingPlan: null // Clear any pending plan change
       }
     });
 
