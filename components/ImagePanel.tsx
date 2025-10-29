@@ -137,46 +137,24 @@ export function ImagePanel({
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
     if (isMobile) {
-      // For mobile: Open image in new tab so user can long-press and save
-      const newWindow = window.open()
-      if (newWindow) {
-        newWindow.document.write(`
-          <html>
-            <head>
-              <title>Social Echo Image</title>
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <style>
-                body {
-                  margin: 0;
-                  padding: 20px;
-                  background: #000;
-                  display: flex;
-                  flex-direction: column;
-                  align-items: center;
-                  justify-content: center;
-                  min-height: 100vh;
-                }
-                img {
-                  max-width: 100%;
-                  height: auto;
-                  border-radius: 8px;
-                }
-                p {
-                  color: #fff;
-                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                  text-align: center;
-                  margin-top: 20px;
-                  font-size: 14px;
-                }
-              </style>
-            </head>
-            <body>
-              <img src="${generatedImage}" alt="Social Echo Image" />
-              <p>Long-press the image and select "Save Image" or "Download Image"</p>
-            </body>
-          </html>
-        `)
-        newWindow.document.close()
+      // For mobile: Try direct download first, fallback to showing image inline
+      try {
+        // Create a temporary link element
+        const link = document.createElement('a')
+        link.href = generatedImage
+        link.download = `social-echo-${usedImageType || 'image'}-${Date.now()}.png`
+        
+        // Trigger download
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        // Show success message
+        alert('Image ready to save! Long-press the image above and select "Save Image" or "Download Image"')
+      } catch (error) {
+        console.error('Mobile download failed:', error)
+        // Fallback: Show instructions
+        alert('To save this image: Long-press the image above and select "Save Image" or "Download Image" from the menu.')
       }
     } else {
       // For desktop: Try to download directly
