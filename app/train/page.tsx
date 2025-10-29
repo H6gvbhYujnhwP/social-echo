@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { ArrowLeft, User } from 'lucide-react'
 import Link from 'next/link'
@@ -9,8 +11,18 @@ import { TrainForm } from '../../components/TrainForm'
 import { UserProfile, getProfile } from '../../lib/localstore'
 
 export default function TrainPage() {
+  const router = useRouter()
+  const { data: session, status } = useSession()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+
+  // Check authentication - redirect to signin if not logged in
+  useEffect(() => {
+    if (status === 'loading') return
+    if (!session) {
+      router.push('/signin?callbackUrl=/train')
+    }
+  }, [session, status, router])
 
   useEffect(() => {
     // Load profile from database API
@@ -47,7 +59,8 @@ export default function TrainPage() {
     loadProfile()
   }, [])
 
-  if (isLoading) {
+  // Show loading spinner while checking authentication or loading profile
+  if (status === 'loading' || isLoading || !session) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <motion.div
