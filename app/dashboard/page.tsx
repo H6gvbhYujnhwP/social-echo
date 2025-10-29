@@ -732,6 +732,7 @@ export default function DashboardPage() {
               autoSelectedType={todayDraft ? undefined : undefined} // Will be calculated in ImagePanel
               savedImageUrl={generatedImageUrl}
               savedImageStyle={generatedImageStyle}
+              onHistoryClick={() => setIsHistoryDrawerOpen(true)}
               onImageGenerated={async (imageUrl, imageStyle) => {
                 setGeneratedImageUrl(imageUrl)
                 setGeneratedImageStyle(imageStyle)

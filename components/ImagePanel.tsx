@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Image, Download, RefreshCw, Palette, Info } from 'lucide-react'
+import { Image, Download, RefreshCw, Palette, Info, Clock } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Select } from './ui/Select'
 import { getAvailableImageTypes } from '../lib/ai/image-service'
@@ -18,6 +18,7 @@ interface ImagePanelProps {
   savedImageUrl?: string | null
   savedImageStyle?: string | null
   onImageGenerated?: (imageUrl: string, imageStyle: string) => void
+  onHistoryClick?: () => void
 }
 
 export function ImagePanel({ 
@@ -30,7 +31,8 @@ export function ImagePanel({
   autoSelectedType,
   savedImageUrl,
   savedImageStyle,
-  onImageGenerated
+  onImageGenerated,
+  onHistoryClick
 }: ImagePanelProps) {
   const imageTypes = getAvailableImageTypes()
   
@@ -219,12 +221,26 @@ export function ImagePanel({
             <Image className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 mr-2 sm:mr-3 flex-shrink-0" />
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Create Image</h2>
           </div>
-          {autoSelectedType && (
-            <div className="flex items-center text-xs text-green-600 bg-green-50 px-3 py-1 rounded-full">
-              <Info className="h-3 w-3 mr-1" />
-              Auto-selected
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {onHistoryClick && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="inline-flex items-center gap-2 text-gray-700 border-gray-400 hover:bg-gray-100 hover:border-gray-500"
+                onClick={onHistoryClick}
+              >
+                <Clock className="h-4 w-4" />
+                <span className="hidden sm:inline">History</span>
+              </Button>
+            )}
+            {autoSelectedType && (
+              <div className="flex items-center text-xs text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                <Info className="h-3 w-3 mr-1" />
+                Auto-selected
+              </div>
+            )}
+          </div>
         </div>
       </div>
       

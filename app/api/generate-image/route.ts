@@ -270,8 +270,20 @@ If text is absolutely unavoidable, use short English only (max 3-5 words).`
       )
     }
     
+    // Handle OpenAI content policy violations
+    if (error.code === 'content_policy_violation' || error.type === 'image_generation_user_error') {
+      return NextResponse.json(
+        { 
+          error: error.error?.message || error.message || 'Content policy violation: Your image prompt was rejected by the safety system. Try adjusting your content or generating a new post.',
+          code: 'content_policy_violation'
+        },
+        { status: 400 }
+      )
+    }
+    
+    // Generic error with details
     return NextResponse.json(
-      { error: 'Failed to generate image', details: error.message },
+      { error: error.message || 'Failed to generate image' },
       { status: 500 }
     )
   }
