@@ -452,7 +452,12 @@ export async function POST(request: NextRequest) {
       
       // Free trial email triggers
       if (subscription.status === 'free_trial' && !isRegeneration) {
-        const newUsageCount = trackResult.newUsageCount || subscription.usageCount + 1;
+        // Get updated usage count from database
+        const updatedSubscription = await prisma.subscription.findUnique({
+          where: { userId },
+          select: { usageCount: true }
+        });
+        const newUsageCount = updatedSubscription?.usageCount || subscription.usageCount + 1;
         
         // Send feedback email at 4 posts (50% of trial)
         if (newUsageCount === 4) {
