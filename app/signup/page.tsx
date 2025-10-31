@@ -167,10 +167,10 @@ function SignUpForm() {
               <p className={`text-xs mt-1 ${
                 plan.toLowerCase().includes('starter') ? 'text-green-600' : 'text-blue-600'
               }`}>
-                {plan.toLowerCase().includes('starter')
-                  ? '🎉 1-day free trial - You\'ll be billed in 24h unless you cancel'
-                  : 'You\'ll be redirected to payment after signup'
-                }
+              {plan.toLowerCase().includes('starter')
+                ? '🎉 Free Trial - 8 posts, no bank details required'
+                : 'You\'ll be redirected to payment after signup'
+              }
               </p>
             </div>
           )}
@@ -250,8 +250,8 @@ function SignUpForm() {
             disabled={loading}
           >
             {loading 
-              ? (plan ? 'Creating account & redirecting to payment...' : 'Creating account...') 
-              : (plan ? 'Create Account & Continue to Payment' : 'Create Account')
+              ? (plan?.toLowerCase().includes('starter') ? 'Creating account...' : 'Creating account & redirecting to payment...') 
+              : (plan?.toLowerCase().includes('starter') ? 'Create Account & Enjoy Your Free Trial' : (plan ? 'Create Account & Continue to Payment' : 'Create Account'))
             }
           </Button>
         </form>
@@ -276,8 +276,10 @@ function SignUpForm() {
               Privacy Policy
             </a>
             .<br />
-            Subscriptions bill monthly until canceled.<br />
-            No refunds within the first 30 days.
+            {plan?.toLowerCase().includes('starter') 
+              ? 'This is a free trial with 8 posts, no bank details required at this stage. Once your trial has ended you can enter bank details to continue enjoying Social Echo.'
+              : 'Subscriptions bill monthly until canceled. No refunds within the first 30 days.'
+            }
           </p>
         </div>
         </div>
