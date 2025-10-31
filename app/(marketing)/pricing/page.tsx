@@ -40,8 +40,8 @@ export default function PricingPage() {
                   <span className="text-gray-700 text-lg">/month</span>
                 </div>
                 <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-4">
-                  <p className="text-green-800 text-sm font-semibold">🎉 1-Day Free Trial</p>
-                  <p className="text-green-700 text-xs mt-1">Card required. Billed in 24 hours unless you cancel.</p>
+                  <p className="text-green-800 text-sm font-semibold">🎉 Free Trial - 8 Posts</p>
+                  <p className="text-green-700 text-xs mt-1">Sign up now, no bank details required, free 8 posts trial</p>
                 </div>
                 <p className="text-gray-700 text-base">Perfect for freelancers and solopreneurs</p>
               </div>
@@ -67,7 +67,7 @@ export default function PricingPage() {
                 onClick={() => handleSelectPlan('SocialEcho_Starter', 'Starter', 29.99)}
                 className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold py-3.5 px-6 rounded-lg transition-all shadow-md hover:shadow-lg text-base"
               >
-                Start 1-Day Free Trial
+                Start Free Trial Now
               </button>
             </div>
 

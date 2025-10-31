@@ -46,6 +46,29 @@ export async function checkUserAccess(userId: string): Promise<AccessCheckResult
       reason: 'Subscription required. Please subscribe to a plan.'
     }
   }
+  
+  // Check email verification for free trial users
+  if (subscription.status === 'free_trial') {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { emailVerified: true }
+    });
+    
+    if (!user?.emailVerified) {
+      return {
+        allowed: false,
+        reason: 'Please verify your email address to start using your free trial. Check your inbox for the verification link.',
+        subscription: {
+          status: subscription.status,
+          plan: subscription.plan,
+          usageCount: subscription.usageCount,
+          usageLimit: subscription.usageLimit,
+          trialEnd: subscription.trialEnd,
+          currentPeriodEnd: subscription.currentPeriodEnd
+        }
+      }
+    }
+  }
 
   // Check if trial has expired and auto-suspend
   if (subscription.status === 'trial' && subscription.trialEnd) {
@@ -104,8 +127,8 @@ export async function checkUserAccess(userId: string): Promise<AccessCheckResult
     }
   }
 
-  // Allow access for valid statuses: active, trial (not expired), trialing, past_due
-  const validStatuses = ['active', 'trial', 'trialing', 'past_due']
+  // Allow access for valid statuses: active, trial (not expired), trialing, free_trial, past_due
+  const validStatuses = ['active', 'trial', 'trialing', 'free_trial', 'past_due']
   if (!validStatuses.includes(subscription.status)) {
     return {
       allowed: false,

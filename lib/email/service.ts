@@ -340,3 +340,21 @@ export async function sendOnboardingEmail(
   }
 }
 
+
+// Free trial welcome email with verification
+export async function sendFreeTrialWelcomeEmail(to: string, userName: string, verificationUrl: string): Promise<boolean> {
+  const template = templates.freeTrialWelcomeEmail(userName, to, verificationUrl);
+  return sendEmail({ to, ...template });
+}
+
+// Free trial feedback email (sent at 4 posts)
+export async function sendFreeTrialFeedbackEmail(to: string, userName: string, postsRemaining: number): Promise<boolean> {
+  const template = templates.freeTrialFeedbackEmail(userName, postsRemaining);
+  return sendEmail({ to, ...template });
+}
+
+// Free trial exhausted email
+export async function sendFreeTrialExhaustedEmail(to: string, userName: string): Promise<boolean> {
+  const template = templates.freeTrialExhaustedEmail(userName);
+  return sendEmail({ to, ...template });
+}

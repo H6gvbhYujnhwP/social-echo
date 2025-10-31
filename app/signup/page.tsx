@@ -42,6 +42,13 @@ function SignUpForm() {
 
       // Check if reactivation is required
       if (data.reactivationRequired) {
+        // Check if they already used free trial
+        if (data.requiresPayment) {
+          setError(data.message || 'You have already used your free trial. Please select a paid plan to continue.');
+          setLoading(false);
+          return;
+        }
+        
         // User has a canceled account - redirect to reactivation flow
         setError('');
         
@@ -57,15 +64,14 @@ function SignUpForm() {
         }
 
         // Redirect to checkout to reactivate subscription
-        const planToUse = plan || 'SocialEcho_Starter_Monthly';
-        const isStarterPlan = planToUse.toLowerCase().includes('starter');
+        const planToUse = plan || 'SocialEcho_Pro'; // Default to Pro for reactivation
         
         const checkoutRes = await fetch('/api/checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             planKey: planToUse,
-            withTrial: isStarterPlan
+            withTrial: false // No trial for reactivation
           })
         });
 
@@ -95,16 +101,21 @@ function SignUpForm() {
 
       // Step 3: Redirect based on plan
       if (plan) {
-        // If plan is selected, redirect to Stripe Checkout
-        // Enable trial for Starter plan
         const isStarterPlan = plan.toLowerCase().includes('starter');
         
+        if (isStarterPlan) {
+          // Starter plan gets free trial - skip payment, go to training
+          router.push('/train?welcome=1')
+          return
+        }
+        
+        // For Pro and Ultimate plans, redirect to Stripe Checkout
         const checkoutRes = await fetch('/api/checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             planKey: plan,
-            withTrial: isStarterPlan // Enable 1-day trial for Starter
+            withTrial: false // No Stripe trial for Pro/Ultimate
           })
         })
 
@@ -121,8 +132,8 @@ function SignUpForm() {
         }
       }
 
-      // No plan selected, redirect to dashboard
-      router.push('/dashboard')
+      // No plan selected, redirect to training
+      router.push('/train?welcome=1')
     } catch (err: any) {
       setError(err.message || 'Failed to create account')
       setLoading(false)

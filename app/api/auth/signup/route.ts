@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import * as bcrypt from 'bcrypt'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
-// Email sending removed - now handled by webhooks after payment
+import { sendFreeTrialWelcomeEmail } from '@/lib/email/service'
+import crypto from 'crypto'
 
 // Force Node.js runtime
 export const runtime = 'nodejs'
@@ -30,6 +31,22 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       // Check if user has a canceled subscription - allow reactivation
       if (existingUser.subscription?.status === 'canceled') {
+        // Check if they already used free trial - require payment for reactivation
+        if (existingUser.hasUsedFreeTrial) {
+          console.log('[signup] User already used free trial, requiring payment for reactivation', {
+            userId: existingUser.id,
+            email: existingUser.email
+          });
+          
+          return NextResponse.json({
+            reactivationRequired: true,
+            requiresPayment: true,
+            userId: existingUser.id,
+            email: existingUser.email,
+            message: 'You have already used your free trial. Please select a paid plan to continue.'
+          }, { status: 200 });
+        }
+        
         console.log('[signup] Existing user with canceled subscription, allowing reactivation', {
           userId: existingUser.id,
           email: existingUser.email
@@ -52,21 +69,24 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await bcrypt.hash(validated.password, 10)
     
-    // Create user with pending_payment status
-    // The webhook will upgrade to active once payment succeeds
+    // Create user with free_trial status (Starter plan only)
+    // User gets 8 free posts without payment
     const user = await prisma.user.create({
       data: {
         email: validated.email.toLowerCase(),
         password: passwordHash,
         name: validated.name || 'User',
         businessName: validated.businessName || null,
+        hasUsedFreeTrial: true, // Mark that they've used their free trial
+        freeTrialUsedAt: new Date(),
         subscription: {
           create: {
-            plan: 'none', // No plan until payment succeeds
-            status: 'pending_payment', // Waiting for Stripe checkout
-            usageLimit: 0, // No usage until plan is activated
+            plan: 'starter', // Free trial uses Starter plan features
+            status: 'free_trial', // New status for payment-free trial
+            usageLimit: 8, // 8 free posts
             usageCount: 0,
-            currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            currentPeriodStart: new Date(),
+            currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year (usage-based, not time-based)
           }
         }
       },
@@ -75,19 +95,41 @@ export async function POST(request: NextRequest) {
       }
     })
     
-    console.log('[signup] User created with pending_payment status', {
+    console.log('[signup] User created with free_trial status', {
       userId: user.id,
       businessName: user.businessName || 'none',
+      usageLimit: 8
     });
     
-    // NOTE: Email sending removed from signup route per v7.0 blueprint
-    // Emails are now sent ONLY after payment confirmation via Stripe webhooks
-    // This prevents sending emails to users who never complete payment
+    // Create email verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex')
+    const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
     
-    // Return userId and email for checkout flow
+    await prisma.emailVerificationToken.create({
+      data: {
+        userId: user.id,
+        email: user.email,
+        token: verificationToken,
+        expiresAt: verificationExpiry,
+      },
+    })
+    
+    // Send verification email
+    const verificationUrl = `${process.env.NEXTAUTH_URL}/api/auth/verify-email?token=${verificationToken}`
+    
+    try {
+      await sendFreeTrialWelcomeEmail(user.email, user.name, verificationUrl)
+      console.log('[signup] Verification email sent', { userId: user.id })
+    } catch (emailError) {
+      console.error('[signup] Failed to send verification email', emailError)
+      // Don't fail signup if email fails - user can request resend
+    }
+    
+    // Return userId and email for signin flow
     return NextResponse.json({
       userId: user.id,
       email: user.email,
+      message: 'Account created! Please check your email to verify your account.',
     }, { status: 201 });
     
   } catch (error: any) {

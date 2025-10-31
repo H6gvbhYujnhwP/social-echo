@@ -139,8 +139,8 @@ export async function POST(request: NextRequest) {
     if (!force) {
       // Unlimited plans (usageLimit === null) should never block
       if (subscription.usageLimit !== null && subscription.usageCount >= subscription.usageLimit) {
-        // Special error for trial users
-        if (subscription.status === 'trial') {
+        // Special error for trial users (both admin trials and free trials)
+        if (subscription.status === 'trial' || subscription.status === 'free_trial') {
           return NextResponse.json(
             { 
               error: 'TRIAL_EXHAUSTED',
@@ -449,6 +449,43 @@ export async function POST(request: NextRequest) {
       // Don't fail the request, just log the error
     } else {
       console.log('[generate-text] Usage tracked successfully');
+      
+      // Free trial email triggers
+      if (subscription.status === 'free_trial' && !isRegeneration) {
+        const newUsageCount = trackResult.newUsageCount || subscription.usageCount + 1;
+        
+        // Send feedback email at 4 posts (50% of trial)
+        if (newUsageCount === 4) {
+          const user = await prisma.user.findUnique({ where: { id: userId } });
+          if (user && !user.feedbackEmailSentAt) {
+            const { sendFreeTrialFeedbackEmail } = await import('@/lib/email/service');
+            try {
+              await sendFreeTrialFeedbackEmail(user.email, user.name, 4); // 4 posts remaining
+              await prisma.user.update({
+                where: { id: userId },
+                data: { feedbackEmailSentAt: new Date() }
+              });
+              console.log('[generate-text] Feedback email sent at 4 posts');
+            } catch (emailError) {
+              console.error('[generate-text] Failed to send feedback email:', emailError);
+            }
+          }
+        }
+        
+        // Send trial exhausted email at 8 posts
+        if (newUsageCount === 8) {
+          const user = await prisma.user.findUnique({ where: { id: userId } });
+          if (user) {
+            const { sendFreeTrialExhaustedEmail } = await import('@/lib/email/service');
+            try {
+              await sendFreeTrialExhaustedEmail(user.email, user.name);
+              console.log('[generate-text] Trial exhausted email sent at 8 posts');
+            } catch (emailError) {
+              console.error('[generate-text] Failed to send trial exhausted email:', emailError);
+            }
+          }
+        }
+      }
     }
     
     // Return result with post ID for feedback

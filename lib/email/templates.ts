@@ -1826,3 +1826,318 @@ Manage Subscription: ${accountUrl} | Get Help: ${helpUrl}
   };
 }
 
+
+// Free trial welcome email with verification link
+export function freeTrialWelcomeEmail(userName: string, email: string, verificationUrl: string): EmailTemplate {
+  return {
+    subject: 'Welcome to Social Echo - Verify Your Email to Start Your Free Trial! 🎉',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
+            .button { display: inline-block; background: #667eea; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; font-size: 16px; }
+            .trial-box { background: #f0f9ff; border: 2px solid #3b82f6; padding: 20px; margin: 20px 0; border-radius: 8px; text-align: center; }
+            .step-number { display: inline-block; background: #667eea; color: white; width: 28px; height: 28px; border-radius: 50%; text-align: center; line-height: 28px; font-weight: bold; margin-right: 10px; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+            h3 { color: #667eea; margin-top: 25px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎉 Welcome to Social Echo!</h1>
+              <p style="font-size: 18px; margin: 10px 0 0 0;">Your Free Trial Starts Now</p>
+            </div>
+            <div class="content">
+              <p>Hi ${userName},</p>
+              
+              <p>Welcome aboard! You're just one click away from experiencing the power of AI-driven content creation.</p>
+              
+              <div class="trial-box">
+                <h2 style="margin: 0 0 10px 0; color: #3b82f6;">✨ Your Free Trial Includes:</h2>
+                <p style="font-size: 18px; margin: 0;"><strong>8 Free Posts</strong> - No credit card required!</p>
+              </div>
+              
+              <h3>🔐 First Step: Verify Your Email</h3>
+              <p>To start generating amazing content, please verify your email address:</p>
+              
+              <div style="text-align: center;">
+                <a href="${verificationUrl}" class="button">Verify Email & Start Free Trial →</a>
+              </div>
+              
+              <p style="font-size: 14px; color: #666; margin-top: 20px;">
+                Or copy and paste this link into your browser:<br>
+                <a href="${verificationUrl}" style="color: #667eea; word-break: break-all;">${verificationUrl}</a>
+              </p>
+              
+              <h3>🚀 What Happens Next?</h3>
+              
+              <p><span class="step-number">1</span><strong>Train Your AI</strong></p>
+              <p style="margin-left: 38px;">Tell us about your business - your unique selling points, target audience, and brand voice.</p>
+              
+              <p><span class="step-number">2</span><strong>Generate Content</strong></p>
+              <p style="margin-left: 38px;">Create 8 professional social media posts with headlines, copy, hashtags, and image prompts!</p>
+              
+              <p><span class="step-number">3</span><strong>Choose Your Plan</strong></p>
+              <p style="margin-left: 38px;">After your trial, continue with Starter (£9.99), Pro (£19.99), or Ultimate (£179.99).</p>
+              
+              <p style="margin-top: 30px;">Ready to transform your social media presence? Click the button above to get started!</p>
+              
+              <p>Cheers,<br>The Social Echo Team</p>
+            </div>
+            <div class="footer">
+              <p>This email was sent to ${email}</p>
+              <p>If you didn't create this account, you can safely ignore this email.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+Welcome to Social Echo!
+
+Hi ${userName},
+
+Welcome aboard! You're just one click away from experiencing the power of AI-driven content creation.
+
+YOUR FREE TRIAL INCLUDES:
+✨ 8 Free Posts - No credit card required!
+
+FIRST STEP: VERIFY YOUR EMAIL
+To start generating amazing content, please verify your email address:
+
+${verificationUrl}
+
+WHAT HAPPENS NEXT?
+
+1. Train Your AI
+Tell us about your business - your unique selling points, target audience, and brand voice.
+
+2. Generate Content
+Create 8 professional social media posts with headlines, copy, hashtags, and image prompts!
+
+3. Choose Your Plan
+After your trial, continue with Starter (£9.99), Pro (£19.99), or Ultimate (£179.99).
+
+Ready to transform your social media presence? Click the link above to get started!
+
+Cheers,
+The Social Echo Team
+
+---
+This email was sent to ${email}
+If you didn't create this account, you can safely ignore this email.
+    `
+  };
+}
+
+// Free trial feedback email (sent at 4 posts)
+export function freeTrialFeedbackEmail(userName: string, postsRemaining: number): EmailTemplate {
+  return {
+    subject: 'How are you enjoying Social Echo? We\'d love your feedback! 💬',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
+            .progress-box { background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 20px 0; border-radius: 4px; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>💬 We'd Love Your Feedback!</h1>
+            </div>
+            <div class="content">
+              <p>Hi ${userName},</p>
+              
+              <p>You're halfway through your free trial! 🎉</p>
+              
+              <div class="progress-box">
+                <p style="margin: 0; font-size: 16px;"><strong>Trial Progress:</strong> 4 posts created, ${postsRemaining} remaining</p>
+              </div>
+              
+              <p>We hope you're enjoying Social Echo's AI-powered content generation. Your experience matters to us!</p>
+              
+              <h3>Quick Question:</h3>
+              <p><strong>How are you finding Social Echo so far?</strong></p>
+              
+              <p>Simply reply to this email and let us know:</p>
+              <ul>
+                <li>What do you love about Social Echo?</li>
+                <li>Is there anything we could improve?</li>
+                <li>Any features you'd like to see?</li>
+              </ul>
+              
+              <p>Your feedback helps us make Social Echo even better for you and other users. Plus, we read every response personally!</p>
+              
+              <p style="margin-top: 30px;">Keep creating amazing content,<br>The Social Echo Team</p>
+            </div>
+            <div class="footer">
+              <p>Still have ${postsRemaining} free posts remaining in your trial</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+We'd Love Your Feedback!
+
+Hi ${userName},
+
+You're halfway through your free trial! 🎉
+
+TRIAL PROGRESS: 4 posts created, ${postsRemaining} remaining
+
+We hope you're enjoying Social Echo's AI-powered content generation. Your experience matters to us!
+
+QUICK QUESTION:
+How are you finding Social Echo so far?
+
+Simply reply to this email and let us know:
+- What do you love about Social Echo?
+- Is there anything we could improve?
+- Any features you'd like to see?
+
+Your feedback helps us make Social Echo even better for you and other users. Plus, we read every response personally!
+
+Keep creating amazing content,
+The Social Echo Team
+
+---
+Still have ${postsRemaining} free posts remaining in your trial
+    `
+  };
+}
+
+// Free trial exhausted email
+export function freeTrialExhaustedEmail(userName: string): EmailTemplate {
+  const upgradeUrl = `${process.env.NEXTAUTH_URL}/pricing?upgrade=1`;
+  
+  return {
+    subject: 'Your Free Trial is Complete - Ready to Continue? 🚀',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
+            .button { display: inline-block; background: #667eea; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; font-size: 16px; }
+            .plan-box { background: #f9fafb; border: 2px solid #e5e7eb; padding: 20px; margin: 15px 0; border-radius: 8px; }
+            .plan-name { color: #667eea; font-size: 20px; font-weight: bold; margin: 0 0 10px 0; }
+            .plan-price { color: #333; font-size: 24px; font-weight: bold; margin: 0 0 15px 0; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎉 Congratulations!</h1>
+              <p style="font-size: 18px; margin: 10px 0 0 0;">You've Completed Your Free Trial</p>
+            </div>
+            <div class="content">
+              <p>Hi ${userName},</p>
+              
+              <p>You've used all 8 of your free posts. We hope you loved the experience of AI-powered content creation!</p>
+              
+              <h3>Ready to Keep Creating Amazing Content?</h3>
+              <p>Choose the plan that fits your needs:</p>
+              
+              <div class="plan-box">
+                <p class="plan-name">Starter Plan</p>
+                <p class="plan-price">£9.99/month</p>
+                <ul style="margin: 0; padding-left: 20px;">
+                  <li>8 posts per month</li>
+                  <li>2 regenerations per post</li>
+                  <li>AI-powered content generation</li>
+                </ul>
+              </div>
+              
+              <div class="plan-box">
+                <p class="plan-name">Pro Plan</p>
+                <p class="plan-price">£19.99/month</p>
+                <ul style="margin: 0; padding-left: 20px;">
+                  <li>30 posts per month</li>
+                  <li>2 regenerations per post</li>
+                  <li>Priority support</li>
+                </ul>
+              </div>
+              
+              <div class="plan-box">
+                <p class="plan-name">Ultimate Plan</p>
+                <p class="plan-price">£179.99/month</p>
+                <ul style="margin: 0; padding-left: 20px;">
+                  <li><strong>Unlimited posts</strong></li>
+                  <li><strong>Unlimited regenerations</strong></li>
+                  <li>Premium support</li>
+                </ul>
+              </div>
+              
+              <div style="text-align: center;">
+                <a href="${upgradeUrl}" class="button">View Plans & Upgrade →</a>
+              </div>
+              
+              <p style="margin-top: 30px;">Thank you for trying Social Echo. We're excited to continue helping you create engaging content!</p>
+              
+              <p>Best regards,<br>The Social Echo Team</p>
+            </div>
+            <div class="footer">
+              <p>Questions? Reply to this email - we're here to help!</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+Congratulations! You've Completed Your Free Trial
+
+Hi ${userName},
+
+You've used all 8 of your free posts. We hope you loved the experience of AI-powered content creation!
+
+READY TO KEEP CREATING AMAZING CONTENT?
+Choose the plan that fits your needs:
+
+STARTER PLAN - £9.99/month
+- 8 posts per month
+- 2 regenerations per post
+- AI-powered content generation
+
+PRO PLAN - £19.99/month
+- 30 posts per month
+- 2 regenerations per post
+- Priority support
+
+ULTIMATE PLAN - £179.99/month
+- Unlimited posts
+- Unlimited regenerations
+- Premium support
+
+View plans and upgrade: ${upgradeUrl}
+
+Thank you for trying Social Echo. We're excited to continue helping you create engaging content!
+
+Best regards,
+The Social Echo Team
+
+---
+Questions? Reply to this email - we're here to help!
+    `
+  };
+}
