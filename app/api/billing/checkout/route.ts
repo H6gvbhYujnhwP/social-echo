@@ -180,7 +180,8 @@ export async function POST(request: NextRequest) {
           isAgencyPlan: isAgencyPlan.toString(),
         },
         // 24-hour trial for Starter plan only (no trial for Pro/Ultimate)
-        trial_period_days: plan === 'SocialEcho_Starter' ? 1 : undefined,
+        // BUT: Skip trial if user already used free trial (upgrading from free trial)
+        trial_period_days: plan === 'SocialEcho_Starter' && !user.hasUsedFreeTrial ? 1 : undefined,
       },
       allow_promotion_codes: true,
       billing_address_collection: 'required',
