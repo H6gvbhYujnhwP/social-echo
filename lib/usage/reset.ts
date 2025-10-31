@@ -68,6 +68,12 @@ export async function ensureUsageWindowFresh(
 ): Promise<Subscription> {
   const now = new Date();
   
+  // CRITICAL: Free trial users should NEVER have their usage reset
+  // They get 8 posts total for lifetime, not per month
+  if (subscription.status === 'free_trial') {
+    return subscription;
+  }
+  
   // Check if we have period boundaries
   if (!subscription.currentPeriodEnd) {
     // Initialize period boundaries
@@ -121,18 +127,20 @@ export async function resetDueSubscriptions(): Promise<number> {
   // Find subscriptions where currentPeriodEnd is in the past or missing
   // Split into two queries to avoid Prisma type issues with null filters
   const [missingPeriod, pastPeriod] = await Promise.all([
-    // Subscriptions with missing period boundaries
+    // Subscriptions with missing period boundaries (exclude free trial)
     prisma.subscription.findMany({
       where: {
         currentPeriodEnd: null as any, // Type assertion needed for Prisma nullable DateTime
+        status: { not: 'free_trial' }, // Free trial should never reset
       },
     }),
-    // Subscriptions past their period end
+    // Subscriptions past their period end (exclude free trial)
     prisma.subscription.findMany({
       where: {
         currentPeriodEnd: {
           lte: now,
         },
+        status: { not: 'free_trial' }, // Free trial should never reset
       },
     }),
   ]);
