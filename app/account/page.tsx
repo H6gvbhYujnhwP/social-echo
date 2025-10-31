@@ -408,6 +408,28 @@ function AccountPageInner() {
     const currentMeta = getPlanMetadata(currentPlanId)
     const targetMeta = getPlanMetadata(targetPlanId)
     
+    // Special case: Free trial users need to go to checkout even for same plan
+    if (subscription?.status === 'free_trial') {
+      setActionLoading(true)
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: targetPlanId })
+        })
+        const data = await res.json()
+        if (data.url) {
+          window.location.href = data.url
+        } else {
+          throw new Error('Failed to create checkout session')
+        }
+      } catch (err: any) {
+        setMessage({ type: 'error', text: err.message || 'Failed to start checkout' })
+        setActionLoading(false)
+      }
+      return
+    }
+    
     // Determine if this is an upgrade or downgrade
     const isUpgrade = targetMeta.priceValue > currentMeta.priceValue
     const isDowngrade = targetMeta.priceValue < currentMeta.priceValue
@@ -745,14 +767,14 @@ function AccountPageInner() {
                       {planMeta.name} Plan
                     </h2>
                     <p className="text-white/70">
-                      {planMeta.price}
+                      {subscription?.status === 'free_trial' ? 'Free Trial' : planMeta.price}
                     </p>
                     {isUltimate && (
                       <p className="text-purple-300 text-sm mt-1 font-medium">
                         ✨ Unlimited Posts
                       </p>
                     )}
-                    {renewalDate && (
+                    {subscription?.status !== 'free_trial' && renewalDate && (
                       <p className="text-white/60 text-sm mt-2">
                         {subscription?.pendingPlan && subscription?.pendingAt
                           ? `Scheduled downgrade to ${getPlanMetadata(subscription.pendingPlan).name} from ${new Date(subscription.pendingAt).toLocaleDateString('en-GB')}`
@@ -762,16 +784,21 @@ function AccountPageInner() {
                         }
                       </p>
                     )}
+                    {subscription?.status === 'free_trial' && (
+                      <p className="text-purple-300 text-sm mt-2 font-medium">
+                        🎉 8 posts included - No payment required yet
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                       subscription?.status === 'active' 
                         ? 'bg-green-500/20 text-green-300'
-                        : subscription?.status === 'trialing'
-                        ? 'bg-blue-500/20 text-blue-300'
+                        : subscription?.status === 'trialing' || subscription?.status === 'free_trial'
+                        ? 'bg-purple-500/20 text-purple-300'
                         : 'bg-red-500/20 text-red-300'
                     }`}>
-                      {subscription?.status === 'trialing' ? 'Trial' : subscription?.status || 'Active'}
+                      {subscription?.status === 'trialing' || subscription?.status === 'free_trial' ? 'free_trial' : subscription?.status || 'Active'}
                     </span>
                   </div>
                 </div>
@@ -1027,12 +1054,12 @@ function AccountPageInner() {
                   </div>
                  {!subscription?.pendingPlan && (
                    <button
-                     onClick={handleChangePlan}
-                     disabled={actionLoading || selectedPlan === subscription?.plan}
-                     className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-                   >
-                     {actionLoading ? 'Changing...' : 'Change Plan'}
-                   </button>
+                      onClick={handleChangePlan}
+                      disabled={actionLoading || (selectedPlan === subscription?.plan && subscription?.status !== 'free_trial')}
+                      className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                    >
+                      {actionLoading ? (subscription?.status === 'free_trial' ? 'Redirecting to checkout...' : 'Changing...') : (subscription?.status === 'free_trial' ? 'Upgrade to Paid Plan' : 'Change Plan')}
+                    </button>
                  )}
                 </div>
               </motion.div>
