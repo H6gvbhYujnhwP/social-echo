@@ -181,7 +181,16 @@ export async function POST(request: NextRequest) {
         },
         // 24-hour trial for Starter plan only (no trial for Pro/Ultimate)
         // BUT: Skip trial if user already used free trial (upgrading from free trial)
-        trial_period_days: plan === 'SocialEcho_Starter' && !user.hasUsedFreeTrial ? 1 : undefined,
+        trial_period_days: (() => {
+          const shouldGiveTrial = plan === 'SocialEcho_Starter' && !user.hasUsedFreeTrial
+          console.log('[checkout] Trial decision:', {
+            plan,
+            hasUsedFreeTrial: user.hasUsedFreeTrial,
+            shouldGiveTrial,
+            trialDays: shouldGiveTrial ? 1 : undefined
+          })
+          return shouldGiveTrial ? 1 : undefined
+        })(),
       },
       allow_promotion_codes: true,
       billing_address_collection: 'required',
