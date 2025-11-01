@@ -149,8 +149,8 @@ export async function POST(req: Request) {
           plan: plan,
           priceId: priceId,
         },
-        // 24-hour trial for Starter plan only
-        trial_period_days: plan === 'starter' ? 1 : undefined,
+        // NO Stripe trial periods - the only trial is the 8-post free trial
+        // All paid plans charge immediately
       },
       
       metadata: {
