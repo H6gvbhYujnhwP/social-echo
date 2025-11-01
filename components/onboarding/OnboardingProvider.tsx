@@ -43,11 +43,19 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
           }
           
           setHasCompleted(data.hasCompletedOnboarding)
-          setCurrentStep(data.onboardingStep)
           
-          // Auto-start if not completed and not skipped
+          // Auto-start onboarding for new users (step 0) or resume for in-progress users
           if (!data.hasCompletedOnboarding && !data.onboardingSkipped) {
+            const step = data.onboardingStep === 0 ? 1 : data.onboardingStep
+            setCurrentStep(step)
             setIsActive(true)
+            
+            // If brand new user (step 0), initialize to step 1
+            if (data.onboardingStep === 0) {
+              await fetch('/api/onboarding/start', { method: 'POST' })
+            }
+          } else {
+            setCurrentStep(data.onboardingStep)
           }
         }
       } catch (error) {
