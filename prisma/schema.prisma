@@ -47,6 +47,13 @@ model User {
   freeTrialUsedAt  DateTime? // When they used it
   feedbackEmailSentAt DateTime? // Track when 4-post feedback email was sent
   
+  // Onboarding tracking
+  hasCompletedOnboarding Boolean  @default(false)
+  onboardingStep         Int      @default(0)
+  onboardingSkipped      Boolean  @default(false)
+  onboardingStartedAt    DateTime?
+  onboardingCompletedAt  DateTime?
+  
   // Agency relationships
   agencyId             String?  // If user is CUSTOMER, this links to their agency
   agency               Agency?  @relation("AgencyCustomers", fields: [agencyId], references: [id], onDelete: SetNull)

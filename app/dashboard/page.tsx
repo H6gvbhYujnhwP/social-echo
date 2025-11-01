@@ -11,6 +11,7 @@ import { LearningProgress, type LearningProgressRef } from '../../components/Lea
 import HistoryDrawer from '../../components/HistoryDrawer'
 import TrialExhaustedModal from '../../components/TrialExhaustedModal'
 import { TrialCountdown } from '../../components/TrialCountdown'
+import { OnboardingOrchestrator } from '../../components/onboarding/OnboardingOrchestrator'
 import { UserProfile, getProfile, getOrCreatePlanner, savePostHistory, type Planner, type PostType } from '../../lib/localstore'
 import Link from 'next/link'
 
@@ -603,6 +604,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Onboarding Trainer */}
+      <OnboardingOrchestrator />
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <div className="w-full h-full" style={{

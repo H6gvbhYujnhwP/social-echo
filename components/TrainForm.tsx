@@ -225,6 +225,17 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
         target_audience: audienceText,
       })
 
+      // Advance onboarding to step 11 (Profile Complete celebration)
+      try {
+        await fetch('/api/onboarding/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ step: 11 })
+        })
+      } catch (error) {
+        console.error('Failed to update onboarding step:', error)
+      }
+
       // Show success message
       alert('✅ Profile saved successfully! Your AI is now trained with your latest business information.')
 
