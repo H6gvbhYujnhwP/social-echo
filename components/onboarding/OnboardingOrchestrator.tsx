@@ -20,6 +20,7 @@ export function OnboardingOrchestrator() {
     prevStep,
     skipOnboarding,
     completeOnboarding,
+    goToStep,
     setCurrentPage,
   } = useOnboarding()
 
@@ -29,6 +30,30 @@ export function OnboardingOrchestrator() {
   useEffect(() => {
     setCurrentPage(pathname)
   }, [pathname, setCurrentPage])
+
+  // Auto-advance through steps that don't match current page
+  useEffect(() => {
+    if (!isActive) return
+
+    const isTrainPage = pathname.startsWith('/train')
+    const isDashboardPage = pathname.startsWith('/dashboard')
+
+    // Steps 3-10 are for /train page only
+    if (currentStep >= 3 && currentStep <= 10 && !isTrainPage) {
+      // Jump to step 11 (celebration) or 12 (dashboard training)
+      const targetStep = isDashboardPage ? 12 : 11
+      // Use setTimeout to avoid state update during render
+      setTimeout(() => goToStep(targetStep), 0)
+      return
+    }
+
+    // Steps 12-17 are for /dashboard page only
+    if (currentStep >= 12 && currentStep <= 17 && !isDashboardPage) {
+      // Jump to step 18 (final celebration)
+      setTimeout(() => goToStep(18), 0)
+      return
+    }
+  }, [isActive, currentStep, pathname, goToStep])
 
   if (!isActive) return null
 
@@ -141,9 +166,8 @@ export function OnboardingOrchestrator() {
 
       // PHASE 2: PROFILE SETUP (Steps 3-10) - Only show on /train page
       case 3:
-        if (pathname !== '/train') {
-          // Auto-skip if not on train page
-          nextStep()
+        // Skip this step if not on train page - will show next applicable step
+        if (!pathname.startsWith('/train')) {
           return null
         }
         return (
@@ -170,7 +194,7 @@ export function OnboardingOrchestrator() {
         )
 
       case 4:
-        if (pathname !== '/train') {
+        if (!pathname.startsWith('/train')) {
           nextStep()
           return null
         }
@@ -201,7 +225,7 @@ export function OnboardingOrchestrator() {
         )
 
       case 5:
-        if (pathname !== '/train') {
+        if (!pathname.startsWith('/train')) {
           nextStep()
           return null
         }
@@ -230,7 +254,7 @@ export function OnboardingOrchestrator() {
         )
 
       case 6:
-        if (pathname !== '/train') {
+        if (!pathname.startsWith('/train')) {
           nextStep()
           return null
         }
@@ -262,7 +286,7 @@ export function OnboardingOrchestrator() {
         )
 
       case 7:
-        if (pathname !== '/train') {
+        if (!pathname.startsWith('/train')) {
           nextStep()
           return null
         }
@@ -294,7 +318,7 @@ export function OnboardingOrchestrator() {
         )
 
       case 8:
-        if (pathname !== '/train') {
+        if (!pathname.startsWith('/train')) {
           nextStep()
           return null
         }
@@ -325,7 +349,7 @@ export function OnboardingOrchestrator() {
         )
 
       case 9:
-        if (pathname !== '/train') {
+        if (!pathname.startsWith('/train')) {
           nextStep()
           return null
         }
@@ -357,7 +381,7 @@ export function OnboardingOrchestrator() {
         )
 
       case 10:
-        if (pathname !== '/train') {
+        if (!pathname.startsWith('/train')) {
           nextStep()
           return null
         }
@@ -396,14 +420,20 @@ export function OnboardingOrchestrator() {
       case 11:
         return (
           <OnboardingModal showProgress={false} fullScreen={true}>
-            <ProfileCompleteCelebration onContinue={nextStep} />
+            <ProfileCompleteCelebration 
+              onContinue={() => {
+                // Redirect to dashboard and advance to step 12
+                window.location.href = '/dashboard'
+                goToStep(12)
+              }} 
+            />
           </OnboardingModal>
         )
 
       // PHASE 4: DASHBOARD TRAINING (Steps 12-17) - Only show on /dashboard
       case 12:
-        if (pathname !== '/dashboard') {
-          nextStep()
+        // Skip this step if not on dashboard - will show next applicable step
+        if (!pathname.startsWith('/dashboard')) {
           return null
         }
         return (
@@ -430,8 +460,8 @@ export function OnboardingOrchestrator() {
         )
 
       case 13:
-        if (pathname !== '/dashboard') {
-          nextStep()
+        // Skip this step if not on dashboard - will show next applicable step
+        if (!pathname.startsWith('/dashboard')) {
           return null
         }
         return (
@@ -462,8 +492,8 @@ export function OnboardingOrchestrator() {
         )
 
       case 14:
-        if (pathname !== '/dashboard') {
-          nextStep()
+        // Skip this step if not on dashboard - will show next applicable step
+        if (!pathname.startsWith('/dashboard')) {
           return null
         }
         return (
@@ -496,8 +526,8 @@ export function OnboardingOrchestrator() {
         )
 
       case 15:
-        if (pathname !== '/dashboard') {
-          nextStep()
+        // Skip this step if not on dashboard - will show next applicable step
+        if (!pathname.startsWith('/dashboard')) {
           return null
         }
         return (
@@ -550,8 +580,8 @@ export function OnboardingOrchestrator() {
         )
 
       case 16:
-        if (pathname !== '/dashboard') {
-          nextStep()
+        // Skip this step if not on dashboard - will show next applicable step
+        if (!pathname.startsWith('/dashboard')) {
           return null
         }
         return (
@@ -584,8 +614,8 @@ export function OnboardingOrchestrator() {
         )
 
       case 17:
-        if (pathname !== '/dashboard') {
-          nextStep()
+        // Skip this step if not on dashboard - will show next applicable step
+        if (!pathname.startsWith('/dashboard')) {
           return null
         }
         return (
