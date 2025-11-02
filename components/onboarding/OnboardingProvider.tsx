@@ -19,6 +19,7 @@ interface OnboardingContextType {
   toggleOnboarding: () => void
   markStepComplete: (step: number) => void
   setCurrentPage: (page: string) => void
+  hideModal: () => void
 }
 
 const OnboardingContext = createContext<OnboardingContextType | null>(null)
@@ -148,6 +149,12 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     }
   }
 
+  const hideModal = () => {
+    // Hide modal without marking as skipped or completed
+    // Useful for temporarily closing modal while keeping onboarding active
+    setIsActive(false)
+  }
+
   return (
     <OnboardingContext.Provider
       value={{
@@ -166,6 +173,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         toggleOnboarding,
         markStepComplete,
         setCurrentPage,
+        hideModal,
       }}
     >
       {children}

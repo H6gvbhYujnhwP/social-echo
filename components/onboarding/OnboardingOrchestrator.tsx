@@ -29,6 +29,7 @@ export function OnboardingOrchestrator() {
     completeOnboarding,
     goToStep,
     setCurrentPage,
+    hideModal,
   } = useOnboarding()
 
   const pathname = usePathname()
@@ -58,8 +59,10 @@ export function OnboardingOrchestrator() {
           <OnboardingModal showProgress={false} fullScreen={true}>
             <HowItWorksStep 
               onContinue={() => {
-                // Move to step 3 which will close the modal
-                nextStep()
+                // Set step to 11 (waiting for profile save)
+                goToStep(11)
+                // Hide modal without marking as skipped
+                hideModal()
               }} 
             />
           </OnboardingModal>
