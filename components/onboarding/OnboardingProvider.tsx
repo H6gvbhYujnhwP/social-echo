@@ -8,6 +8,8 @@ interface OnboardingContextType {
   currentStep: number
   totalSteps: number
   hasCompleted: boolean
+  completedSteps: number[]
+  currentPage: string
   startOnboarding: () => void
   nextStep: () => void
   prevStep: () => void
@@ -15,6 +17,8 @@ interface OnboardingContextType {
   completeOnboarding: () => void
   goToStep: (step: number) => void
   toggleOnboarding: () => void
+  markStepComplete: (step: number) => void
+  setCurrentPage: (page: string) => void
 }
 
 const OnboardingContext = createContext<OnboardingContextType | null>(null)
@@ -24,6 +28,8 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   const [isActive, setIsActive] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const [hasCompleted, setHasCompleted] = useState(false)
+  const [completedSteps, setCompletedSteps] = useState<number[]>([])
+  const [currentPage, setCurrentPage] = useState('')
   const totalSteps = 18
 
   // Load onboarding state from API
@@ -81,6 +87,11 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   }
 
   const nextStep = async () => {
+    // Mark current step as complete
+    if (!completedSteps.includes(currentStep)) {
+      setCompletedSteps([...completedSteps, currentStep])
+    }
+    
     const newStep = currentStep + 1
     setCurrentStep(newStep)
     await fetch('/api/onboarding/update', {
@@ -114,10 +125,26 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       // Turn off
       setIsActive(false)
     } else {
-      // Turn on - restart from step 1
+      // Turn on - determine starting step based on page and progress
       setIsActive(true)
-      setCurrentStep(1)
+      
+      // If on dashboard and profile is complete, start from dashboard steps (12)
+      // Otherwise start from beginning
+      if (currentPage === '/dashboard' && completedSteps.includes(11)) {
+        setCurrentStep(12)
+      } else if (currentPage === '/train') {
+        setCurrentStep(1)
+      } else {
+        setCurrentStep(1)
+      }
+      
       startOnboarding()
+    }
+  }
+
+  const markStepComplete = (step: number) => {
+    if (!completedSteps.includes(step)) {
+      setCompletedSteps([...completedSteps, step])
     }
   }
 
@@ -128,6 +155,8 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         currentStep,
         totalSteps,
         hasCompleted,
+        completedSteps,
+        currentPage,
         startOnboarding,
         nextStep,
         prevStep,
@@ -135,6 +164,8 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         completeOnboarding,
         goToStep,
         toggleOnboarding,
+        markStepComplete,
+        setCurrentPage,
       }}
     >
       {children}
