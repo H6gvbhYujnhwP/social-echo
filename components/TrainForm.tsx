@@ -10,6 +10,7 @@ import { TagsInput } from './TagsInput'
 import { KeywordSuggestions } from './KeywordSuggestions'
 import { DocumentUpload } from './DocumentUpload'
 import { UserProfile, setProfile } from '../lib/localstore'
+import { useOnboarding } from './onboarding/OnboardingProvider'
 import { HelpCircle } from 'lucide-react'
 
 // URL validation helper - accepts domain.com, www.domain.com, https://domain.com
@@ -99,6 +100,7 @@ const FieldHelp = ({ text }: { text: string }) => (
 
 export function TrainForm({ initialProfile }: TrainFormProps) {
   const router = useRouter()
+  const { goToStep, isActive } = useOnboarding()
   
   // Initialize selectedAudiences from the saved profile
   const [selectedAudiences, setSelectedAudiences] = useState<string[]>(() => {
@@ -225,22 +227,15 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
         target_audience: audienceText,
       })
 
-      // Advance onboarding to step 11 (Profile Complete celebration)
-      try {
-        await fetch('/api/onboarding/update', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ step: 11 })
-        })
-      } catch (error) {
-        console.error('Failed to update onboarding step:', error)
+      // If onboarding is active, advance to step 11 (Profile Complete celebration)
+      // The celebration will handle the redirect to dashboard
+      if (isActive) {
+        goToStep(11)
+      } else {
+        // If onboarding is not active, just redirect to dashboard
+        alert('✅ Profile saved successfully! Your AI is now trained with your latest business information.')
+        router.replace('/dashboard')
       }
-
-      // Show success message
-      alert('✅ Profile saved successfully! Your AI is now trained with your latest business information.')
-
-      // Navigate to dashboard
-      router.replace('/dashboard')
     } catch (err: any) {
       console.error('save failed', err)
       const errorMessage = err.message || 'Failed to save profile. Please try again.'
