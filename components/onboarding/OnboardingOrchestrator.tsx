@@ -58,7 +58,7 @@ export function OnboardingOrchestrator() {
         return (
           <OnboardingModal showProgress={false} fullScreen={true}>
             <HowItWorksStep 
-              onContinue={() => {
+              onNext={() => {
                 // Advance to step 3, which returns null
                 // This closes the modal but keeps onboarding active
                 nextStep()
