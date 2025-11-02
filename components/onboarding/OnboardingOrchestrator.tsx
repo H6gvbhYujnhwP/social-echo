@@ -48,7 +48,7 @@ export function OnboardingOrchestrator() {
         // Welcome Screen
         return (
           <OnboardingModal showProgress={false} fullScreen={true}>
-            <WelcomeStep onStart={nextStep} onSkip={skipOnboarding} />
+            <WelcomeStep onNext={nextStep} />
           </OnboardingModal>
         )
 
