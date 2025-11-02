@@ -106,8 +106,8 @@ export function OnboardingOrchestrator() {
           <OnboardingModal showProgress={false} fullScreen={true}>
             <ProfileCompleteCelebration 
               onContinue={() => {
-                // Complete onboarding and redirect to dashboard
-                completeOnboarding()
+                // Advance to dashboard training and redirect
+                nextStep() // Go to Step 12
                 router.push('/dashboard')
               }} 
             />
