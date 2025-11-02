@@ -9,6 +9,8 @@ import Link from 'next/link'
 import Container from '../../components/layout/Container'
 import { TrainForm } from '../../components/TrainForm'
 import { UserProfile, getProfile } from '../../lib/localstore'
+import { OnboardingToggle } from '../../components/onboarding/OnboardingToggle'
+import { OnboardingOrchestrator } from '../../components/onboarding/OnboardingOrchestrator'
 
 export default function TrainPage() {
   const router = useRouter()
@@ -74,6 +76,8 @@ export default function TrainPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Onboarding Trainer */}
+      <OnboardingOrchestrator />
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-20">
         <div className="w-full h-full" style={{
@@ -98,6 +102,8 @@ export default function TrainPage() {
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center space-x-3 sm:space-x-6 text-xs sm:text-sm text-gray-300"
           >
+            <OnboardingToggle />
+            <span>•</span>
             <Link href="/dashboard" className="flex items-center hover:text-white transition-colors">
               <ArrowLeft className="h-4 w-4 mr-1" />
               Back to Home

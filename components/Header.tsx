@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
+import { OnboardingToggle } from './onboarding/OnboardingToggle'
 
 export function Header() {
   const { data: session, status } = useSession()
@@ -45,6 +46,8 @@ export function Header() {
             ) : session ? (
               // Authenticated navigation
               <>
+                <OnboardingToggle />
+                <span className="text-gray-400">•</span>
                 <Link href="/dashboard" className="text-gray-600 hover:text-blue-600">
                   Dashboard
                 </Link>
@@ -107,6 +110,9 @@ export function Header() {
             ) : session ? (
               // Authenticated mobile navigation
               <div className="flex flex-col space-y-3">
+                <div className="py-2">
+                  <OnboardingToggle />
+                </div>
                 <Link
                   href="/dashboard"
                   className="text-gray-600 hover:text-blue-600 py-2"
