@@ -68,6 +68,25 @@ export function OnboardingOrchestrator() {
         )
 
       case 3:
+        // Step 3: Prompt user to fill profile
+        return (
+          <OnboardingModal showProgress={false} fullScreen={true}>
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-white mb-4">Now, Train Your Echo!</h2>
+              <p className="text-gray-300 mb-6">
+                Fill out the form below to teach your AI about your business.
+                This takes about 5 minutes.
+              </p>
+              <button
+                onClick={() => goToStep(11)}
+                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:opacity-90"
+              >
+                Got It!
+              </button>
+            </div>
+          </OnboardingModal>
+        )
+
       case 4:
       case 5:
       case 6:
@@ -75,7 +94,7 @@ export function OnboardingOrchestrator() {
       case 8:
       case 9:
       case 10:
-        // Steps 3-10: User is filling out profile
+        // Steps 4-10: User is filling out profile
         // Don't show any modal - let them work
         // TrainForm will trigger step 11 when they click Save
         return null
