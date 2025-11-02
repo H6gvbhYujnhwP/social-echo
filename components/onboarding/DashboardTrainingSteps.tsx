@@ -19,8 +19,11 @@ export function DashboardTrainingSteps({ step, onNext, onSkip }: DashboardTraini
         <SpotlightTooltip
           targetSelector="button:has(> svg.lucide-sparkles)"
           title="Generate Your First Post!"
-          description="This is where the magic happens! Click this button to generate a LinkedIn post based on your training. Your AI will create content that matches your voice and industry."
-          icon={<Sparkles className="w-6 h-6" />}
+          content={
+            <p className="text-gray-300">
+              This is where the magic happens! Click this button to generate a LinkedIn post based on your training. Your AI will create content that matches your voice and industry.
+            </p>
+          }
           position="bottom"
           onNext={onNext}
           onSkip={onSkip}
@@ -33,8 +36,11 @@ export function DashboardTrainingSteps({ step, onNext, onSkip }: DashboardTraini
         <SpotlightTooltip
           targetSelector="div:has(> button:contains('Auto (Planner)'))"
           title="Choose Your Post Type"
-          description="You can let the AI choose the best post type for today (Auto), or manually select from different types like Information & Advice, Personal Stories, or Industry Insights."
-          icon={<Palette className="w-6 h-6" />}
+          content={
+            <p className="text-gray-300">
+              You can let the AI choose the best post type for today (Auto), or manually select from different types like Information & Advice, Personal Stories, or Industry Insights.
+            </p>
+          }
           position="top"
           onNext={onNext}
           onSkip={onSkip}
