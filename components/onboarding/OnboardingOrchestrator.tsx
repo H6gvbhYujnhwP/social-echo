@@ -59,10 +59,9 @@ export function OnboardingOrchestrator() {
           <OnboardingModal showProgress={false} fullScreen={true}>
             <HowItWorksStep 
               onContinue={() => {
-                // Set step to 11 (waiting for profile save)
-                goToStep(11)
-                // Hide modal without marking as skipped
-                hideModal()
+                // Advance to step 3, which returns null
+                // This closes the modal but keeps onboarding active
+                nextStep()
               }} 
             />
           </OnboardingModal>
