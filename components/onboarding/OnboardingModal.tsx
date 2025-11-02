@@ -44,8 +44,8 @@ export function OnboardingModal({
           exit={{ scale: 0.9, y: 20 }}
           className={`
             relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 
-            rounded-2xl shadow-2xl border border-white/20
-            ${fullScreen ? 'w-full h-full m-4' : 'max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto'}
+            rounded-2xl shadow-2xl border border-white/20 overflow-y-auto
+            ${fullScreen ? 'w-full h-full m-4' : 'max-w-2xl w-full mx-4 max-h-[90vh]'}
           `}
         >
           {/* Close Button */}
