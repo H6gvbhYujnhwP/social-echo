@@ -78,7 +78,7 @@ export function OnboardingOrchestrator() {
                 This takes about 5 minutes.
               </p>
               <button
-                onClick={() => goToStep(11)}
+                onClick={() => nextStep()}
                 className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:opacity-90"
               >
                 Got It!
