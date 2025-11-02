@@ -14,6 +14,7 @@ interface OnboardingContextType {
   skipOnboarding: () => void
   completeOnboarding: () => void
   goToStep: (step: number) => void
+  toggleOnboarding: () => void
 }
 
 const OnboardingContext = createContext<OnboardingContextType | null>(null)
@@ -36,16 +37,21 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
           const data = await res.json()
           
           // Auto-complete onboarding for existing users who have already used the platform
+          // This ensures existing users don't see the trainer by default
           if (data.hasProfile && data.hasPostHistory && !data.hasCompletedOnboarding) {
             await fetch('/api/onboarding/complete', { method: 'POST' })
             setHasCompleted(true)
+            setIsActive(false) // Ensure it's not active for existing users
             return
           }
           
           setHasCompleted(data.hasCompletedOnboarding)
           
-          // Auto-start onboarding for new users (step 0) or resume for in-progress users
-          if (!data.hasCompletedOnboarding && !data.onboardingSkipped) {
+          // Only auto-start for brand new users (no profile, no posts, not completed, not skipped)
+          const isNewUser = !data.hasProfile && !data.hasPostHistory && !data.hasCompletedOnboarding && !data.onboardingSkipped
+          
+          if (isNewUser) {
+            // Brand new user - auto-start onboarding
             const step = data.onboardingStep === 0 ? 1 : data.onboardingStep
             setCurrentStep(step)
             setIsActive(true)
@@ -55,7 +61,9 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
               await fetch('/api/onboarding/start', { method: 'POST' })
             }
           } else {
+            // Existing user or user who skipped - don't auto-start
             setCurrentStep(data.onboardingStep)
+            setIsActive(false)
           }
         }
       } catch (error) {
@@ -101,6 +109,18 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     setCurrentStep(step)
   }
 
+  const toggleOnboarding = () => {
+    if (isActive) {
+      // Turn off
+      setIsActive(false)
+    } else {
+      // Turn on - restart from step 1
+      setIsActive(true)
+      setCurrentStep(1)
+      startOnboarding()
+    }
+  }
+
   return (
     <OnboardingContext.Provider
       value={{
@@ -114,6 +134,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         skipOnboarding,
         completeOnboarding,
         goToStep,
+        toggleOnboarding,
       }}
     >
       {children}
