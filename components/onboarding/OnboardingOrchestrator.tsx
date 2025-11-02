@@ -8,6 +8,7 @@ import { WelcomeStep } from './steps/WelcomeStep'
 import { HowItWorksStep } from './steps/HowItWorksStep'
 import { CelebrationScreen } from './CelebrationScreen'
 import { ProfileCompleteCelebration } from './ProfileCompleteCelebration'
+import { DashboardTrainingSteps } from './DashboardTrainingSteps'
 
 /**
  * Simplified V2 Onboarding - Focus on Dashboard Training
@@ -120,10 +121,13 @@ export function OnboardingOrchestrator() {
       case 16:
       case 17:
         // Steps 12-17: Dashboard training
-        // For now, skip to final celebration
-        // TODO: Implement dashboard tooltips
-        setTimeout(() => goToStep(18), 100)
-        return null
+        return (
+          <DashboardTrainingSteps
+            step={currentStep}
+            onNext={nextStep}
+            onSkip={() => goToStep(18)}
+          />
+        )
 
       case 18:
       default:
