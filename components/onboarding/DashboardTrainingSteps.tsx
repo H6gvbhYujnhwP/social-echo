@@ -33,18 +33,26 @@ export function DashboardTrainingSteps({ step, onNext, onSkip }: DashboardTraini
     case 13:
       // Post Types
       return (
-        <SpotlightTooltip
-          targetSelector="div:has(> button:contains('Auto (Planner)'))"
-          title="Choose Your Post Type"
-          content={
-            <p className="text-gray-300">
-              You can let the AI choose the best post type for today (Auto), or manually select from different types like Information & Advice, Personal Stories, or Industry Insights.
+        <OnboardingModal showProgress={false} fullScreen={false}>
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center mx-auto">
+              <Sparkles className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-3xl font-bold text-white">Choose Your Post Type</h2>
+            <p className="text-gray-300 max-w-md">
+              You can let the AI choose the best post type for today (Auto), or manually select from different types like Information & Advice, Random Facts, Selling, or News.
             </p>
-          }
-          position="top"
-          onNext={onNext}
-          onSkip={onSkip}
-        />
+            <p className="text-gray-400 text-sm">
+              The AI planner automatically selects the best type based on your content calendar!
+            </p>
+            <button
+              onClick={onNext}
+              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:opacity-90"
+            >
+              Got It!
+            </button>
+          </div>
+        </OnboardingModal>
       )
 
     case 14:
