@@ -455,7 +455,7 @@ export default function HomePage() {
                     "Content Mix Planner",
                     "Priority AI learning"
                   ]}
-                  buttonText="Start Free Trial"
+                  buttonText="Get Started"
                   onButtonClick={() => handleSignUp('SocialEcho_Pro')}
                   gradient="blue"
                   delay={0.4}
