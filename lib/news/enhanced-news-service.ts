@@ -63,6 +63,20 @@ function calculateRelevanceScore(headline: Headline, profile: ProfileData): numb
     }
   }
   
+  // Negative keywords penalty (reduce score for off-topic content)
+  const negativeKeywords = [
+    'artificial intelligence', 'ai adoption', 'ai tools', 'ai revolution',
+    'machine learning', 'chatgpt', 'generative ai', 'ai-powered',
+    'automation software', 'tech startup', 'software development'
+  ]
+  
+  for (const negKeyword of negativeKeywords) {
+    if (titleLower.includes(negKeyword)) {
+      // Heavy penalty for off-topic content
+      score -= 20
+    }
+  }
+  
   // Recency bonus (if published in last 7 days)
   if (headline.pubDate) {
     const pubDate = new Date(headline.pubDate)
