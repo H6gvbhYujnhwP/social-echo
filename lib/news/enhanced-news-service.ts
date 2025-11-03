@@ -64,6 +64,7 @@ function calculateRelevanceScore(headline: Headline, profile: ProfileData): numb
   }
   
   // Negative keywords penalty (reduce score for off-topic content)
+  // Reduced penalty to allow occasional AI/tech news (it's legitimate business news)
   const negativeKeywords = [
     'artificial intelligence', 'ai adoption', 'ai tools', 'ai revolution',
     'machine learning', 'chatgpt', 'generative ai', 'ai-powered',
@@ -72,8 +73,8 @@ function calculateRelevanceScore(headline: Headline, profile: ProfileData): numb
   
   for (const negKeyword of negativeKeywords) {
     if (titleLower.includes(negKeyword)) {
-      // Heavy penalty for off-topic content
-      score -= 20
+      // Moderate penalty - allows AI news occasionally but deprioritizes it
+      score -= 5
     }
   }
   
