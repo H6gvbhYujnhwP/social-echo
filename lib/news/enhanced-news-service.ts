@@ -87,25 +87,36 @@ function calculateRelevanceScore(headline: Headline, profile: ProfileData): numb
 function buildSearchQueries(profile: ProfileData): string[] {
   const queries: string[] = []
   
+  // Clean up industry string (trim whitespace)
+  const industry = profile.industry.trim()
+  
   // Primary query: Industry + UK
-  queries.push(`${profile.industry} UK`)
+  queries.push(`${industry} UK`)
   
-  // Secondary query: Industry + SME/business
-  queries.push(`${profile.industry} SME business`)
-  
-  // Tertiary query: Industry + innovation/technology
-  queries.push(`${profile.industry} innovation technology`)
+  // Secondary query: Industry + news
+  queries.push(`${industry} news UK`)
   
   // If keywords exist, add specific queries
   if (profile.keywords.length > 0) {
     const topKeywords = profile.keywords.slice(0, 3).join(' ')
-    queries.push(`${topKeywords} ${profile.industry}`)
+    queries.push(`${topKeywords} ${industry}`)
   }
   
-  // Products/services specific
-  const productKeywords = profile.products_services.split(/\s+/).slice(0, 3).join(' ')
-  if (productKeywords) {
-    queries.push(`${productKeywords} news`)
+  // Products/services specific (extract key terms)
+  const productTerms = profile.products_services
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(word => word.length > 4 && !['provide', 'provides', 'offering', 'services'].includes(word))
+    .slice(0, 3)
+    .join(' ')
+  
+  if (productTerms) {
+    queries.push(`${productTerms} ${industry}`)
+  }
+  
+  // Industry + business/SME (only if not already in industry name)
+  if (!industry.toLowerCase().includes('business') && !industry.toLowerCase().includes('sme')) {
+    queries.push(`${industry} business UK`)
   }
   
   return queries
