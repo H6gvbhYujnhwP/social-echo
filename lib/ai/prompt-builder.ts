@@ -126,7 +126,9 @@ export function buildSellingPrompt(inputs: GenInputs): string {
   
   // Add RSS article if available
   const rssContext = inputs.customRssArticle
-    ? `\n- Industry News Reference: ${inputs.customRssArticle.source} - "${inputs.customRssArticle.title}"${inputs.customRssArticle.contentSnippet ? `\n  Snippet: ${inputs.customRssArticle.contentSnippet.substring(0, 300)}...` : ''}${inputs.customRssArticle.link ? `\n  Link: ${inputs.customRssArticle.link}` : ''}\n  (You may reference this news as context or inspiration, but focus on selling the product/service)`
+    ? `\n- Industry News Reference: ${inputs.customRssArticle.source} - "${inputs.customRssArticle.title}"${inputs.customRssArticle.contentSnippet ? `\n  Snippet: ${inputs.customRssArticle.contentSnippet.substring(0, 300)}...` : ''}${inputs.customRssArticle.link ? `
+  Link: ${inputs.customRssArticle.link} (for reference only - DO NOT include in post)` : ''}
+  (You may reference this news as context or inspiration, but focus on selling the product/service. DO NOT include external links in the post body.)`
     : ''
   
   // Add learning signals enhancement if available
@@ -142,7 +144,7 @@ Business Context:
 - Sector: ${inputs.sector}
 - Target Audience: ${inputs.audience}
 - Tone: ${inputs.brandTone || 'professional'}
-${inputs.website ? `- Website: ${inputs.website} (use for additional context if needed)` : ''}${documentContext}${rssContext}
+${inputs.website ? `- Website: ${inputs.website} (for context only - DO NOT include links in the post body, LinkedIn penalizes external links)` : ''}${documentContext}${rssContext}
 
 ⚠️ CRITICAL RANDOMIZATION REQUIREMENTS:
 This post MUST focus on a DIFFERENT product/service than previous posts to avoid repetition.
@@ -171,7 +173,7 @@ Style Guidelines:
 - Short sentences (4-12 words)
 - One vivid detail beats three vague claims
 - Persuasive but not pushy
-- Maximum 160 words (aim for 140-160 for depth)
+- Target 150-200 words (LinkedIn's sweet spot for engagement and reach)
 - Use blank lines generously
 - VARY your angle: Don't repeat the same problem/story as recent posts
 
@@ -180,7 +182,7 @@ ${inputs.notes ? `\n🎯 USER'S CUSTOM BRIEF (HIGHEST PRIORITY):\n${inputs.notes
 Return STRICT JSON with fields:
 - "headline_options": array of 3 hooks (1 contrarian, 1 data-led, 1 story-first)
 - "post_text": full post following PAS structure, focused on ${focusProduct}
-- "hashtags": array of 5-8 relevant hashtags
+- "hashtags": array of 3-5 relevant hashtags (LinkedIn algorithm favors fewer, more targeted tags)
 - "visual_prompt": detailed prompt for accompanying image showing ${focusProduct}
 - "best_time_uk": optimal posting time in UK timezone (HH:MM, 24-hour)
 
@@ -217,7 +219,10 @@ export function buildInfoAdvicePrompt(inputs: GenInputs): string {
   
   // Add RSS article if available
   const rssContext = inputs.customRssArticle
-    ? `\n\n📰 INDUSTRY NEWS REFERENCE:\n- Source: ${inputs.customRssArticle.source}\n- Title: "${inputs.customRssArticle.title}"${inputs.customRssArticle.contentSnippet ? `\n- Snippet: ${inputs.customRssArticle.contentSnippet.substring(0, 300)}...` : ''}${inputs.customRssArticle.link ? `\n- Link: ${inputs.customRssArticle.link}` : ''}\n\nYou may use this news as inspiration or context for your advice, but provide actionable guidance rather than just reporting the news.`
+    ? `\n\n📰 INDUSTRY NEWS REFERENCE:\n- Source: ${inputs.customRssArticle.source}\n- Title: "${inputs.customRssArticle.title}"${inputs.customRssArticle.contentSnippet ? `\n- Snippet: ${inputs.customRssArticle.contentSnippet.substring(0, 300)}...` : ''}${inputs.customRssArticle.link ? `
+- Link: ${inputs.customRssArticle.link} (for reference only - DO NOT include in post)` : ''}
+
+You may use this news as inspiration or context for your advice, but provide actionable guidance rather than just reporting the news. DO NOT include external links in the post body.`
     : ''
   
   // Add learning signals enhancement if available
@@ -288,7 +293,7 @@ Style Guidelines:
 - Use blank lines generously
 - One vivid detail or specific example
 - No generic fluff - be specific to ${inputs.sector}
-- Maximum 160 words (aim for 140-160 for depth)
+- Target 150-200 words (LinkedIn's sweet spot for engagement and reach)
 - Focus on TEACHING, not SELLING
 
 ${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}${learningEnhancement}
@@ -296,7 +301,7 @@ ${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}${learningEn
 Return STRICT JSON with fields:
 - "headline_options": array of 3 hooks (1 contrarian, 1 data-led, 1 story-first)
 - "post_text": full post with actionable advice
-- "hashtags": array of 5-8 relevant hashtags
+- "hashtags": array of 3-5 relevant hashtags (LinkedIn algorithm favors fewer, more targeted tags)
 - "visual_prompt": detailed prompt for accompanying image
 - "best_time_uk": optimal posting time in UK timezone (HH:MM, 24-hour)
 
@@ -343,7 +348,7 @@ RANDOM / FUN FACTS POST REQUIREMENTS:
 2. **Bridge to business**: Connect it to ${inputs.sector} or ${inputs.audience} with a playful but useful takeaway
 3. **Keep it light but valuable**: Fun tone, but still provides insight or perspective
 4. **Country-appropriate**: If the source is country-specific, lean into it; otherwise keep it universal
-5. **Maximum 160 words** (aim for 140-160 for depth and context)
+5. **Target 150-200 words** (LinkedIn's sweet spot for engagement and reach)
 
 Style Guidelines:
 - Playful, witty, or thought-provoking opening
@@ -357,7 +362,7 @@ ${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}${learningEn
 Return STRICT JSON with fields:
 - "headline_options": array of 3 hooks (1 playful, 1 curious, 1 thought-provoking)
 - "post_text": full post bridging random fact to business insight
-- "hashtags": array of 5-8 relevant hashtags (mix fun + professional)
+- "hashtags": array of 3-5 relevant hashtags (LinkedIn algorithm favors fewer, more targeted tags) (mix fun + professional)
 - "visual_prompt": detailed prompt for accompanying image (can be playful/creative)
 - "best_time_uk": optimal posting time in UK timezone (HH:MM, 24-hour)
 
@@ -406,7 +411,7 @@ NEWS POST REQUIREMENTS:
 2. **Summary**: 1-2 lines on what happened (accurate, no fabrication)
 3. **"What this means"**: Practical implication for ${inputs.audience}
 4. **Next step**: Actionable takeaway or thought-provoking question
-5. **Maximum 160 words** (aim for 140-160 for depth and analysis)
+5. **Target 150-200 words** (LinkedIn's sweet spot for engagement and reach)
 6. **Neutral, practical tone** - informative, not sensational
 
 Style Guidelines:
@@ -421,7 +426,7 @@ ${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}${learningEn
 Return STRICT JSON with fields:
 - "headline_options": array of 3 hooks (1 urgent, 1 analytical, 1 questioning)
 - "post_text": full post with news commentary
-- "hashtags": array of 5-8 relevant hashtags
+- "hashtags": array of 3-5 relevant hashtags (LinkedIn algorithm favors fewer, more targeted tags)
 - "visual_prompt": detailed prompt for accompanying image
 - "best_time_uk": optimal posting time in UK timezone (HH:MM, 24-hour)
 

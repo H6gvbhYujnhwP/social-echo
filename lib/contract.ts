@@ -32,7 +32,7 @@ export const TextGenerationRequestSchema = z.object({
 export const TextGenerationResponseSchema = z.object({
   headline_options: z.array(z.string()).length(3),
   post_text: z.string(),
-  hashtags: z.array(z.string()).min(6).max(8),
+  hashtags: z.array(z.string()).min(3).max(5),
   visual_prompt: z.string(),
   best_time_uk: z.string().regex(/^\d{2}:\d{2}$/),
   postId: z.string().optional(), // Post ID for feedback
