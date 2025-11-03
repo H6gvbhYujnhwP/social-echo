@@ -91,14 +91,26 @@ export default function LearningProfilePage() {
       
       // Load learning signals
       const signalsRes = await fetch('/api/learning-signals')
+      if (signalsRes.status === 404) {
+        // User has no profile yet
+        setError('Please complete your profile first to start using the learning system.')
+        setLoading(false)
+        return
+      }
       if (!signalsRes.ok) throw new Error('Failed to load learning signals')
       const signalsData = await signalsRes.json()
       setSignals(signalsData)
       
       // Load feedback history
       const historyRes = await fetch(`/api/feedback/history?page=${currentPage}&limit=10`)
+      if (historyRes.status === 404) {
+        // User has no feedback yet - this is okay, just show empty state
+        setHistory({ feedback: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } })
+        setLoading(false)
+        return
+      }
       if (!historyRes.ok) throw new Error('Failed to load feedback history')
-      const historyData = await signalsRes.json()
+      const historyData = await historyRes.json()
       setHistory(historyData)
       
     } catch (err: any) {
