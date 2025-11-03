@@ -8,6 +8,7 @@ import { ArrowLeft, User } from 'lucide-react'
 import Link from 'next/link'
 import Container from '../../components/layout/Container'
 import { TrainForm } from '../../components/TrainForm'
+import { RssFeedManager } from '../../components/RssFeedManager'
 import { UserProfile, getProfile } from '../../lib/localstore'
 import { OnboardingToggle } from '../../components/onboarding/OnboardingToggle'
 import { OnboardingOrchestrator } from '../../components/onboarding/OnboardingOrchestrator'
@@ -159,6 +160,16 @@ export default function TrainPage() {
                 <TrainForm initialProfile={profile || undefined} />
               </div>
             </div>
+          </motion.div>
+
+          {/* RSS Feed Manager */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="mt-8"
+          >
+            <RssFeedManager />
           </motion.div>
 
           {/* Benefits Section */}

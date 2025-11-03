@@ -68,12 +68,13 @@ async function loadAiConfig(): Promise<AiGlobalConfig> {
 /**
  * Build generation inputs from profile
  */
-function buildGenInputs(
+async function buildGenInputs(
   profile: ProfileData,
   tone: string,
   keywords: string[],
+  userId: string,
   twists?: GenerationTwists
-): GenInputs {
+): Promise<GenInputs> {
   // Randomly select a document snippet (30% chance if documents exist)
   let documentSnippet: string | undefined = undefined
   if (profile.documents && profile.documents.length > 0 && Math.random() < 0.3) {
@@ -83,6 +84,27 @@ function buildGenInputs(
     const maxStart = Math.max(0, randomDoc.content.length - snippetLength)
     const startPos = Math.floor(Math.random() * maxStart)
     documentSnippet = randomDoc.content.substring(startPos, startPos + snippetLength).trim()
+  }
+
+  // Randomly select an RSS article (40% chance if user has RSS feeds)
+  let customRssArticle: { title: string; contentSnippet?: string; source: string; link?: string } | undefined = undefined
+  try {
+    const { getRandomRssArticle } = await import('../rss/custom-rss-service')
+    if (Math.random() < 0.4) {
+      const article = await getRandomRssArticle(userId)
+      if (article) {
+        customRssArticle = {
+          title: article.title,
+          contentSnippet: article.contentSnippet,
+          source: article.source,
+          link: article.link
+        }
+        console.log('[ai-service-v8.8] Using custom RSS article:', article.title.substring(0, 60))
+      }
+    }
+  } catch (error) {
+    console.error('[ai-service-v8.8] Error fetching RSS article:', error)
+    // Continue without RSS article
   }
 
   return {
@@ -97,7 +119,8 @@ function buildGenInputs(
     website: profile.website || undefined,
     notes: twists?.note,
     originalPost: twists?.originalPost,
-    documentSnippet
+    documentSnippet,
+    customRssArticle
   }
 }
 
@@ -142,7 +165,7 @@ export async function buildAndGenerateDraftV8(opts: {
   const uniqueKeywords = [...new Set(allKeywords)]
   
   // 5. Build generation inputs
-  const genInputs = buildGenInputs(opts.profile, effectiveTone, uniqueKeywords, opts.twists)
+  const genInputs = await buildGenInputs(opts.profile, effectiveTone, uniqueKeywords, opts.userId, opts.twists)
   
   // 5.5. Add learning signals to inputs
   if (opts.learningSignals) {

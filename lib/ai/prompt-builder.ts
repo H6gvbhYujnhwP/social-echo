@@ -22,6 +22,7 @@ export type GenInputs = {
   website?: string
   originalPost?: string  // For refinement mode
   documentSnippet?: string  // Random snippet from uploaded documents
+  customRssArticle?: { title: string; contentSnippet?: string; source: string; link?: string }  // Article from custom RSS feeds
   learningSignals?: LearningSignals  // AI learning from user feedback
 }
 
@@ -123,6 +124,11 @@ export function buildSellingPrompt(inputs: GenInputs): string {
     ? `\n- Technical Reference: Use the following material to inform product details and benefits:\n${inputs.documentSnippet.substring(0, 800)}...`
     : ''
   
+  // Add RSS article if available
+  const rssContext = inputs.customRssArticle
+    ? `\n- Industry News Reference: ${inputs.customRssArticle.source} - "${inputs.customRssArticle.title}"${inputs.customRssArticle.contentSnippet ? `\n  Snippet: ${inputs.customRssArticle.contentSnippet.substring(0, 300)}...` : ''}${inputs.customRssArticle.link ? `\n  Link: ${inputs.customRssArticle.link}` : ''}\n  (You may reference this news as context or inspiration, but focus on selling the product/service)`
+    : ''
+  
   // Add learning signals enhancement if available
   const { buildPromptEnhancement } = require('./learning-signals')
   const learningEnhancement = inputs.learningSignals 
@@ -136,7 +142,7 @@ Business Context:
 - Sector: ${inputs.sector}
 - Target Audience: ${inputs.audience}
 - Tone: ${inputs.brandTone || 'professional'}
-${inputs.website ? `- Website: ${inputs.website} (use for additional context if needed)` : ''}${documentContext}
+${inputs.website ? `- Website: ${inputs.website} (use for additional context if needed)` : ''}${documentContext}${rssContext}
 
 ⚠️ CRITICAL RANDOMIZATION REQUIREMENTS:
 This post MUST focus on a DIFFERENT product/service than previous posts to avoid repetition.
@@ -209,6 +215,11 @@ export function buildInfoAdvicePrompt(inputs: GenInputs): string {
     ? `\n\n📄 REFERENCE MATERIAL (use this to inform your advice if relevant):\n${inputs.documentSnippet}\n\nYou may incorporate insights from this reference material naturally, but DO NOT quote it directly. Use it to inform your expertise.`
     : ''
   
+  // Add RSS article if available
+  const rssContext = inputs.customRssArticle
+    ? `\n\n📰 INDUSTRY NEWS REFERENCE:\n- Source: ${inputs.customRssArticle.source}\n- Title: "${inputs.customRssArticle.title}"${inputs.customRssArticle.contentSnippet ? `\n- Snippet: ${inputs.customRssArticle.contentSnippet.substring(0, 300)}...` : ''}${inputs.customRssArticle.link ? `\n- Link: ${inputs.customRssArticle.link}` : ''}\n\nYou may use this news as inspiration or context for your advice, but provide actionable guidance rather than just reporting the news.`
+    : ''
+  
   // Add learning signals enhancement if available
   const { buildPromptEnhancement } = require('./learning-signals')
   const learningEnhancement = inputs.learningSignals 
@@ -221,7 +232,7 @@ Business Context:
 - Business: ${inputs.businessName}
 - Sector: ${inputs.sector}
 - Target Audience: ${inputs.audience}
-- Tone: ${inputs.brandTone || 'professional'}${documentContext}
+- Tone: ${inputs.brandTone || 'professional'}${documentContext}${rssContext}
 
 🎯 FOCUS TOPIC FOR THIS POST: ${focusTopic}
 
