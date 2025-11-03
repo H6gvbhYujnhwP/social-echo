@@ -7,7 +7,7 @@
 
 import { buildRefinementPrompt } from './prompt-builder-refinement'
 
-import type { LearningSignals } from './learning-signals'
+import type { LearningSignals } from './ai-service'
 
 export type GenInputs = {
   businessName: string

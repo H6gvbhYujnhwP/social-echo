@@ -21,7 +21,7 @@ export interface FeedbackWithPost {
   createdAt: Date
   post: {
     id: string
-    post_text: string
+    postText: string
   }
 }
 
@@ -201,7 +201,7 @@ export async function deriveLearningSignals(
       post: {
         select: {
           id: true,
-          post_text: true
+          postText: true
         }
       }
     },

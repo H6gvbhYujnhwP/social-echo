@@ -166,23 +166,10 @@ export async function buildAndGenerateDraft(opts: {
   if (opts.twists?.toneOverride) {
     effectiveTone = opts.twists.toneOverride
   }
-  
-  // Avoid downvoted tones (if learning signals present)
-  if (opts.learningSignals?.downvotedTones && 
-      opts.learningSignals.downvotedTones.includes(effectiveTone) &&
-      config.weightDownvotedTones > 0.5) {
-    console.log('[ai-service] Avoiding downvoted tone:', effectiveTone)
-    // Don't override - just log for now (could pick alternative tone)
-  }
+
   
   // 4. Determine hashtag count
   let hashtagCount = config.hashtagCountDefault
-  if (opts.learningSignals?.reduceHashtags) {
-    hashtagCount = Math.max(3, hashtagCount - 2)
-  }
-  if (opts.learningSignals?.preferredHashtagCount) {
-    hashtagCount = opts.learningSignals.preferredHashtagCount
-  }
   
   // 5. Merge keywords (profile + learning + twists)
   const allKeywords = [
