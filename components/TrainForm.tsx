@@ -487,20 +487,6 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
         <FieldHelp text="Your country helps us generate content with the right spelling (colour vs color), currency (£ vs $), holidays, and cultural references. Leave blank for neutral international English." />
       </div>
 
-      {/* Submit Button */}
-      <div className="pt-6 border-t border-white/10">
-        <Button
-          type="submit"
-          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-          size="lg"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? 'Saving Your Profile...' : 'Save & Start Creating Content'}
-        </Button>
-        <p className="text-center text-sm text-gray-400 mt-4">
-          You can update these details anytime from your dashboard
-        </p>
-      </div>
     </form>
   )
 }

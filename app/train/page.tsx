@@ -172,6 +172,33 @@ export default function TrainPage() {
             <RssFeedManager />
           </motion.div>
 
+          {/* Save Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.35 }}
+            className="mt-8"
+          >
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+              <button
+                onClick={() => {
+                  // Trigger form submission by finding and clicking the form's submit button
+                  const form = document.querySelector('form')
+                  if (form) {
+                    const submitEvent = new Event('submit', { bubbles: true, cancelable: true })
+                    form.dispatchEvent(submitEvent)
+                  }
+                }}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                Save & Start Creating Content
+              </button>
+              <p className="text-center text-sm text-white/60 mt-4">
+                You can update these details anytime from your dashboard
+              </p>
+            </div>
+          </motion.div>
+
           {/* Benefits Section */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
