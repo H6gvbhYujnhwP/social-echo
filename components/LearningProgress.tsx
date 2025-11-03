@@ -159,17 +159,33 @@ export const LearningProgress = forwardRef<LearningProgressRef>((props, ref) => 
             <span className="text-white text-xl">📊</span>
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-white">Learning Progress</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-semibold text-white">Learning Progress</h3>
+              {confidence >= 30 && (
+                <span className="bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full text-xs font-medium">
+                  🔄 Learning Active
+                </span>
+              )}
+            </div>
             <p className="text-white/60 text-sm">Your AI is getting smarter with every feedback</p>
           </div>
         </div>
-        <button
-          onClick={fetchStats}
-          className="text-white/60 hover:text-white transition-colors text-sm"
-          title="Refresh stats"
-        >
-          🔄
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href="/learning-profile"
+            className="text-white/60 hover:text-white transition-colors text-sm underline"
+            title="View full learning profile"
+          >
+            View Details
+          </a>
+          <button
+            onClick={fetchStats}
+            className="text-white/60 hover:text-white transition-colors text-sm"
+            title="Refresh stats"
+          >
+            🔄
+          </button>
+        </div>
       </div>
 
       {/* No feedback yet */}
@@ -315,8 +331,11 @@ export const LearningProgress = forwardRef<LearningProgressRef>((props, ref) => 
                 AI Insights
               </h4>
               <ul className="text-white/80 text-sm space-y-1">
+                {confidence >= 30 && (
+                  <li>✨ <strong>Your feedback is now influencing post generation!</strong> The AI learns from your preferences.</li>
+                )}
                 {tones.length > 0 && tones[0].successRate > 70 && (
-                  <li>✨ You love <strong>{tones[0].tone}</strong> tone posts! I'll use it more often.</li>
+                  <li>🎭 You love <strong>{tones[0].tone}</strong> tone posts! I'll use it more often.</li>
                 )}
                 {postTypes.length > 0 && postTypes[0].successRate > 70 && (
                   <li>📈 <strong className="capitalize">{postTypes[0].type}</strong> posts are your favorite type!</li>

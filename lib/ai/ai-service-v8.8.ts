@@ -144,6 +144,16 @@ export async function buildAndGenerateDraftV8(opts: {
   // 5. Build generation inputs
   const genInputs = buildGenInputs(opts.profile, effectiveTone, uniqueKeywords, opts.twists)
   
+  // 5.5. Add learning signals to inputs
+  if (opts.learningSignals) {
+    genInputs.learningSignals = opts.learningSignals
+    console.log('[ai-service-v8.8] Learning signals attached:', {
+      confidence: opts.learningSignals.confidence,
+      preferredTermsCount: opts.learningSignals.preferredTerms.length,
+      avoidedTermsCount: opts.learningSignals.avoidedTerms.length
+    })
+  }
+  
   // 6. Get diversity parameters (if enabled)
   const useDiversity = opts.useDiversityEngine !== false
   let diversityParams: any = null

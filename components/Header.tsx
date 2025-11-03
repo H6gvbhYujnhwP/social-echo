@@ -56,6 +56,10 @@ export function Header() {
                   Train Again
                 </Link>
                 <span className="text-gray-400">•</span>
+                <Link href="/learning-profile" className="text-gray-600 hover:text-blue-600">
+                  Learning Profile
+                </Link>
+                <span className="text-gray-400">•</span>
                 <Link href="/help" className="text-gray-600 hover:text-blue-600">
                   Help
                 </Link>
@@ -126,6 +130,13 @@ export function Header() {
                   onClick={closeMobileMenu}
                 >
                   Train Again
+                </Link>
+                <Link
+                  href="/learning-profile"
+                  className="text-gray-600 hover:text-blue-600 py-2"
+                  onClick={closeMobileMenu}
+                >
+                  Learning Profile
                 </Link>
                 <Link
                   href="/help"

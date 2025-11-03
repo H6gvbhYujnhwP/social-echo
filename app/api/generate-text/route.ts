@@ -180,72 +180,16 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Analyze feedback from database for learning signals
-    const feedback = await prisma.feedback.findMany({
-      where: { userId },
-      include: { post: true },
-      orderBy: { createdAt: 'desc' },
-      take: 50 // Last 50 feedback items
+    // Derive learning signals using the new service
+    const { deriveLearningSignals } = await import('@/lib/ai/learning-signals')
+    const learningSignals = await deriveLearningSignals(userId)
+    
+    console.log('[generate-text] Learning signals derived:', {
+      confidence: learningSignals.confidence,
+      totalFeedback: learningSignals.totalFeedback,
+      preferredTermsCount: learningSignals.preferredTerms.length,
+      avoidedTermsCount: learningSignals.avoidedTerms.length
     })
-    
-    // Calculate learning signals
-    const learningSignals: LearningSignals = {}
-    
-    if (feedback.length >= 5) {
-      // Tone preference learning
-      const toneStats: Record<string, { up: number; down: number }> = {}
-      feedback.forEach((f: any) => {
-        const tone = f.post.tone || 'unknown'
-        if (!toneStats[tone]) {
-          toneStats[tone] = { up: 0, down: 0 }
-        }
-        if (f.feedback === 'up') {
-          toneStats[tone].up++
-        } else {
-          toneStats[tone].down++
-        }
-      })
-      
-      // Find downvoted tones (< 40% positive)
-      const downvotedTones: string[] = []
-      Object.entries(toneStats).forEach(([tone, stats]) => {
-        const total = stats.up + stats.down
-        if (total >= 3) {
-          const score = stats.up / total
-          if (score < 0.4) {
-            downvotedTones.push(tone)
-          }
-        }
-      })
-      
-      if (downvotedTones.length > 0) {
-        learningSignals.downvotedTones = downvotedTones
-      }
-      
-      // Hashtag preference learning
-      const hashtagCounts = feedback
-        .filter((f: any) => f.feedback === 'up')
-        .map((f: any) => f.hashtags.length)
-      
-      if (hashtagCounts.length >= 3) {
-        const avgHashtags = Math.round(
-          hashtagCounts.reduce((sum: number, count: number) => sum + count, 0) / hashtagCounts.length
-        )
-        learningSignals.preferredHashtagCount = avgHashtags
-      }
-      
-      // Preferred terms from positive feedback
-      const preferredKeywords = new Set<string>()
-      feedback
-        .filter((f: any) => f.feedback === 'up')
-        .forEach((f: any) => {
-          f.keywords.forEach((kw: string) => preferredKeywords.add(kw))
-        })
-      
-      if (preferredKeywords.size > 0) {
-        learningSignals.preferredTerms = Array.from(preferredKeywords).slice(0, 10)
-      }
-    }
     
     // Prepare profile data for AI service
     const profileData: ProfileData = {

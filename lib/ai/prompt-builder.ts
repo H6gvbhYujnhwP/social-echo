@@ -7,6 +7,8 @@
 
 import { buildRefinementPrompt } from './prompt-builder-refinement'
 
+import type { LearningSignals } from './learning-signals'
+
 export type GenInputs = {
   businessName: string
   sector: string
@@ -20,6 +22,7 @@ export type GenInputs = {
   website?: string
   originalPost?: string  // For refinement mode
   documentSnippet?: string  // Random snippet from uploaded documents
+  learningSignals?: LearningSignals  // AI learning from user feedback
 }
 
 /**
@@ -119,6 +122,12 @@ export function buildSellingPrompt(inputs: GenInputs): string {
   const documentContext = inputs.documentSnippet 
     ? `\n- Technical Reference: Use the following material to inform product details and benefits:\n${inputs.documentSnippet.substring(0, 800)}...`
     : ''
+  
+  // Add learning signals enhancement if available
+  const { buildPromptEnhancement } = require('./learning-signals')
+  const learningEnhancement = inputs.learningSignals 
+    ? buildPromptEnhancement(inputs.learningSignals)
+    : ''
 
   return `Generate a SELLING LinkedIn post using the PAS (Problem → Agitate → Solution) structure.
 
@@ -160,7 +169,7 @@ Style Guidelines:
 - Use blank lines generously
 - VARY your angle: Don't repeat the same problem/story as recent posts
 
-${inputs.notes ? `\n🎯 USER'S CUSTOM BRIEF (HIGHEST PRIORITY):\n${inputs.notes}\n\nIf the user has provided specific instructions above, prioritize those over the randomized focus.` : ''}
+${inputs.notes ? `\n🎯 USER'S CUSTOM BRIEF (HIGHEST PRIORITY):\n${inputs.notes}\n\nIf the user has provided specific instructions above, prioritize those over the randomized focus.` : ''}${learningEnhancement}
 
 Return STRICT JSON with fields:
 - "headline_options": array of 3 hooks (1 contrarian, 1 data-led, 1 story-first)
@@ -198,6 +207,12 @@ export function buildInfoAdvicePrompt(inputs: GenInputs): string {
   // Add document snippet if available
   const documentContext = inputs.documentSnippet 
     ? `\n\n📄 REFERENCE MATERIAL (use this to inform your advice if relevant):\n${inputs.documentSnippet}\n\nYou may incorporate insights from this reference material naturally, but DO NOT quote it directly. Use it to inform your expertise.`
+    : ''
+  
+  // Add learning signals enhancement if available
+  const { buildPromptEnhancement } = require('./learning-signals')
+  const learningEnhancement = inputs.learningSignals 
+    ? buildPromptEnhancement(inputs.learningSignals)
     : ''
 
   return `Generate an INFORMATION & ADVICE LinkedIn post that combines insight with actionable guidance.
@@ -265,7 +280,7 @@ Style Guidelines:
 - Maximum 160 words (aim for 140-160 for depth)
 - Focus on TEACHING, not SELLING
 
-${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}
+${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}${learningEnhancement}
 
 Return STRICT JSON with fields:
 - "headline_options": array of 3 hooks (1 contrarian, 1 data-led, 1 story-first)
@@ -288,6 +303,12 @@ export function buildRandomPrompt(inputs: GenInputs, randomSource: { title: stri
   }
   
   const countryGuidance = getCountryGuidance(inputs.country)
+  
+  // Add learning signals enhancement if available
+  const { buildPromptEnhancement } = require('./learning-signals')
+  const learningEnhancement = inputs.learningSignals 
+    ? buildPromptEnhancement(inputs.learningSignals)
+    : ''
   
   return `Generate a RANDOM / FUN FACTS LinkedIn post that bridges an interesting fact to business value.
 
@@ -320,7 +341,7 @@ Style Guidelines:
 - End with a question or reflection that invites engagement
 - Balance fun with professional value
 
-${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}
+${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}${learningEnhancement}
 
 Return STRICT JSON with fields:
 - "headline_options": array of 3 hooks (1 playful, 1 curious, 1 thought-provoking)
@@ -343,6 +364,12 @@ export function buildNewsPrompt(inputs: GenInputs, newsHeadlines: string[]): str
   }
   
   const countryGuidance = getCountryGuidance(inputs.country)
+  
+  // Add learning signals enhancement if available
+  const { buildPromptEnhancement } = require('./learning-signals')
+  const learningEnhancement = inputs.learningSignals 
+    ? buildPromptEnhancement(inputs.learningSignals)
+    : ''
   
   const headlinesText = newsHeadlines.length > 0
     ? `REAL SECTOR NEWS (pick 1 and craft a professional take):\n${newsHeadlines.join('\n')}\n\nRules for real news posts:\n- Open with a spiky hook that grabs attention\n- 1–2 lines summarizing the story accurately (NO hallucinations)\n- 1 specific implication for ${inputs.audience}\n- 1 actionable takeaway or question\n- Cite the source inline\n- Keep it professional and credible`
@@ -378,7 +405,7 @@ Style Guidelines:
 - Professional and credible tone
 - If using real news, cite source inline
 
-${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}
+${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}${learningEnhancement}
 
 Return STRICT JSON with fields:
 - "headline_options": array of 3 hooks (1 urgent, 1 analytical, 1 questioning)

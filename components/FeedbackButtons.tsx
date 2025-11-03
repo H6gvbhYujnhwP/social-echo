@@ -197,8 +197,9 @@ export function FeedbackButtons({ postId, resetKey, onFeedbackSubmitted }: Feedb
   // Idle mode - show the two buttons
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+      <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
         <span className="font-medium">How was this draft?</span>
+        <span className="text-xs text-purple-600">💡 Your feedback helps the AI learn</span>
       </div>
       
       <div className="flex gap-2">
