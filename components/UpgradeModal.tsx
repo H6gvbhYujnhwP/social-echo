@@ -145,7 +145,7 @@ export default function UpgradeModal({ isOpen, onClose, onConfirm, isTrialing }:
                               • A new billing cycle starts today
                             </p>
                             <p>
-                              • Your usage limit resets to 30 posts/month
+                              • Your usage limit resets to 100 posts/month
                             </p>
                           </>
                         )}

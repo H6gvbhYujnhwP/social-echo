@@ -40,15 +40,15 @@ export default function PricingPage() {
                   <span className="text-gray-700 text-lg">/month</span>
                 </div>
                 <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-4">
-                  <p className="text-green-800 text-sm font-semibold">🎉 Free Trial - 8 Posts</p>
-                  <p className="text-green-700 text-xs mt-1">Sign up now, no bank details required, free 8 posts trial</p>
+                  <p className="text-green-800 text-sm font-semibold">🎉 Free Trial - 30 Posts</p>
+                  <p className="text-green-700 text-xs mt-1">Sign up now, no bank details required, free 30 posts trial</p>
                 </div>
                 <p className="text-gray-700 text-base">Perfect for freelancers and solopreneurs</p>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start gap-3">
                   <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
-                  <span className="text-gray-800 text-base"><strong className="font-semibold">8 posts per month</strong> (2 per week)</span>
+                  <span className="text-gray-800 text-base"><strong className="font-semibold">30 posts per month</strong> (daily)</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
@@ -89,7 +89,7 @@ export default function PricingPage() {
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start gap-3">
                   <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>
-                  <span className="text-gray-900 text-base font-semibold">30 posts per month</span>
+                  <span className="text-gray-900 text-base font-semibold">100 posts per month</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-green-600 text-xl mt-0.5 flex-shrink-0">✓</span>

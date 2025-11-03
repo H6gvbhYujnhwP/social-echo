@@ -760,7 +760,7 @@ export default function AdminUsersPage() {
                     onChange={(e) => setCreateForm({ ...createForm, plan: e.target.value as 'starter' | 'pro' | 'ultimate' })}
                     className="w-4 h-4"
                   />
-                  <span>Starter (8 posts/month)</span>
+                  <span>Starter (30 posts/month)</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -771,7 +771,7 @@ export default function AdminUsersPage() {
                     onChange={(e) => setCreateForm({ ...createForm, plan: e.target.value as 'starter' | 'pro' | 'ultimate' })}
                     className="w-4 h-4"
                   />
-                  <span>Pro (30 posts/month)</span>
+                  <span>Pro (100 posts/month)</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input

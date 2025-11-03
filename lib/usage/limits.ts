@@ -12,14 +12,14 @@ export interface PlanLimits {
 
 /**
  * Plan usage limits
- * - Starter: 8 posts/month, 2 regenerations per post
- * - Pro: 30 posts/month, 2 regenerations per post
+ * - Starter: 30 posts/month, 2 regenerations per post
+ * - Pro: 100 posts/month, 2 regenerations per post
  * - Ultimate: Unlimited posts/month, unlimited regenerations per post
  * - Agency: Unlimited
  */
 export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
-  starter:  { postsPerMonth: 8,    regenerationsPerPost: 2 },
-  pro:      { postsPerMonth: 30,   regenerationsPerPost: 2 },
+  starter:  { postsPerMonth: 30,   regenerationsPerPost: 2 },
+  pro:      { postsPerMonth: 100,  regenerationsPerPost: 2 },
   ultimate: { postsPerMonth: null, regenerationsPerPost: null }, // Unlimited everything
   agency:   { postsPerMonth: null, regenerationsPerPost: null },
 };

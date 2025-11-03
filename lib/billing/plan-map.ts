@@ -66,8 +66,8 @@ export function planFromPriceId(priceId: string | null | undefined): Plan {
  * Get usage limit for a plan
  * 
  * Returns:
- * - Starter: 8 posts/month
- * - Pro: 30 posts/month
+ * - Starter: 30 posts/month
+ * - Pro: 100 posts/month
  * - Ultimate: null (unlimited)
  * - Agency: null (unlimited)
  * - None: 0 (no access)
@@ -75,9 +75,9 @@ export function planFromPriceId(priceId: string | null | undefined): Plan {
 export function limitsFor(plan: Plan): number | null {
   switch (plan) {
     case 'starter':
-      return 8;
-    case 'pro':
       return 30;
+    case 'pro':
+      return 100;
     case 'ultimate':
       return null; // Unlimited monthly posts
     case 'agency':

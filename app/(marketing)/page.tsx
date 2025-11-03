@@ -131,8 +131,8 @@ export default function HomePage() {
                     </tr>
                     <tr className="border-b border-white/10">
                       <td className="px-6 py-4">Posts Per Month</td>
-                      <td className="px-6 py-4 text-center">4-8 posts</td>
-                      <td className="px-6 py-4 text-center font-semibold">Up to 30 posts</td>
+                      <td className="px-6 py-4 text-center">15-30 posts</td>
+                      <td className="px-6 py-4 text-center font-semibold">Up to 100 posts</td>
                     </tr>
                     <tr className="border-b border-white/10">
                       <td className="px-6 py-4">Content Style</td>
@@ -424,7 +424,7 @@ export default function HomePage() {
                 title="Starter"
                 price="£29.99/month"
                 features={[
-                  "8 posts per month (2/week)",
+                  "30 posts per month (daily)",
                   "All 4 post types",
                   "Text + image generation",
                   "2 refinements per post",
@@ -448,7 +448,7 @@ export default function HomePage() {
                   title="Pro"
                   price="£49.99/month"
                   features={[
-                    "30 posts per month (daily)",
+                    "100 posts per month (3+/day)",
                     "All 4 post types",
                     "Text + image generation",
                     "2 refinements per post",

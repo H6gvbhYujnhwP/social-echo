@@ -18,7 +18,7 @@ export const PLAN_METADATA: Record<string, PlanMetadata> = {
     name: 'Starter',
     price: '£29.99/month',
     priceValue: 29.99,
-    features: '8 posts per month',
+    features: '100 posts per month',
     postsLimit: 8
   },
   pro: {
@@ -26,7 +26,7 @@ export const PLAN_METADATA: Record<string, PlanMetadata> = {
     name: 'Pro',
     price: '£49.99/month',
     priceValue: 49.99,
-    features: '30 posts per month',
+    features: '100 posts per month',
     postsLimit: 30
   },
   ultimate: {

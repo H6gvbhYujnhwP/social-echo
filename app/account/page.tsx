@@ -786,7 +786,7 @@ function AccountPageInner() {
                     )}
                     {subscription?.status === 'free_trial' && (
                       <p className="text-purple-300 text-sm mt-2 font-medium">
-                        🎉 8 posts included - No payment required yet
+                        🎉 30 posts included - No payment required yet
                       </p>
                     )}
                   </div>

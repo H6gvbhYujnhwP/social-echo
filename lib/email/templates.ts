@@ -105,7 +105,7 @@ Please log in and change your password immediately for security.
               <strong>✓</strong> Get AI-powered image prompts for visuals</p>
               
               <h3>📈 Ready to Level Up?</h3>
-              <p>Your Starter plan includes 8 posts per month. Need more? Upgrade to Pro for unlimited posts, priority AI processing, and advanced features.</p>
+              <p>Your Starter plan includes 100 posts per month. Need more? Upgrade to Pro for unlimited posts, priority AI processing, and advanced features.</p>
               
               <p style="margin-top: 30px;">We're here to help you succeed. If you have any questions or need guidance, just reply to this email!</p>
               
@@ -172,7 +172,7 @@ Not happy with a post? Hit regenerate! It doesn't count against your monthly lim
 
 📈 READY TO LEVEL UP?
 
-Your Starter plan includes 8 posts per month. Need more? Upgrade to Pro for unlimited posts, priority AI processing, and advanced features.
+Your Starter plan includes 100 posts per month. Need more? Upgrade to Pro for unlimited posts, priority AI processing, and advanced features.
 
 We're here to help you succeed. If you have any questions or need guidance, just reply to this email!
 
@@ -1241,7 +1241,7 @@ export function trialStartedEmail(userName: string, trialEndDate: string): Email
                 <strong>✓ Trial Period:</strong> 24 hours<br>
                 <strong>✓ Billing Date:</strong> ${trialEndDate}<br>
                 <strong>✓ Plan:</strong> Starter (£29.99/month)<br>
-                <strong>✓ Features:</strong> 8 posts/month, AI text & image generation
+                <strong>✓ Features:</strong> 100 posts/month, AI text & image generation
               </div>
               
               <h3>🚀 Make the Most of Your Trial</h3>
@@ -1290,7 +1290,7 @@ Trial Details:
 ✓ Trial Period: 24 hours
 ✓ Billing Date: ${trialEndDate}
 ✓ Plan: Starter (£29.99/month)
-✓ Features: 8 posts/month, AI text & image generation
+✓ Features: 100 posts/month, AI text & image generation
 
 Make the Most of Your Trial:
 - Train your AI with your business details
@@ -1351,7 +1351,7 @@ export function trialConvertedEmail(userName: string, planName: string): EmailTe
               <h3>🚀 What's Next?</h3>
               <p>Continue creating amazing content with:</p>
               <ul>
-                <li><strong>8 posts per month</strong> (2 per week)</li>
+                <li><strong>100 posts per month</strong> (2 per week)</li>
                 <li><strong>AI-powered text generation</strong> for all post types</li>
                 <li><strong>7 intelligent visual styles</strong> for images</li>
                 <li><strong>Learning system</strong> that improves with feedback</li>
@@ -1391,7 +1391,7 @@ Your ${planName} subscription is now active and you have full access to all feat
 
 What's Next?
 Continue creating amazing content with:
-- 8 posts per month (2 per week)
+- 100 posts per month (2 per week)
 - AI-powered text generation for all post types
 - 7 intelligent visual styles for images
 - Learning system that improves with feedback
@@ -2063,7 +2063,7 @@ export function freeTrialExhaustedEmail(userName: string): EmailTemplate {
                 <p class="plan-name">Starter Plan</p>
                 <p class="plan-price">£9.99/month</p>
                 <ul style="margin: 0; padding-left: 20px;">
-                  <li>8 posts per month</li>
+                  <li>100 posts per month</li>
                   <li>2 regenerations per post</li>
                   <li>AI-powered content generation</li>
                 </ul>
@@ -2073,7 +2073,7 @@ export function freeTrialExhaustedEmail(userName: string): EmailTemplate {
                 <p class="plan-name">Pro Plan</p>
                 <p class="plan-price">£19.99/month</p>
                 <ul style="margin: 0; padding-left: 20px;">
-                  <li>30 posts per month</li>
+                  <li>100 posts per month</li>
                   <li>2 regenerations per post</li>
                   <li>Priority support</li>
                 </ul>
@@ -2115,12 +2115,12 @@ READY TO KEEP CREATING AMAZING CONTENT?
 Choose the plan that fits your needs:
 
 STARTER PLAN - £9.99/month
-- 8 posts per month
+- 100 posts per month
 - 2 regenerations per post
 - AI-powered content generation
 
 PRO PLAN - £19.99/month
-- 30 posts per month
+- 100 posts per month
 - 2 regenerations per post
 - Priority support
 
