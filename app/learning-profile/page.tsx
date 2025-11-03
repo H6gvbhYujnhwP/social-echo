@@ -44,7 +44,7 @@ interface FeedbackItem {
   post: {
     id: string
     post_text: string
-    headline: string
+    headlineOptions: string[]
   }
 }
 
@@ -419,7 +419,7 @@ export default function LearningProfilePage() {
                           )}
                           <div>
                             <p className="text-white font-medium">
-                              {item.post.headline || 'Post'}
+                              {item.post.headlineOptions?.[0] || 'Post'}
                             </p>
                             <p className="text-gray-400 text-sm">
                               {new Date(item.createdAt).toLocaleString()}

@@ -31,8 +31,8 @@ export const dynamic = 'force-dynamic'
  *     createdAt: string
  *     post: {
  *       id: string
- *       post_text: string
- *       headline: string
+ *       postText: string
+ *       headlineOptions: string[]
  *     }
  *   }>
  *   pagination: {
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             postText: true,
-            headline: true
+            headlineOptions: true
           }
         }
       },
