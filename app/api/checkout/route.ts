@@ -149,7 +149,7 @@ export async function POST(req: Request) {
           plan: plan,
           priceId: priceId,
         },
-        // NO Stripe trial periods - the only trial is the 8-post free trial
+        // NO Stripe trial periods - the only trial is the 30-post free trial
         // All paid plans charge immediately
       },
       

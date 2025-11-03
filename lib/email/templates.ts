@@ -1882,7 +1882,7 @@ export function freeTrialWelcomeEmail(userName: string, email: string, verificat
               <p style="margin-left: 38px;">Tell us about your business - your unique selling points, target audience, and brand voice.</p>
               
               <p><span class="step-number">2</span><strong>Generate Content</strong></p>
-              <p style="margin-left: 38px;">Create 8 professional social media posts with headlines, copy, hashtags, and image prompts!</p>
+              <p style="margin-left: 38px;">Create 30 professional social media posts with headlines, copy, hashtags, and image prompts!</p>
               
               <p><span class="step-number">3</span><strong>Choose Your Plan</strong></p>
               <p style="margin-left: 38px;">After your trial, continue with Starter (£9.99), Pro (£19.99), or Ultimate (£179.99).</p>
@@ -1920,7 +1920,7 @@ WHAT HAPPENS NEXT?
 Tell us about your business - your unique selling points, target audience, and brand voice.
 
 2. Generate Content
-Create 8 professional social media posts with headlines, copy, hashtags, and image prompts!
+Create 30 professional social media posts with headlines, copy, hashtags, and image prompts!
 
 3. Choose Your Plan
 After your trial, continue with Starter (£9.99), Pro (£19.99), or Ultimate (£179.99).
@@ -2054,7 +2054,7 @@ export function freeTrialExhaustedEmail(userName: string): EmailTemplate {
             <div class="content">
               <p>Hi ${userName},</p>
               
-              <p>You've used all 8 of your free posts. We hope you loved the experience of AI-powered content creation!</p>
+              <p>You've used all 30 of your free posts. We hope you loved the experience of AI-powered content creation!</p>
               
               <h3>Ready to Keep Creating Amazing Content?</h3>
               <p>Choose the plan that fits your needs:</p>
@@ -2109,7 +2109,7 @@ Congratulations! You've Completed Your Free Trial
 
 Hi ${userName},
 
-You've used all 8 of your free posts. We hope you loved the experience of AI-powered content creation!
+You've used all 30 of your free posts. We hope you loved the experience of AI-powered content creation!
 
 READY TO KEEP CREATING AMAZING CONTENT?
 Choose the plan that fits your needs:

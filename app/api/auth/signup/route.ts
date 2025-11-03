@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     const passwordHash = await bcrypt.hash(validated.password, 10)
     
     // Create user with free_trial status (Starter plan only)
-    // User gets 8 free posts without payment
+    // User gets 30 free posts without payment
     const user = await prisma.user.create({
       data: {
         email: validated.email.toLowerCase(),
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
           create: {
             plan: 'starter', // Free trial uses Starter plan features
             status: 'free_trial', // New status for payment-free trial
-            usageLimit: 8, // 8 free posts
+            usageLimit: 30, // 30 free posts
             usageCount: 0,
             currentPeriodStart: new Date(),
             currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year (usage-based, not time-based)
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     console.log('[signup] User created with free_trial status', {
       userId: user.id,
       businessName: user.businessName || 'none',
-      usageLimit: 8
+      usageLimit: 30
     });
     
     // Create email verification token

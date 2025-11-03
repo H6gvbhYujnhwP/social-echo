@@ -69,7 +69,7 @@ export async function ensureUsageWindowFresh(
   const now = new Date();
   
   // CRITICAL: Free trial users should NEVER have their usage reset
-  // They get 8 posts total for lifetime, not per month
+  // They get 30 posts total for lifetime, not per month
   if (subscription.status === 'free_trial') {
     return subscription;
   }

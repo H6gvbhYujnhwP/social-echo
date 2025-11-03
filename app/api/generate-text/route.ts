@@ -421,14 +421,14 @@ export async function POST(request: NextRequest) {
           }
         }
         
-        // Send trial exhausted email at 8 posts
+        // Send trial exhausted email at 30 posts
         if (newUsageCount === 8) {
           const user = await prisma.user.findUnique({ where: { id: userId } });
           if (user) {
             const { sendFreeTrialExhaustedEmail } = await import('@/lib/email/service');
             try {
               await sendFreeTrialExhaustedEmail(user.email, user.name);
-              console.log('[generate-text] Trial exhausted email sent at 8 posts');
+              console.log('[generate-text] Trial exhausted email sent at 30 posts');
             } catch (emailError) {
               console.error('[generate-text] Failed to send trial exhausted email:', emailError);
             }
