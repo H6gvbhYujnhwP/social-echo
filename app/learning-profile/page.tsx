@@ -68,6 +68,7 @@ export default function LearningProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [editingFeedback, setEditingFeedback] = useState<string | null>(null)
+  const [editNote, setEditNote] = useState<string>('')
   const [banner, setBanner] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   
   // Redirect if not authenticated
@@ -441,7 +442,10 @@ export default function LearningProfilePage() {
                         
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => setEditingFeedback(item.id)}
+                            onClick={() => {
+                              setEditingFeedback(item.id)
+                              setEditNote(item.note || '')
+                            }}
                             className="text-gray-400 hover:text-white transition-colors"
                             title="Edit feedback"
                           >
@@ -490,7 +494,7 @@ export default function LearningProfilePage() {
                               <label className="text-gray-300 text-sm mb-2 block">Rating</label>
                               <div className="flex gap-3">
                                 <button
-                                  onClick={() => updateFeedback(item.id, 'up', item.note || '')}
+                                  onClick={() => updateFeedback(item.id, 'up', editNote)}
                                   className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                                     item.feedback === 'up'
                                       ? 'bg-green-500/20 text-green-300 border border-green-500/50'
@@ -501,7 +505,7 @@ export default function LearningProfilePage() {
                                   Good
                                 </button>
                                 <button
-                                  onClick={() => updateFeedback(item.id, 'down', item.note || '')}
+                                  onClick={() => updateFeedback(item.id, 'down', editNote)}
                                   className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                                     item.feedback === 'down'
                                       ? 'bg-red-500/20 text-red-300 border border-red-500/50'
@@ -513,9 +517,24 @@ export default function LearningProfilePage() {
                                 </button>
                               </div>
                             </div>
+                            <div>
+                              <label className="text-gray-300 text-sm mb-2 block">Note (Optional)</label>
+                              <textarea
+                                value={editNote}
+                                onChange={(e) => setEditNote(e.target.value)}
+                                placeholder="Add context about why you rated this way..."
+                                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                                rows={3}
+                                maxLength={1000}
+                              />
+                              <p className="text-gray-500 text-xs mt-1">{editNote.length}/1000 characters</p>
+                            </div>
                             <div className="flex gap-2">
                               <button
-                                onClick={() => setEditingFeedback(null)}
+                                onClick={() => {
+                                  setEditingFeedback(null)
+                                  setEditNote('')
+                                }}
                                 className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
                               >
                                 Cancel
