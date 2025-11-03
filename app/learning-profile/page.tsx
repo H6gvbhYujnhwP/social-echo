@@ -480,6 +480,50 @@ export default function LearningProfilePage() {
                           <p className="text-gray-300 text-sm italic">"{item.note}"</p>
                         </div>
                       )}
+                      
+                      {/* Edit Mode */}
+                      {editingFeedback === item.id && (
+                        <div className="mt-4 bg-white/10 border border-white/20 rounded-lg p-4">
+                          <h4 className="text-white font-medium mb-3">Edit Feedback</h4>
+                          <div className="space-y-3">
+                            <div>
+                              <label className="text-gray-300 text-sm mb-2 block">Rating</label>
+                              <div className="flex gap-3">
+                                <button
+                                  onClick={() => updateFeedback(item.id, 'up', item.note || '')}
+                                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                                    item.feedback === 'up'
+                                      ? 'bg-green-500/20 text-green-300 border border-green-500/50'
+                                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                                  }`}
+                                >
+                                  <ThumbsUp className="w-4 h-4" />
+                                  Good
+                                </button>
+                                <button
+                                  onClick={() => updateFeedback(item.id, 'down', item.note || '')}
+                                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                                    item.feedback === 'down'
+                                      ? 'bg-red-500/20 text-red-300 border border-red-500/50'
+                                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                                  }`}
+                                >
+                                  <ThumbsDown className="w-4 h-4" />
+                                  Bad
+                                </button>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => setEditingFeedback(null)}
+                                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
