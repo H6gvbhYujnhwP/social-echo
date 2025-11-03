@@ -6,23 +6,7 @@
  */
 
 import { prisma } from '../prisma'
-
-export interface LearningSignals {
-  // Derived from feedback analysis
-  preferredTerms: string[]        // Terms from upvoted posts (keywords + hashtags)
-  avoidedTerms: string[]          // Terms from downvoted posts
-  preferredTone: string | null    // Tone with highest success rate
-  preferredPostTypes: string[]    // Post types with highest success rate
-  
-  // Metadata
-  confidence: number              // 0-100, based on feedback count
-  totalFeedback: number           // Total feedback items
-  upvoteRate: number              // Percentage of upvotes
-  
-  // Timestamps
-  lastCalculated: Date            // When signals were last derived
-  feedbackSince: Date | null      // Date of oldest feedback used
-}
+import type { LearningSignals } from './ai-service'
 
 export interface FeedbackWithPost {
   id: string

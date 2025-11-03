@@ -70,12 +70,23 @@ export function bustConfigCache() {
 
 /**
  * Learning signals from feedback analysis
+ * This is the core of the Feedback-to-Training Loop.
  */
 export type LearningSignals = {
-  preferredTerms?: string[]
-  downvotedTones?: string[]
-  reduceHashtags?: boolean
-  preferredHashtagCount?: number
+  // Derived from feedback analysis
+  preferredTerms: string[]        // Terms from upvoted posts (keywords + hashtags)
+  avoidedTerms: string[]          // Terms from downvoted posts
+  preferredTone: string | null    // Tone with highest success rate
+  preferredPostTypes: string[]    // Post types with highest success rate
+  
+  // Metadata
+  confidence: number              // 0-100, based on feedback count
+  totalFeedback: number           // Total feedback items
+  upvoteRate: number              // Percentage of upvotes
+  
+  // Timestamps
+  lastCalculated: Date            // When signals were last derived
+  feedbackSince: Date | null      // Date of oldest feedback used
 }
 
 /**
