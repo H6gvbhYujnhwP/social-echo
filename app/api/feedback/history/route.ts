@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
         post: {
           select: {
             id: true,
-            post_text: true,
+            postText: true,
             headline: true
           }
         }
