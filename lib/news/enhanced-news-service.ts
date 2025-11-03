@@ -63,20 +63,39 @@ function calculateRelevanceScore(headline: Headline, profile: ProfileData): numb
     }
   }
   
-  // Negative keywords penalty (reduce score for off-topic content)
-  // Reduced penalty to allow occasional AI/tech news (it's legitimate business news)
-  const negativeKeywords = [
-    'artificial intelligence', 'ai adoption', 'ai tools', 'ai revolution',
-    'machine learning', 'chatgpt', 'generative ai', 'ai-powered',
-    'automation software', 'tech startup', 'software development'
-  ]
+  // Industry-specific negative keywords penalty
+  // Tech companies WANT AI news, traditional industries DON'T
+  const industryLower = profile.industry.toLowerCase()
   
-  for (const negKeyword of negativeKeywords) {
-    if (titleLower.includes(negKeyword)) {
-      // Moderate penalty - allows AI news occasionally but deprioritizes it
-      score -= 5
+  // Determine if this is a tech/software company
+  const isTechCompany = 
+    industryLower.includes('software') ||
+    industryLower.includes('technology') ||
+    industryLower.includes('it services') ||
+    industryLower.includes('saas') ||
+    industryLower.includes('tech') ||
+    industryLower.includes('startup') ||
+    industryLower.includes('digital') ||
+    industryLower.includes('ai ') ||
+    industryLower.includes('data analytics') ||
+    industryLower.includes('automation')
+  
+  // Only apply AI/tech penalty for NON-tech companies
+  if (!isTechCompany) {
+    const negativeKeywords = [
+      'artificial intelligence', 'ai adoption', 'ai tools', 'ai revolution',
+      'machine learning', 'chatgpt', 'generative ai', 'ai-powered',
+      'automation software', 'tech startup', 'software development'
+    ]
+    
+    for (const negKeyword of negativeKeywords) {
+      if (titleLower.includes(negKeyword)) {
+        // Moderate penalty for traditional industries
+        score -= 5
+      }
     }
   }
+  // Tech companies get NO penalty - AI news is relevant to them
   
   // Recency bonus (if published in last 7 days)
   if (headline.pubDate) {
