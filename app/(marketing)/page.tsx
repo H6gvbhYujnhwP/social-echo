@@ -88,6 +88,43 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Video Demo Section */}
+        <section className="px-6 py-16">
+          <div className="max-w-5xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-8"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                See Social Echo in Action
+              </h2>
+              <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+                Watch how easy it is to generate professional social media content in seconds
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-black/50 backdrop-blur-sm"
+            >
+              <video
+                controls
+                className="w-full h-auto"
+                poster="/videos/SocialEcho.mp4"
+              >
+                <source src="/videos/SocialEcho.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </motion.div>
+          </div>
+        </section>
+
         {/* Agency Comparison Section */}
         <section className="px-6 py-16">
           <div className="max-w-6xl mx-auto">
