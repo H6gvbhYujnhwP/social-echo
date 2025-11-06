@@ -113,14 +113,16 @@ export default function HomePage() {
               viewport={{ once: true }}
               className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-black/50 backdrop-blur-sm"
             >
-              <video
-                controls
-                className="w-full h-auto"
-                poster="/videos/SocialEcho.mp4"
-              >
-                <source src="/videos/SocialEcho.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
+              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                  className="absolute top-0 left-0 w-full h-full rounded-xl"
+                  src="https://www.youtube.com/embed/opWaytjSPqA?rel=0&modestbranding=1"
+                  title="Social Echo Demo"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
             </motion.div>
           </div>
         </section>
