@@ -43,14 +43,15 @@ export function ImagePanel({
   const [error, setError] = useState<string | null>(null)
   const [usedImageType, setUsedImageType] = useState<string | null>(savedImageStyle || null)
   const [allowText, setAllowText] = useState(false)
+  const [userHasSelectedStyle, setUserHasSelectedStyle] = useState(false)
 
-  // Update selected style when auto-selected type changes
+  // Update selected style when auto-selected type changes, but only if user hasn't manually selected a style
   React.useEffect(() => {
-    if (autoSelectedType) {
+    if (autoSelectedType && !userHasSelectedStyle) {
       setSelectedStyle(autoSelectedType)
       console.log('[ImagePanel] Auto-selected image type:', autoSelectedType)
     }
-  }, [autoSelectedType])
+  }, [autoSelectedType, userHasSelectedStyle])
 
   // Restore saved image when props change (e.g., when loading a saved post)
   React.useEffect(() => {
@@ -230,7 +231,10 @@ export function ImagePanel({
           </label>
           <Select
             value={selectedStyle}
-            onChange={(e) => setSelectedStyle(e.target.value)}
+            onChange={(e) => {
+              setSelectedStyle(e.target.value)
+              setUserHasSelectedStyle(true)
+            }}
             options={imageTypes.map(t => ({ value: t.value, label: t.label }))}
             className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />
