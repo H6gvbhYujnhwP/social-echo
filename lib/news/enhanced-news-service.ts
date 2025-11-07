@@ -63,11 +63,60 @@ function calculateRelevanceScore(headline: Headline, profile: ProfileData): numb
     }
   }
   
-  // Industry-specific negative keywords penalty
-  // Tech companies WANT AI news, traditional industries DON'T
+  // Industry-specific POSITIVE keywords boost
+  // Boost regulatory, compliance, and industry-specific terms
   const industryLower = profile.industry.toLowerCase()
   
-  // Determine if this is a tech/software company
+  // Financial Services specific boosts
+  if (industryLower.includes('financial') || industryLower.includes('finance') || 
+      industryLower.includes('leasing') || industryLower.includes('lending')) {
+    const financialBoostKeywords = [
+      'fca', 'financial conduct authority', 'regulation', 'compliance',
+      'lending', 'loan', 'credit', 'asset finance', 'leasing',
+      'fintech regulation', 'banking rules', 'consumer credit',
+      'prudential', 'capital requirements', 'financial services act',
+      'mortgage', 'interest rate', 'bank of england', 'monetary policy'
+    ]
+    
+    for (const boostKeyword of financialBoostKeywords) {
+      if (titleLower.includes(boostKeyword)) {
+        score += 15 // Strong positive boost for industry-specific terms
+      }
+    }
+  }
+  
+  // Healthcare specific boosts
+  if (industryLower.includes('health') || industryLower.includes('medical') || 
+      industryLower.includes('pharmaceutical')) {
+    const healthBoostKeywords = [
+      'nhs', 'nice', 'mhra', 'cqc', 'clinical', 'patient',
+      'healthcare regulation', 'medical device', 'drug approval',
+      'health and social care', 'gp', 'hospital', 'prescription'
+    ]
+    
+    for (const boostKeyword of healthBoostKeywords) {
+      if (titleLower.includes(boostKeyword)) {
+        score += 15
+      }
+    }
+  }
+  
+  // Legal specific boosts
+  if (industryLower.includes('legal') || industryLower.includes('law')) {
+    const legalBoostKeywords = [
+      'court', 'legislation', 'statute', 'case law', 'solicitor',
+      'barrister', 'tribunal', 'legal aid', 'law society', 'sra'
+    ]
+    
+    for (const boostKeyword of legalBoostKeywords) {
+      if (titleLower.includes(boostKeyword)) {
+        score += 15
+      }
+    }
+  }
+  
+  // Industry-specific negative keywords penalty
+  // Tech companies WANT AI news, traditional industries DON'T
   const isTechCompany = 
     industryLower.includes('software') ||
     industryLower.includes('technology') ||
@@ -85,14 +134,22 @@ function calculateRelevanceScore(headline: Headline, profile: ProfileData): numb
     const negativeKeywords = [
       'artificial intelligence', 'ai adoption', 'ai tools', 'ai revolution',
       'machine learning', 'chatgpt', 'generative ai', 'ai-powered',
-      'automation software', 'tech startup', 'software development'
+      'automation software', 'tech startup', 'software development',
+      'digital transformation', 'ai integration', 'embracing ai',
+      'ai technology', 'adopt ai', 'ai solutions', 'ai innovation'
     ]
     
     for (const negKeyword of negativeKeywords) {
       if (titleLower.includes(negKeyword)) {
-        // Moderate penalty for traditional industries
-        score -= 5
+        // STRONG penalty for traditional industries - increased from -5 to -25
+        score -= 25
       }
+    }
+    
+    // Additional penalty for generic "SME adopts tech" stories
+    if ((titleLower.includes('sme') || titleLower.includes('small business')) && 
+        (titleLower.includes('adopt') || titleLower.includes('embrace') || titleLower.includes('integrate'))) {
+      score -= 15
     }
   }
   // Tech companies get NO penalty - AI news is relevant to them
@@ -116,6 +173,85 @@ function calculateRelevanceScore(headline: Headline, profile: ProfileData): numb
 }
 
 /**
+ * Build industry-specific search queries
+ */
+function buildIndustrySpecificQueries(industry: string): string[] {
+  const industryLower = industry.toLowerCase()
+  const queries: string[] = []
+  
+  // Financial Services / Leasing / Lending
+  if (industryLower.includes('financial') || industryLower.includes('finance') || 
+      industryLower.includes('leasing') || industryLower.includes('lending') ||
+      industryLower.includes('asset finance')) {
+    queries.push('FCA regulations UK')
+    queries.push('UK lending rules')
+    queries.push('asset finance UK news')
+    queries.push('leasing industry UK')
+    queries.push('consumer credit UK')
+    queries.push('financial services regulation UK')
+    queries.push('UK banking compliance')
+    queries.push('financial conduct authority news')
+  }
+  
+  // Healthcare / Medical
+  if (industryLower.includes('health') || industryLower.includes('medical') || 
+      industryLower.includes('pharmaceutical')) {
+    queries.push('NHS news UK')
+    queries.push('healthcare regulation UK')
+    queries.push('MHRA updates')
+    queries.push('CQC inspection UK')
+    queries.push('medical device regulation UK')
+    queries.push('pharmaceutical industry UK')
+  }
+  
+  // Legal Services
+  if (industryLower.includes('legal') || industryLower.includes('law')) {
+    queries.push('UK law changes')
+    queries.push('legal sector UK news')
+    queries.push('court ruling UK')
+    queries.push('legislation UK')
+    queries.push('Law Society news')
+  }
+  
+  // Construction / Property
+  if (industryLower.includes('construction') || industryLower.includes('property') || 
+      industryLower.includes('real estate')) {
+    queries.push('UK construction industry news')
+    queries.push('building regulations UK')
+    queries.push('property market UK')
+    queries.push('housing development UK')
+  }
+  
+  // Manufacturing
+  if (industryLower.includes('manufacturing') || industryLower.includes('production')) {
+    queries.push('UK manufacturing news')
+    queries.push('supply chain UK')
+    queries.push('industrial production UK')
+    queries.push('factory output UK')
+  }
+  
+  // Retail / E-commerce
+  if (industryLower.includes('retail') || industryLower.includes('ecommerce') || 
+      industryLower.includes('e-commerce')) {
+    queries.push('UK retail news')
+    queries.push('consumer spending UK')
+    queries.push('high street UK')
+    queries.push('online shopping UK')
+  }
+  
+  // Hospitality / Tourism
+  if (industryLower.includes('hospitality') || industryLower.includes('tourism') || 
+      industryLower.includes('hotel') || industryLower.includes('restaurant')) {
+    queries.push('UK hospitality industry')
+    queries.push('tourism UK news')
+    queries.push('restaurant sector UK')
+    queries.push('hotel industry UK')
+  }
+  
+  return queries
+}
+
+/**
  * Build search queries from user profile
  */
 function buildSearchQueries(profile: ProfileData): string[] {
@@ -124,8 +260,14 @@ function buildSearchQueries(profile: ProfileData): string[] {
   // Clean up industry string (trim whitespace)
   const industry = profile.industry.trim()
   
-  // Primary query: Industry + UK
-  queries.push(`${industry} UK`)
+  // FIRST: Add highly specific industry queries (if available)
+  const industrySpecificQueries = buildIndustrySpecificQueries(industry)
+  queries.push(...industrySpecificQueries)
+  
+  // Primary query: Industry + UK (only if no specific queries added)
+  if (industrySpecificQueries.length === 0) {
+    queries.push(`${industry} UK`)
+  }
   
   // Secondary query: Industry + news
   queries.push(`${industry} news UK`)
@@ -145,12 +287,15 @@ function buildSearchQueries(profile: ProfileData): string[] {
     .join(' ')
   
   if (productTerms) {
-    queries.push(`${productTerms} ${industry}`)
+    queries.push(`${productTerms} UK`)
   }
   
-  // Industry + business/SME (only if not already in industry name)
-  if (!industry.toLowerCase().includes('business') && !industry.toLowerCase().includes('sme')) {
-    queries.push(`${industry} business UK`)
+  // Industry + regulation (for regulated industries)
+  const industryLower = industry.toLowerCase()
+  if (industryLower.includes('financial') || industryLower.includes('health') || 
+      industryLower.includes('legal') || industryLower.includes('pharmaceutical')) {
+    queries.push(`${industry} regulation UK`)
+    queries.push(`${industry} compliance UK`)
   }
   
   return queries
@@ -255,8 +400,8 @@ export async function fetchSectorNews(
     .sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0))
   
   console.log('[news-service] Top headlines by relevance:', 
-    sortedHeadlines.slice(0, 3).map(h => ({
-      title: h.title.substring(0, 60) + '...',
+    sortedHeadlines.slice(0, 5).map(h => ({
+      title: h.title.substring(0, 80) + '...',
       score: h.relevanceScore
     }))
   )
@@ -321,4 +466,3 @@ export async function fetchHeadlines(sector: string, limit = 6): Promise<Headlin
     return []
   }
 }
-
