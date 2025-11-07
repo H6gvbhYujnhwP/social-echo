@@ -72,9 +72,11 @@ Tone: elegant, intellectual, visually simple.
 
   "infographic": `
 Generate a sleek, data-driven infographic visualizing key business or financial metrics. 
-Use simple icons, charts, or bars — not cluttered dashboards. 
-Focus on one striking stat or comparison. 
-Tone: factual, insightful, visually digestible.
+Use simple icons, charts, bars, graphs, or visual data representations — not cluttered dashboards. 
+Focus on one striking stat or comparison using VISUAL elements only (colored bars, pie charts, icons, arrows).
+When text is NOT allowed: render charts with colored segments, height differences, or visual proportions ONLY - no labels, no numbers, no axis text.
+When text IS allowed: include ONLY the specific text provided, rendered clearly as chart labels or key statistics.
+Tone: factual, insightful, visually digestible, clean modern design.
 `,
 }
 
@@ -82,12 +84,13 @@ Tone: factual, insightful, visually digestible.
  * Strict no-text composition rules
  */
 export const NO_TEXT_RULES = `
-IMPORTANT COMPOSITION RULES:
-- Do NOT include any text, letters, words, logos, watermarks, handwriting, signage, captions, or typographic elements inside the image.
-- If a sign, label, or screen would normally show text, render it blank or suggestive without readable lettering.
-- If text is absolutely unavoidable, use natural English only, at most 3-5 words, and keep it legible and clean.
-- Avoid non-English, pseudo-letters, lorem ipsum, or gibberish text entirely.
-- Render a clean, high-quality visual suitable for social media.
+STRICT NO-TEXT RULES:
+- ABSOLUTELY NO text, letters, words, numbers, logos, watermarks, handwriting, signage, captions, labels, or typographic elements of ANY kind.
+- If a sign, screen, chart, or label would normally contain text, render it COMPLETELY BLANK or as abstract shapes/colors only.
+- NO exceptions - even if text seems "natural" or "necessary", DO NOT include it.
+- NO pseudo-text, NO gibberish, NO lorem ipsum, NO foreign characters, NO symbols that resemble letters.
+- Render a completely text-free visual suitable for social media.
+- This is a HARD REQUIREMENT - any text will be rejected.
 `
 
 /**
