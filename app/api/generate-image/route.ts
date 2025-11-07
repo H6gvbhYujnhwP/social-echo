@@ -187,17 +187,39 @@ If text is absolutely unavoidable, use short English only (max 3-5 words).`
     
     // Route to appropriate image generator based on style
     let imageBase64: string
+    let generatorUsed = 'dall-e-3' // Track which generator was actually used
     
     if (imageType === 'photo-real') {
-      console.log('[generate-image] Using Flux Pro 1.1 for photorealistic image')
-      imageBase64 = await generateFluxProImage(imagePrompt)
+      console.log('[generate-image] Attempting Flux Pro 1.1 for photorealistic image')
+      try {
+        imageBase64 = await generateFluxProImage(imagePrompt)
+        generatorUsed = 'flux-pro-1.1'
+        console.log('[generate-image] ✅ Successfully generated with Flux Pro 1.1')
+      } catch (error: any) {
+        console.error('[generate-image] ❌ Flux Pro failed:', error.message)
+        console.log('[generate-image] Falling back to DALL-E 3')
+        imageBase64 = await generateImage(imagePrompt)
+        generatorUsed = 'dall-e-3-fallback'
+      }
     } else if (imageType === 'infographic') {
-      console.log('[generate-image] Using Ideogram v3 Turbo for infographic')
-      imageBase64 = await generateIdeogramImage(imagePrompt)
+      console.log('[generate-image] Attempting Ideogram v3 Turbo for infographic')
+      try {
+        imageBase64 = await generateIdeogramImage(imagePrompt)
+        generatorUsed = 'ideogram-v3-turbo'
+        console.log('[generate-image] ✅ Successfully generated with Ideogram v3 Turbo')
+      } catch (error: any) {
+        console.error('[generate-image] ❌ Ideogram failed:', error.message)
+        console.log('[generate-image] Falling back to DALL-E 3')
+        imageBase64 = await generateImage(imagePrompt)
+        generatorUsed = 'dall-e-3-fallback'
+      }
     } else {
       console.log('[generate-image] Using DALL-E 3 for', imageType)
       imageBase64 = await generateImage(imagePrompt)
+      generatorUsed = 'dall-e-3'
     }
+    
+    console.log('[generate-image] Final generator used:', generatorUsed)
     
     // Only perform text detection if text is NOT allowed (checkbox unchecked)
     // When allowText=true, user wants text, so skip detection to save API calls
@@ -237,11 +259,26 @@ If text is absolutely unavoidable, use short English only (max 3-5 words).`
       
       // Retry generation with appropriate generator
       if (imageType === 'photo-real') {
-        imageBase64 = await generateFluxProImage(strictPrompt)
+        try {
+          imageBase64 = await generateFluxProImage(strictPrompt)
+          generatorUsed = 'flux-pro-1.1-retry'
+        } catch (error: any) {
+          console.error('[generate-image] ❌ Flux Pro retry failed:', error.message)
+          imageBase64 = await generateImage(strictPrompt)
+          generatorUsed = 'dall-e-3-fallback-retry'
+        }
       } else if (imageType === 'infographic') {
-        imageBase64 = await generateIdeogramImage(strictPrompt)
+        try {
+          imageBase64 = await generateIdeogramImage(strictPrompt)
+          generatorUsed = 'ideogram-v3-turbo-retry'
+        } catch (error: any) {
+          console.error('[generate-image] ❌ Ideogram retry failed:', error.message)
+          imageBase64 = await generateImage(strictPrompt)
+          generatorUsed = 'dall-e-3-fallback-retry'
+        }
       } else {
         imageBase64 = await generateImage(strictPrompt)
+        generatorUsed = 'dall-e-3-retry'
       }
       
       // Check again
@@ -270,7 +307,8 @@ If text is absolutely unavoidable, use short English only (max 3-5 words).`
     
     const response: ImageGenerationResponse = {
       image_base64: imageBase64,
-      image_type: imageType
+      image_type: imageType,
+      generator: generatorUsed // Add for debugging
     }
     
     return NextResponse.json(response)
