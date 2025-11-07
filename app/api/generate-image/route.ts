@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateImage, analyzeImageForText } from '../../../lib/openai'
+import { generateFluxProImage, generateIdeogramImage } from '../../../lib/replicate-image'
 import { 
   ImageGenerationRequestSchema,
   type ImageGenerationResponse 
@@ -184,8 +185,19 @@ If text is absolutely unavoidable, use short English only (max 3-5 words).`
     console.log('[generate-image] Prompt length:', imagePrompt.length, 'characters')
     console.log('[generate-image] Allow text:', allowText)
     
-    // Generate image with OpenAI (first attempt)
-    let imageBase64 = await generateImage(imagePrompt)
+    // Route to appropriate image generator based on style
+    let imageBase64: string
+    
+    if (imageType === 'photo-real') {
+      console.log('[generate-image] Using Flux Pro 1.1 for photorealistic image')
+      imageBase64 = await generateFluxProImage(imagePrompt)
+    } else if (imageType === 'infographic') {
+      console.log('[generate-image] Using Ideogram v3 Turbo for infographic')
+      imageBase64 = await generateIdeogramImage(imagePrompt)
+    } else {
+      console.log('[generate-image] Using DALL-E 3 for', imageType)
+      imageBase64 = await generateImage(imagePrompt)
+    }
     
     // Only perform text detection if text is NOT allowed (checkbox unchecked)
     // When allowText=true, user wants text, so skip detection to save API calls
@@ -223,8 +235,14 @@ If text is absolutely unavoidable, use short English only (max 3-5 words).`
         strictPrompt = imagePrompt + `\n\nSTRICT OVERRIDE: Do not include any letters, words, or text of any kind. Render blank signs/labels with shapes only.`
       }
       
-      // Retry generation
-      imageBase64 = await generateImage(strictPrompt)
+      // Retry generation with appropriate generator
+      if (imageType === 'photo-real') {
+        imageBase64 = await generateFluxProImage(strictPrompt)
+      } else if (imageType === 'infographic') {
+        imageBase64 = await generateIdeogramImage(strictPrompt)
+      } else {
+        imageBase64 = await generateImage(strictPrompt)
+      }
       
       // Check again
       const secondCheck = await detectTextInImage(imageBase64)
