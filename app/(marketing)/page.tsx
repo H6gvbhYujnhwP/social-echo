@@ -116,7 +116,7 @@ export default function HomePage() {
               <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                 <iframe
                   className="absolute top-0 left-0 w-full h-full rounded-xl"
-                  src="https://www.youtube.com/embed/opWaytjSPqA?rel=0&modestbranding=1"
+                  src="https://www.youtube.com/embed/kE_ZrbgrPg0?rel=0&modestbranding=1"
                   title="Social Echo Demo"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
