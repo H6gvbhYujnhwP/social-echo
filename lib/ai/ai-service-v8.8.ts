@@ -86,11 +86,11 @@ async function buildGenInputs(
     documentSnippet = randomDoc.content.substring(startPos, startPos + snippetLength).trim()
   }
 
-  // Randomly select an RSS article (40% chance if user has RSS feeds)
+  // Randomly select an RSS article (90% chance if user has RSS feeds)
   let customRssArticle: { title: string; contentSnippet?: string; source: string; link?: string } | undefined = undefined
   try {
     const { getRandomRssArticle } = await import('../rss/custom-rss-service')
-    if (Math.random() < 0.4) {
+    if (Math.random() < 0.9) {
       const article = await getRandomRssArticle(userId)
       if (article) {
         customRssArticle = {
@@ -109,6 +109,8 @@ async function buildGenInputs(
 
   return {
     businessName: profile.business_name,
+    userName: profile.name || undefined,
+    userRole: profile.role || undefined,
     sector: profile.industry,
     audience: profile.target_audience,
     country: profile.country || undefined,

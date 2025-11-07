@@ -87,6 +87,7 @@ model Profile {
   business_name     String
   website           String
   industry          String
+  role              String?  // User's job title/role (e.g., "Sales Director", "CEO")
   tone              String   // 'professional' | 'casual' | 'funny' | 'bold'
   products_services String
   target_audience   String

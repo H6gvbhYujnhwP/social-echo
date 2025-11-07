@@ -11,6 +11,8 @@ import type { LearningSignals } from './ai-service'
 
 export type GenInputs = {
   businessName: string
+  userName?: string  // User's full name for personalization
+  userRole?: string  // User's job title/role for authority
   sector: string
   audience: string
   country?: string
@@ -391,6 +393,36 @@ export function buildNewsPrompt(inputs: GenInputs, newsHeadlines: string[]): str
     ? `REAL SECTOR NEWS (pick 1 and craft a professional take):\n${newsHeadlines.join('\n')}\n\nRules for real news posts:\n- Open with a spiky hook that grabs attention\n- 1–2 lines summarizing the story accurately (NO hallucinations)\n- 1 specific implication for ${inputs.audience}\n- 1 actionable takeaway or question\n- Cite the source inline\n- Keep it professional and credible`
     : `CREATIVE NEWS-STYLE POST (no specific headlines available):\nGenerate a forward-looking news-style post inspired by:\n- Current trends in ${inputs.sector}\n- Innovations relevant to ${inputs.audience}\n- Industry insights\n\nFrame as "Industry Watch" or "Sector Spotlight" style.\nFocus on emerging trends or common challenges.\nDO NOT fabricate specific news events or cite fake sources.`
   
+  // Add RSS article context if available
+  const rssContext = inputs.customRssArticle
+    ? `
+
+CUSTOM RSS ARTICLE (from user's curated feeds - PRIORITIZE THIS):
+Title: ${inputs.customRssArticle.title}
+Source: ${inputs.customRssArticle.source}
+${inputs.customRssArticle.contentSnippet ? `Summary: ${inputs.customRssArticle.contentSnippet}` : ''}
+${inputs.customRssArticle.link ? `Link: ${inputs.customRssArticle.link}` : ''}
+
+IMPORTANT: This article is from the user's hand-picked industry feeds. Create a post about THIS article.
+Cite the source as: "According to ${inputs.customRssArticle.source}..." or "via ${inputs.customRssArticle.source}"`
+    : ''
+  
+  // Add personalization context
+  const personalizationContext = inputs.userName && inputs.userRole
+    ? `
+
+Personalization Context:
+- Author: ${inputs.userName}, ${inputs.userRole} at ${inputs.businessName}
+- Write as ${inputs.userName} sharing professional insights with their network
+- Use first-person perspective ("I", "we") to make it authentic and personal`
+    : inputs.userName
+    ? `
+
+Personalization Context:
+- Author: ${inputs.userName} from ${inputs.businessName}
+- Write as ${inputs.userName} sharing insights with their network`
+    : ''
+  
   return `Generate a NEWS LinkedIn post that provides timely, sector-relevant commentary.
 
 Business Context:
@@ -398,13 +430,13 @@ Business Context:
 - Sector: ${inputs.sector}
 - Target Audience: ${inputs.audience}
 - Tone: ${inputs.brandTone || 'professional'}
-${inputs.keywords ? `- Keywords: ${inputs.keywords.join(', ')}` : ''}
+${inputs.keywords ? `- Keywords: ${inputs.keywords.join(', ')}` : ''}${personalizationContext}
 
 Country/Localization:
 ${countryGuidance}
 ${inputs.country ? `Prefer news relevant to ${inputs.country} when available. Fall back to worldwide only if country-specific news is unavailable.` : ''}
 
-${headlinesText}
+${headlinesText}${rssContext}
 
 NEWS POST REQUIREMENTS:
 1. **Hook**: Start with attention-grabbing angle on the news

@@ -104,6 +104,8 @@ export type GenerationTwists = {
  */
 export type ProfileData = {
   business_name: string
+  name?: string | null  // User's full name for personalization
+  role?: string | null  // User's job title/role for authority
   industry: string
   tone: string
   products_services: string

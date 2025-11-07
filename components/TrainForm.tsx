@@ -306,6 +306,17 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
         <FieldHelp text="Your primary industry or sector. Be specific (e.g., 'Corporate Law' instead of just 'Legal'). This ensures content is relevant to your field." />
       </div>
 
+      {/* Role */}
+      <div>
+        <Input
+          label="Your Role/Title"
+          value={formData.role || ''}
+          onChange={(e) => updateField('role', e.target.value)}
+          placeholder="e.g., Sales Director, CEO, Marketing Manager, Founder"
+        />
+        <FieldHelp text="Your job title or role (optional). This helps personalize content to match your professional voice and authority. For example, 'Sales Director' or 'Founder & CEO'." />
+      </div>
+
       {/* Tone */}
       <div>
         <Select

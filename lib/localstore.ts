@@ -4,6 +4,7 @@ export interface UserProfile {
   business_name: string
   website: string
   industry: string
+  role?: string  // User's job title/role (optional)
   tone: 'professional' | 'casual' | 'funny' | 'bold'
   products_services: string
   target_audience: string

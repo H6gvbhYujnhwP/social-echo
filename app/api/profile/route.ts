@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { getRssFeedsForIndustry } from '@/lib/industry-rss-feeds'
 
 // Force Node.js runtime
 export const runtime = 'nodejs'
@@ -12,6 +13,7 @@ const ProfileSchema = z.object({
   business_name: z.string().min(1, 'Business name is required'),
   website: z.string().url('Must be a valid URL').or(z.literal('')),
   industry: z.string().min(1, 'Industry is required'),
+  role: z.string().optional().nullable(), // Optional user role/title
   tone: z.enum(['professional', 'casual', 'funny', 'bold']),
   products_services: z.string().min(1, 'Products/services are required'),
   target_audience: z.string().min(1, 'Target audience is required'),
@@ -52,6 +54,7 @@ export async function GET(request: NextRequest) {
       business_name: profile.business_name,
       website: profile.website,
       industry: profile.industry,
+      role: profile.role || null,  // User role/title
       tone: profile.tone,
       products_services: profile.products_services,
       target_audience: profile.target_audience,
@@ -98,6 +101,7 @@ export async function POST(request: NextRequest) {
       business_name: validated.business_name,
       website: validated.website,
       industry: validated.industry,
+      role: validated.role && validated.role !== '' ? validated.role : null,  // Optional user role/title
       tone: validated.tone,
       products_services: validated.products_services,
       target_audience: validated.target_audience,
@@ -114,6 +118,7 @@ export async function POST(request: NextRequest) {
         business_name: profileData.business_name,
         website: profileData.website,
         industry: profileData.industry,
+        role: profileData.role,  // Optional user role/title
         tone: profileData.tone,
         products_services: profileData.products_services,
         target_audience: profileData.target_audience,
@@ -126,6 +131,37 @@ export async function POST(request: NextRequest) {
     })
     
     console.log('[profile-post] Profile saved:', profile.id)
+    
+    // Auto-populate RSS feeds if user has none and industry has predefined feeds
+    const existingFeeds = await prisma.customRssFeed.findMany({
+      where: { userId }
+    })
+    
+    if (existingFeeds.length === 0) {
+      const industryFeeds = getRssFeedsForIndustry(validated.industry)
+      
+      if (industryFeeds.length > 0) {
+        console.log(`[profile-post] Auto-populating ${industryFeeds.length} RSS feeds for industry: ${validated.industry}`)
+        
+        // Create all industry-specific RSS feeds
+        await Promise.all(
+          industryFeeds.map(feed =>
+            prisma.customRssFeed.create({
+              data: {
+                userId,
+                url: feed.url,
+                name: feed.name
+              }
+            }).catch(err => {
+              // Ignore duplicate errors
+              console.log(`[profile-post] RSS feed already exists or error: ${feed.url}`, err.message)
+            })
+          )
+        )
+        
+        console.log('[profile-post] Auto-populated RSS feeds successfully')
+      }
+    }
     
     return NextResponse.json({
       success: true,

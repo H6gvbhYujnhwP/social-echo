@@ -192,8 +192,16 @@ export async function POST(request: NextRequest) {
     })
     
     // Prepare profile data for AI service
+    // Get user name from User table
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true }
+    })
+    
     const profileData: ProfileData = {
       business_name: profile.business_name,
+      name: user?.name || null,  // User's full name for personalization
+      role: profile.role || null,  // User's job title/role for authority
       industry: profile.industry,
       tone: profile.tone,
       products_services: profile.products_services,
