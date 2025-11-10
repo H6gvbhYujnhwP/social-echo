@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
 import Container from '../../components/layout/Container'
+import APICreditsCard from '../../components/admin/APICreditsCard'
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession()
@@ -85,6 +86,9 @@ export default function AdminDashboard() {
               Manage users, roles, and permissions
             </p>
           </Link>
+          
+          {/* API Credits */}
+          <APICreditsCard />
           
           {/* Analytics */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 opacity-50 min-w-0">
