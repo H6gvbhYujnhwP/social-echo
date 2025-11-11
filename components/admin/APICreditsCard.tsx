@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { formatUSD, getStatusColor, type APICreditsStatus } from '@/lib/api-credits-service'
+import { formatUSD, getSpendingStatusColor, type APICreditsStatus } from '@/lib/api-credits-service'
 
 export default function APICreditsCard() {
   const [credits, setCredits] = useState<APICreditsStatus | null>(null)
@@ -76,7 +76,7 @@ export default function APICreditsCard() {
         API Credits
       </h3>
       <p className="text-gray-600 text-sm break-words min-w-0 mb-4">
-        Monitor remaining credits for AI services
+        Monitor API spending and status
       </p>
 
       {/* Loading State */}
@@ -100,11 +100,13 @@ export default function APICreditsCard() {
           <div className="border-t pt-4">
             <div className="flex items-center justify-between mb-2">
               <h4 className="font-medium text-gray-900">OpenAI</h4>
-              {credits.openai.status === 'success' && credits.openai.remaining_usd !== undefined && credits.openai.hard_limit_usd !== undefined && (
+              {credits.openai.status === 'success' && 
+               credits.openai.last_7_days_spending !== undefined && 
+               credits.openai.last_30_days_spending !== undefined && (
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(
-                  getStatusColor(credits.openai.remaining_usd, credits.openai.hard_limit_usd)
+                  getSpendingStatusColor(credits.openai.last_7_days_spending, credits.openai.last_30_days_spending)
                 )}`}>
-                  {((credits.openai.remaining_usd / credits.openai.hard_limit_usd) * 100).toFixed(0)}% remaining
+                  Tracking
                 </span>
               )}
             </div>
@@ -112,38 +114,40 @@ export default function APICreditsCard() {
             {credits.openai.status === 'success' ? (
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Usage this month:</span>
+                  <span className="text-gray-600">Last 7 days:</span>
                   <span className="font-medium text-gray-900">
-                    {credits.openai.usage_this_month_usd !== undefined 
-                      ? formatUSD(credits.openai.usage_this_month_usd)
+                    {credits.openai.last_7_days_spending !== undefined 
+                      ? formatUSD(credits.openai.last_7_days_spending)
                       : 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Remaining:</span>
+                  <span className="text-gray-600">Last 30 days:</span>
                   <span className="font-medium text-gray-900">
-                    {credits.openai.remaining_usd !== undefined 
-                      ? formatUSD(credits.openai.remaining_usd)
+                    {credits.openai.last_30_days_spending !== undefined 
+                      ? formatUSD(credits.openai.last_30_days_spending)
                       : 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Hard limit:</span>
+                  <span className="text-gray-600">Daily average:</span>
                   <span className="font-medium text-gray-900">
-                    {credits.openai.hard_limit_usd !== undefined 
-                      ? formatUSD(credits.openai.hard_limit_usd)
+                    {credits.openai.last_7_days_spending !== undefined 
+                      ? formatUSD(credits.openai.last_7_days_spending / 7)
                       : 'N/A'}
                   </span>
                 </div>
-                {credits.openai.has_payment_method !== undefined && !credits.openai.has_payment_method && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-md p-2 mt-2">
-                    <p className="text-xs text-yellow-800">⚠️ No payment method on file</p>
-                  </div>
-                )}
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-2 mt-2">
+                  <p className="text-xs text-blue-800">
+                    💡 <a href="https://platform.openai.com/settings/organization/billing/overview" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900">
+                      View detailed billing →
+                    </a>
+                  </p>
+                </div>
               </div>
             ) : (
               <div className="text-sm text-red-600">
-                {credits.openai.error || 'Failed to load OpenAI credits'}
+                {credits.openai.error || 'Failed to load OpenAI costs'}
               </div>
             )}
           </div>
@@ -152,9 +156,9 @@ export default function APICreditsCard() {
           <div className="border-t pt-4">
             <div className="flex items-center justify-between mb-2">
               <h4 className="font-medium text-gray-900">Replicate</h4>
-              {credits.replicate.status === 'success' && credits.replicate.credit_remaining !== undefined && (
-                <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {formatUSD(credits.replicate.credit_remaining)}
+              {credits.replicate.status === 'success' && credits.replicate.api_active && (
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  ✓ Active
                 </span>
               )}
             </div>
@@ -162,25 +166,28 @@ export default function APICreditsCard() {
             {credits.replicate.status === 'success' ? (
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Usage this month:</span>
+                  <span className="text-gray-600">Account:</span>
                   <span className="font-medium text-gray-900">
-                    {credits.replicate.usage_this_month !== undefined 
-                      ? formatUSD(credits.replicate.usage_this_month)
-                      : 'N/A'}
+                    {credits.replicate.account_name || 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Outstanding balance:</span>
-                  <span className="font-medium text-gray-900">
-                    {credits.replicate.outstanding_balance !== undefined 
-                      ? formatUSD(credits.replicate.outstanding_balance)
-                      : 'N/A'}
+                  <span className="text-gray-600">Type:</span>
+                  <span className="font-medium text-gray-900 capitalize">
+                    {credits.replicate.account_type || 'N/A'}
                   </span>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-2 mt-2">
+                  <p className="text-xs text-blue-800">
+                    💡 <a href="https://replicate.com/account" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900">
+                      View balance & billing →
+                    </a>
+                  </p>
                 </div>
               </div>
             ) : (
-              <div className="text-sm text-gray-600">
-                {credits.replicate.error || 'Not available'}
+              <div className="text-sm text-red-600">
+                {credits.replicate.error || 'Failed to check Replicate API'}
               </div>
             )}
           </div>
