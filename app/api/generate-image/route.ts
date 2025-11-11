@@ -158,10 +158,23 @@ export async function POST(request: NextRequest) {
     // Generate context-aware prompt if we have post content
     let imagePrompt: string
     
+    // Check if this is a tweak operation
+    const isTweaking = validatedRequest.is_tweaking === true
+    
     // Check if user provided a custom description
     if (validatedRequest.is_custom_description) {
-      // User provided custom description - use it directly with style formatting
-      imagePrompt = `Create a ${imageType} style image for LinkedIn/social media.
+      if (isTweaking) {
+        // Tweaking mode: the prompt already contains the original + modification
+        imagePrompt = `${validatedRequest.visual_prompt}
+
+Style: ${imageType}. High quality, professional, engaging.
+Orientation: square or 4:5 portrait. High resolution.
+
+${allowText ? 'Text is allowed (max 5 words, English only).' : 'IMPORTANT: Do NOT include any text, letters, words, logos, watermarks, or typographic elements.'}`
+        console.log('[generate-image] Tweaking existing image with modifications')
+      } else {
+        // User provided custom description - use it directly with style formatting
+        imagePrompt = `Create a ${imageType} style image for LinkedIn/social media.
 
 User's description: ${validatedRequest.visual_prompt}
 
@@ -169,7 +182,8 @@ Style: ${imageType}. High quality, professional, engaging.
 Orientation: square or 4:5 portrait. High resolution.
 
 ${allowText ? 'Text is allowed (max 5 words, English only).' : 'IMPORTANT: Do NOT include any text, letters, words, logos, watermarks, or typographic elements.'}`
-      console.log('[generate-image] Using custom user description')
+        console.log('[generate-image] Using custom user description')
+      }
     } else if (validatedRequest.post_headline && validatedRequest.post_text) {
       // Use new context-aware prompt generator
       imagePrompt = await generateImagePrompt({

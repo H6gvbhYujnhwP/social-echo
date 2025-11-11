@@ -45,6 +45,8 @@ export function ImagePanel({
   const [allowText, setAllowText] = useState(false)
   const [userHasSelectedStyle, setUserHasSelectedStyle] = useState(false)
   const [customDescription, setCustomDescription] = useState('')
+  const [tweakInstructions, setTweakInstructions] = useState('')
+  const [lastGeneratedPrompt, setLastGeneratedPrompt] = useState('')
 
   // Update selected style when auto-selected type changes, but only if user hasn't manually selected a style
   React.useEffect(() => {
@@ -84,8 +86,21 @@ export function ImagePanel({
     setError(null)
     
     try {
+      // Determine if this is a tweak or new generation
+      const isTweaking = generatedImage && tweakInstructions.trim().length > 0
+      
+      // Build the prompt based on mode
+      let finalPrompt: string
+      if (isTweaking) {
+        // Tweaking mode: preserve original and add modifications
+        finalPrompt = `${lastGeneratedPrompt}\n\nADDITIONAL MODIFICATION: ${tweakInstructions.trim()}`
+      } else {
+        // New generation mode
+        finalPrompt = customDescription.trim() || visualPrompt
+      }
+      
       const requestData = {
-        visual_prompt: customDescription.trim() || visualPrompt,
+        visual_prompt: finalPrompt,
         industry: industry,
         tone: tone,
         style: selectedStyle,
@@ -96,7 +111,14 @@ export function ImagePanel({
         // Text inclusion option
         allow_text: allowText,
         // Custom description flag
-        is_custom_description: customDescription.trim().length > 0,
+        is_custom_description: customDescription.trim().length > 0 || isTweaking,
+        // Tweak mode flag
+        is_tweaking: isTweaking,
+      }
+      
+      // Store the prompt for future tweaks
+      if (!isTweaking) {
+        setLastGeneratedPrompt(finalPrompt)
       }
 
       console.log('[ImagePanel] Sending request:', {
@@ -121,6 +143,11 @@ export function ImagePanel({
       setGeneratedImage(data.image_base64)
       setUsedImageType(data.image_type || selectedStyle)
       console.log('[ImagePanel] Image generated successfully, type:', data.image_type)
+      
+      // Clear tweak instructions after successful generation
+      if (isTweaking) {
+        setTweakInstructions('')
+      }
       
       // Call callback to notify parent component
       if (onImageGenerated && data.image_base64) {
@@ -248,23 +275,48 @@ export function ImagePanel({
           )}
         </div>
 
-        {/* Custom Image Description */}
-        <div>
-          <label htmlFor="custom-description" className="block text-sm font-medium text-gray-700 mb-2">
-            Custom Image Description (Optional)
-          </label>
-          <textarea
-            id="custom-description"
-            value={customDescription}
-            onChange={(e) => setCustomDescription(e.target.value)}
-            placeholder="Describe what you want to see in the image... e.g., 'A professional businesswoman working on a laptop in a modern office with plants in the background'"
-            rows={3}
-            className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm resize-none"
-          />
-          <p className="mt-1 text-xs text-gray-500">
-            💡 Leave blank to use AI-generated description from your post content
-          </p>
-        </div>
+        {/* Custom Image Description - Only show if no image generated yet */}
+        {!generatedImage && (
+          <div>
+            <label htmlFor="custom-description" className="block text-sm font-medium text-gray-700 mb-2">
+              Custom Image Description (Optional)
+              <span className="ml-2 text-xs font-normal text-blue-600">→ For NEW image generation</span>
+            </label>
+            <textarea
+              id="custom-description"
+              value={customDescription}
+              onChange={(e) => setCustomDescription(e.target.value)}
+              placeholder="Describe what you want to see in the image... e.g., 'A professional businesswoman working on a laptop in a modern office with plants in the background'"
+              rows={3}
+              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm resize-none"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              💡 Leave blank to use AI-generated description from your post content
+            </p>
+          </div>
+        )}
+
+        {/* Tweak Current Image - Only show AFTER image is generated */}
+        {generatedImage && (
+          <div className="border-2 border-orange-300 bg-orange-50 p-4 rounded-xl">
+            <label htmlFor="tweak-instructions" className="block text-sm font-medium text-orange-900 mb-2 flex items-center">
+              <span className="text-base">✏️</span>
+              <span className="ml-2">Tweak Current Image</span>
+              <span className="ml-2 text-xs font-normal text-orange-600">→ Modify without replacing</span>
+            </label>
+            <textarea
+              id="tweak-instructions"
+              value={tweakInstructions}
+              onChange={(e) => setTweakInstructions(e.target.value)}
+              placeholder="Add modifications to the current image... e.g., 'add a spaceship in the background' or 'make the lighting warmer'"
+              rows={2}
+              className="w-full p-3 border border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm resize-none bg-white"
+            />
+            <p className="mt-1 text-xs text-orange-700">
+              🎯 This will KEEP the current image and ADD your changes to it
+            </p>
+          </div>
+        )}
 
         {/* Text Inclusion Toggle */}
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
@@ -288,17 +340,21 @@ export function ImagePanel({
         <Button
           onClick={handleGenerateImage}
           disabled={isGenerating}
-          className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          className={`w-full py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
+            generatedImage && tweakInstructions.trim()
+              ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white'
+              : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white'
+          }`}
         >
           {isGenerating ? (
             <>
               <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-              Generating {selectedTypeInfo?.label || 'image'}...
+              {generatedImage && tweakInstructions.trim() ? 'Tweaking' : 'Generating'} {selectedTypeInfo?.label || 'image'}...
             </>
           ) : (
             <>
               <Image className="mr-2 h-5 w-5" />
-              Generate {selectedTypeInfo?.label || 'Image'}
+              {generatedImage && tweakInstructions.trim() ? '✏️ Tweak Image' : `Generate ${selectedTypeInfo?.label || 'Image'}`}
             </>
           )}
         </Button>
