@@ -58,7 +58,9 @@ export interface APICreditsStatus {
  */
 async function checkOpenAICredits(): Promise<APICreditsStatus['openai']> {
   try {
-    const apiKey = process.env.OPENAI_API_KEY
+    // Use OPENAI_ADMIN_KEY for billing/costs API (requires api.usage.read scope)
+    // Falls back to OPENAI_API_KEY if admin key not set
+    const apiKey = process.env.OPENAI_ADMIN_KEY || process.env.OPENAI_API_KEY
     if (!apiKey) {
       return {
         status: 'error',
