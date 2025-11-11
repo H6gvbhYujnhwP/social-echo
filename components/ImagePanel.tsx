@@ -45,8 +45,6 @@ export function ImagePanel({
   const [allowText, setAllowText] = useState(false)
   const [userHasSelectedStyle, setUserHasSelectedStyle] = useState(false)
   const [customDescription, setCustomDescription] = useState('')
-  const [tweakInstructions, setTweakInstructions] = useState('')
-  const [lastGeneratedPrompt, setLastGeneratedPrompt] = useState('')
 
   // Update selected style when auto-selected type changes, but only if user hasn't manually selected a style
   React.useEffect(() => {
@@ -86,26 +84,8 @@ export function ImagePanel({
     setError(null)
     
     try {
-      // Determine if this is a tweak or new generation
-      const isTweaking = generatedImage && tweakInstructions.trim().length > 0
-      
-      // Build the prompt based on mode
-      let finalPrompt: string
-      let sendPostContent = true
-      
-      if (isTweaking) {
-        // Tweaking mode: create a simple modification prompt
-        // Reference the existing image style and add the modification
-        finalPrompt = `Take the existing ${selectedStyle} image and make this modification: ${tweakInstructions.trim()}`
-        // Still send post content for context
-        sendPostContent = true
-      } else {
-        // New generation mode
-        finalPrompt = customDescription.trim() || visualPrompt
-        sendPostContent = true
-        // Store the prompt for reference (though we're not using it for tweaks anymore)
-        setLastGeneratedPrompt(finalPrompt)
-      }
+      // Use custom description if provided, otherwise use AI-generated prompt
+      const finalPrompt = customDescription.trim() || visualPrompt
       
       const requestData = {
         visual_prompt: finalPrompt,
@@ -113,15 +93,13 @@ export function ImagePanel({
         tone: tone,
         style: selectedStyle,
         // Include post content for context-aware generation
-        post_type: sendPostContent ? postType : undefined,
-        post_headline: sendPostContent ? postHeadline : undefined,
-        post_text: sendPostContent ? postText : undefined,
+        post_type: postType,
+        post_headline: postHeadline,
+        post_text: postText,
         // Text inclusion option
         allow_text: allowText,
         // Custom description flag
-        is_custom_description: customDescription.trim().length > 0 || isTweaking,
-        // Tweak mode flag
-        is_tweaking: isTweaking,
+        is_custom_description: customDescription.trim().length > 0,
       }
 
       console.log('[ImagePanel] Sending request:', {
@@ -146,11 +124,6 @@ export function ImagePanel({
       setGeneratedImage(data.image_base64)
       setUsedImageType(data.image_type || selectedStyle)
       console.log('[ImagePanel] Image generated successfully, type:', data.image_type)
-      
-      // Clear tweak instructions after successful generation
-      if (isTweaking) {
-        setTweakInstructions('')
-      }
       
       // Call callback to notify parent component
       if (onImageGenerated && data.image_base64) {
@@ -319,10 +292,10 @@ export function ImagePanel({
         {/* Generate Button - Moved directly after Custom Description */}
         <Button
           onClick={handleGenerateImage}
-          disabled={isGenerating || (generatedImage !== null && tweakInstructions.trim().length > 0)}
+          disabled={isGenerating}
           className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
         >
-          {isGenerating && !tweakInstructions.trim() ? (
+          {isGenerating ? (
             <>
               <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
               Generating {selectedTypeInfo?.label || 'image'}...
@@ -330,7 +303,7 @@ export function ImagePanel({
           ) : (
             <>
               <Image className="mr-2 h-5 w-5" />
-              Generate New {selectedTypeInfo?.label || 'Image'}
+              Generate {selectedTypeInfo?.label || 'Image'}
             </>
           )}
         </Button>
@@ -372,37 +345,6 @@ export function ImagePanel({
             transition={{ duration: 0.6 }}
             className="space-y-4"
           >
-            {/* Tweak Box - Positioned ABOVE the image */}
-            <div className="border border-gray-300 bg-gray-50 p-4 rounded-xl">
-              <label htmlFor="tweak-instructions" className="block text-sm font-medium text-gray-700 mb-2">
-                ✏️ Tweak Current Image
-                <span className="ml-2 text-xs font-normal text-gray-500">(keeps existing elements)</span>
-              </label>
-              <div className="flex gap-2">
-                <textarea
-                  id="tweak-instructions"
-                  value={tweakInstructions}
-                  onChange={(e) => setTweakInstructions(e.target.value)}
-                  placeholder="e.g., 'add a spaceship in the background'"
-                  rows={2}
-                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
-                />
-                <Button
-                  onClick={handleGenerateImage}
-                  disabled={isGenerating || !tweakInstructions.trim()}
-                  className="px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed h-auto"
-                >
-                  {isGenerating && tweakInstructions.trim() ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 animate-spin" />
-                    </>
-                  ) : (
-                    'Tweak'
-                  )}
-                </Button>
-              </div>
-            </div>
-            
             {/* Generated Image */}
             <div className="border-2 border-gray-200 rounded-2xl overflow-hidden shadow-lg">
               <img
