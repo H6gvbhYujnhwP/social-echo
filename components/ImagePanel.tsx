@@ -91,12 +91,20 @@ export function ImagePanel({
       
       // Build the prompt based on mode
       let finalPrompt: string
+      let sendPostContent = true
+      
       if (isTweaking) {
-        // Tweaking mode: preserve original and add modifications
-        finalPrompt = `${lastGeneratedPrompt}\n\nADDITIONAL MODIFICATION: ${tweakInstructions.trim()}`
+        // Tweaking mode: create a simple modification prompt
+        // Reference the existing image style and add the modification
+        finalPrompt = `Take the existing ${selectedStyle} image and make this modification: ${tweakInstructions.trim()}`
+        // Still send post content for context
+        sendPostContent = true
       } else {
         // New generation mode
         finalPrompt = customDescription.trim() || visualPrompt
+        sendPostContent = true
+        // Store the prompt for reference (though we're not using it for tweaks anymore)
+        setLastGeneratedPrompt(finalPrompt)
       }
       
       const requestData = {
@@ -105,20 +113,15 @@ export function ImagePanel({
         tone: tone,
         style: selectedStyle,
         // Include post content for context-aware generation
-        post_type: postType,
-        post_headline: postHeadline,
-        post_text: postText,
+        post_type: sendPostContent ? postType : undefined,
+        post_headline: sendPostContent ? postHeadline : undefined,
+        post_text: sendPostContent ? postText : undefined,
         // Text inclusion option
         allow_text: allowText,
         // Custom description flag
         is_custom_description: customDescription.trim().length > 0 || isTweaking,
         // Tweak mode flag
         is_tweaking: isTweaking,
-      }
-      
-      // Store the prompt for future tweaks
-      if (!isTweaking) {
-        setLastGeneratedPrompt(finalPrompt)
       }
 
       console.log('[ImagePanel] Sending request:', {
