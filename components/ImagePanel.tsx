@@ -315,22 +315,18 @@ export function ImagePanel({
 
         <Button
           onClick={handleGenerateImage}
-          disabled={isGenerating}
-          className={`w-full py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
-            generatedImage && tweakInstructions.trim()
-              ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white'
-              : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white'
-          }`}
+          disabled={isGenerating || (generatedImage !== null && tweakInstructions.trim().length > 0)}
+          className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
         >
-          {isGenerating ? (
+          {isGenerating && !tweakInstructions.trim() ? (
             <>
               <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-              {generatedImage && tweakInstructions.trim() ? 'Tweaking' : 'Generating'} {selectedTypeInfo?.label || 'image'}...
+              Generating {selectedTypeInfo?.label || 'image'}...
             </>
           ) : (
             <>
               <Image className="mr-2 h-5 w-5" />
-              {generatedImage && tweakInstructions.trim() ? '✏️ Tweak Image' : `Generate ${selectedTypeInfo?.label || 'Image'}`}
+              Generate New {selectedTypeInfo?.label || 'Image'}
             </>
           )}
         </Button>
@@ -372,32 +368,44 @@ export function ImagePanel({
             transition={{ duration: 0.6 }}
             className="space-y-4"
           >
-            {/* Image with Tweak Box Overlay */}
-            <div className="relative">
-              <div className="border-2 border-gray-200 rounded-2xl overflow-hidden shadow-lg">
-                <img
-                  src={generatedImage}
-                  alt={`Generated ${usedImageType || 'social media'} image`}
-                  className="w-full h-auto"
-                />
-              </div>
-              
-              {/* Tweak Box - Positioned on top of image */}
-              <div className="absolute top-3 left-3 right-3 border-2 border-orange-400 bg-orange-50/95 backdrop-blur-sm p-3 rounded-xl shadow-xl">
-                <label htmlFor="tweak-instructions" className="block text-xs font-bold text-orange-900 mb-2 flex items-center">
-                  <span className="text-sm">✏️</span>
-                  <span className="ml-1">Tweak Current Image</span>
-                  <span className="ml-2 text-xs font-normal text-orange-600">(keeps existing elements)</span>
-                </label>
+            {/* Tweak Box - Positioned ABOVE the image */}
+            <div className="border border-gray-300 bg-gray-50 p-4 rounded-xl">
+              <label htmlFor="tweak-instructions" className="block text-sm font-medium text-gray-700 mb-2">
+                ✏️ Tweak Current Image
+                <span className="ml-2 text-xs font-normal text-gray-500">(keeps existing elements)</span>
+              </label>
+              <div className="flex gap-2">
                 <textarea
                   id="tweak-instructions"
                   value={tweakInstructions}
                   onChange={(e) => setTweakInstructions(e.target.value)}
                   placeholder="e.g., 'add a spaceship in the background'"
                   rows={2}
-                  className="w-full p-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-xs resize-none bg-white shadow-sm"
+                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                 />
+                <Button
+                  onClick={handleGenerateImage}
+                  disabled={isGenerating || !tweakInstructions.trim()}
+                  className="px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed h-auto"
+                >
+                  {isGenerating && tweakInstructions.trim() ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    </>
+                  ) : (
+                    'Tweak'
+                  )}
+                </Button>
               </div>
+            </div>
+            
+            {/* Generated Image */}
+            <div className="border-2 border-gray-200 rounded-2xl overflow-hidden shadow-lg">
+              <img
+                src={generatedImage}
+                alt={`Generated ${usedImageType || 'social media'} image`}
+                className="w-full h-auto"
+              />
             </div>
             
             {usedImageType && (
