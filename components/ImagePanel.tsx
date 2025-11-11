@@ -275,6 +275,25 @@ export function ImagePanel({
           )}
         </div>
 
+        {/* Text Inclusion Toggle - Moved after Visual Style */}
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex-1">
+            <label htmlFor="allow-text" className="text-sm font-medium text-gray-700 cursor-pointer">
+              Include text in image
+            </label>
+            <p className="text-xs text-gray-500 mt-1">
+              Allow short English text (≤5 words) in the generated image
+            </p>
+          </div>
+          <input
+            id="allow-text"
+            type="checkbox"
+            checked={allowText}
+            onChange={(e) => setAllowText(e.target.checked)}
+            className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded cursor-pointer"
+          />
+        </div>
+
         {/* Custom Image Description - Always visible */}
         <div>
           <label htmlFor="custom-description" className="block text-sm font-medium text-gray-700 mb-2">
@@ -294,25 +313,7 @@ export function ImagePanel({
           </p>
         </div>
 
-        {/* Text Inclusion Toggle */}
-        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="flex-1">
-            <label htmlFor="allow-text" className="text-sm font-medium text-gray-700 cursor-pointer">
-              Include text in image
-            </label>
-            <p className="text-xs text-gray-500 mt-1">
-              Allow short English text (≤5 words) in the generated image
-            </p>
-          </div>
-          <input
-            id="allow-text"
-            type="checkbox"
-            checked={allowText}
-            onChange={(e) => setAllowText(e.target.checked)}
-            className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded cursor-pointer"
-          />
-        </div>
-
+        {/* Generate Button - Moved directly after Custom Description */}
         <Button
           onClick={handleGenerateImage}
           disabled={isGenerating || (generatedImage !== null && tweakInstructions.trim().length > 0)}
