@@ -275,48 +275,24 @@ export function ImagePanel({
           )}
         </div>
 
-        {/* Custom Image Description - Only show if no image generated yet */}
-        {!generatedImage && (
-          <div>
-            <label htmlFor="custom-description" className="block text-sm font-medium text-gray-700 mb-2">
-              Custom Image Description (Optional)
-              <span className="ml-2 text-xs font-normal text-blue-600">→ For NEW image generation</span>
-            </label>
-            <textarea
-              id="custom-description"
-              value={customDescription}
-              onChange={(e) => setCustomDescription(e.target.value)}
-              placeholder="Describe what you want to see in the image... e.g., 'A professional businesswoman working on a laptop in a modern office with plants in the background'"
-              rows={3}
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm resize-none"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              💡 Leave blank to use AI-generated description from your post content
-            </p>
-          </div>
-        )}
-
-        {/* Tweak Current Image - Only show AFTER image is generated */}
-        {generatedImage && (
-          <div className="border-2 border-orange-300 bg-orange-50 p-4 rounded-xl">
-            <label htmlFor="tweak-instructions" className="block text-sm font-medium text-orange-900 mb-2 flex items-center">
-              <span className="text-base">✏️</span>
-              <span className="ml-2">Tweak Current Image</span>
-              <span className="ml-2 text-xs font-normal text-orange-600">→ Modify without replacing</span>
-            </label>
-            <textarea
-              id="tweak-instructions"
-              value={tweakInstructions}
-              onChange={(e) => setTweakInstructions(e.target.value)}
-              placeholder="Add modifications to the current image... e.g., 'add a spaceship in the background' or 'make the lighting warmer'"
-              rows={2}
-              className="w-full p-3 border border-orange-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm resize-none bg-white"
-            />
-            <p className="mt-1 text-xs text-orange-700">
-              🎯 This will KEEP the current image and ADD your changes to it
-            </p>
-          </div>
-        )}
+        {/* Custom Image Description - Always visible */}
+        <div>
+          <label htmlFor="custom-description" className="block text-sm font-medium text-gray-700 mb-2">
+            Custom Image Description (Optional)
+            <span className="ml-2 text-xs font-normal text-blue-600">→ For NEW image generation</span>
+          </label>
+          <textarea
+            id="custom-description"
+            value={customDescription}
+            onChange={(e) => setCustomDescription(e.target.value)}
+            placeholder="Describe what you want to see in the image... e.g., 'A professional businesswoman working on a laptop in a modern office with plants in the background'"
+            rows={3}
+            className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm resize-none"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            💡 Leave blank to use AI-generated description from your post content
+          </p>
+        </div>
 
         {/* Text Inclusion Toggle */}
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
@@ -396,13 +372,34 @@ export function ImagePanel({
             transition={{ duration: 0.6 }}
             className="space-y-4"
           >
-            <div className="border-2 border-gray-200 rounded-2xl overflow-hidden shadow-lg">
-              <img
-                src={generatedImage}
-                alt={`Generated ${usedImageType || 'social media'} image`}
-                className="w-full h-auto"
-              />
+            {/* Image with Tweak Box Overlay */}
+            <div className="relative">
+              <div className="border-2 border-gray-200 rounded-2xl overflow-hidden shadow-lg">
+                <img
+                  src={generatedImage}
+                  alt={`Generated ${usedImageType || 'social media'} image`}
+                  className="w-full h-auto"
+                />
+              </div>
+              
+              {/* Tweak Box - Positioned on top of image */}
+              <div className="absolute top-3 left-3 right-3 border-2 border-orange-400 bg-orange-50/95 backdrop-blur-sm p-3 rounded-xl shadow-xl">
+                <label htmlFor="tweak-instructions" className="block text-xs font-bold text-orange-900 mb-2 flex items-center">
+                  <span className="text-sm">✏️</span>
+                  <span className="ml-1">Tweak Current Image</span>
+                  <span className="ml-2 text-xs font-normal text-orange-600">(keeps existing elements)</span>
+                </label>
+                <textarea
+                  id="tweak-instructions"
+                  value={tweakInstructions}
+                  onChange={(e) => setTweakInstructions(e.target.value)}
+                  placeholder="e.g., 'add a spaceship in the background'"
+                  rows={2}
+                  className="w-full p-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-xs resize-none bg-white shadow-sm"
+                />
+              </div>
             </div>
+            
             {usedImageType && (
               <div className="text-center">
                 <span className="inline-block px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
