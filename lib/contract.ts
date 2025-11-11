@@ -58,6 +58,8 @@ export const ImageGenerationRequestSchema = z.object({
   post_text: z.string().optional(),
   // Text inclusion option (default: false)
   allow_text: z.boolean().optional().default(false),
+  // Custom description flag (when user provides their own description)
+  is_custom_description: z.boolean().optional().default(false),
 })
 
 export const ImageGenerationResponseSchema = z.object({

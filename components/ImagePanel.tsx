@@ -44,6 +44,7 @@ export function ImagePanel({
   const [usedImageType, setUsedImageType] = useState<string | null>(savedImageStyle || null)
   const [allowText, setAllowText] = useState(false)
   const [userHasSelectedStyle, setUserHasSelectedStyle] = useState(false)
+  const [customDescription, setCustomDescription] = useState('')
 
   // Update selected style when auto-selected type changes, but only if user hasn't manually selected a style
   React.useEffect(() => {
@@ -84,7 +85,7 @@ export function ImagePanel({
     
     try {
       const requestData = {
-        visual_prompt: visualPrompt,
+        visual_prompt: customDescription.trim() || visualPrompt,
         industry: industry,
         tone: tone,
         style: selectedStyle,
@@ -94,6 +95,8 @@ export function ImagePanel({
         post_text: postText,
         // Text inclusion option
         allow_text: allowText,
+        // Custom description flag
+        is_custom_description: customDescription.trim().length > 0,
       }
 
       console.log('[ImagePanel] Sending request:', {
@@ -243,6 +246,24 @@ export function ImagePanel({
               {selectedTypeInfo.description}
             </p>
           )}
+        </div>
+
+        {/* Custom Image Description */}
+        <div>
+          <label htmlFor="custom-description" className="block text-sm font-medium text-gray-700 mb-2">
+            Custom Image Description (Optional)
+          </label>
+          <textarea
+            id="custom-description"
+            value={customDescription}
+            onChange={(e) => setCustomDescription(e.target.value)}
+            placeholder="Describe what you want to see in the image... e.g., 'A professional businesswoman working on a laptop in a modern office with plants in the background'"
+            rows={3}
+            className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm resize-none"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            💡 Leave blank to use AI-generated description from your post content
+          </p>
         </div>
 
         {/* Text Inclusion Toggle */}

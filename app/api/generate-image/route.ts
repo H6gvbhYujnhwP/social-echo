@@ -158,7 +158,19 @@ export async function POST(request: NextRequest) {
     // Generate context-aware prompt if we have post content
     let imagePrompt: string
     
-    if (validatedRequest.post_headline && validatedRequest.post_text) {
+    // Check if user provided a custom description
+    if (validatedRequest.is_custom_description) {
+      // User provided custom description - use it directly with style formatting
+      imagePrompt = `Create a ${imageType} style image for LinkedIn/social media.
+
+User's description: ${validatedRequest.visual_prompt}
+
+Style: ${imageType}. High quality, professional, engaging.
+Orientation: square or 4:5 portrait. High resolution.
+
+${allowText ? 'Text is allowed (max 5 words, English only).' : 'IMPORTANT: Do NOT include any text, letters, words, logos, watermarks, or typographic elements.'}`
+      console.log('[generate-image] Using custom user description')
+    } else if (validatedRequest.post_headline && validatedRequest.post_text) {
       // Use new context-aware prompt generator
       imagePrompt = await generateImagePrompt({
         type: imageType,
