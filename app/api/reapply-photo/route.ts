@@ -16,10 +16,11 @@ const prisma = new PrismaClient()
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const userId = (session.user as any).id
     const body = await req.json()
     const {
       existingImageUrl,
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     // Get the user profile to access the custom photo
     const profile = await prisma.profile.findUnique({
-      where: { userEmail: session.user.email },
+      where: { userId },
       select: { customPhotos: true, logoUrl: true, logoPosition: true, logoSize: true }
     })
 
