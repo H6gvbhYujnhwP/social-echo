@@ -65,13 +65,13 @@ export async function POST(req: NextRequest) {
     const backdropHeight = backdropMetadata.height || 1024
 
     // Process the custom photo
-    let photoBuffer = Buffer.from(photo.base64.replace(/^data:image/\w+;base64,/, ''), 'base64')
+    let photoBuffer = Buffer.from(photo.base64.replace(/^data:image\/\w+;base64,/, ''), 'base64')
 
     // Remove background if enabled
     if (removeBackgroundEnabled) {
       console.log('[reapply-photo] Removing background from photo')
       const processedPhoto = await removeBackground(photo.base64)
-      photoBuffer = Buffer.from(processedPhoto.replace(/^data:image/\w+;base64,/, ''), 'base64')
+      photoBuffer = Buffer.from(processedPhoto.replace(/^data:image\/\w+;base64,/, ''), 'base64')
     }
 
     // Rotate the photo
