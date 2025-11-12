@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { cuid } from '@/lib/utils/cuid'
+import crypto from 'crypto'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const MAX_PHOTOS = 5
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create new photo object
-    const photoId = cuid()
+    const photoId = crypto.randomBytes(16).toString('hex')
     const newPhoto = {
       id: photoId,
       name: file.name,
