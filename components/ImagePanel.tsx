@@ -67,6 +67,7 @@ export function ImagePanel({
   const [photoRotation, setPhotoRotation] = useState<0 | 90 | 180 | 270>(0)
   const [removeBackground, setRemoveBackground] = useState(true) // Default to true for better results
   const [isGeneratingBackdrop, setIsGeneratingBackdrop] = useState(false)
+  const [isReapplyingPhoto, setIsReapplyingPhoto] = useState(false)
 
   // Update selected style when auto-selected type changes, but only if user hasn't manually selected a style
   React.useEffect(() => {
@@ -280,6 +281,52 @@ export function ImagePanel({
       setError(err instanceof Error ? err.message : 'Failed to generate backdrop')
     } finally {
       setIsGeneratingBackdrop(false)
+    }
+  }
+
+  const handleReapplyPhoto = async () => {
+    if (!generatedImage || !selectedPhotoId) {
+      setError('No existing image to modify')
+      return
+    }
+    
+    setIsReapplyingPhoto(true)
+    setError(null)
+    
+    try {
+      const response = await fetch('/api/reapply-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          existingImageUrl: originalImage || generatedImage,
+          photoId: selectedPhotoId,
+          photoPosition,
+          photoSize,
+          photoRotation,
+          removeBackgroundEnabled: removeBackground,
+          applyLogo
+        })
+      })
+      
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to apply photo changes')
+      }
+      
+      const data = await response.json()
+      setGeneratedImage(data.imageUrl)
+      
+      // Notify parent component
+      if (onImageGenerated) {
+        onImageGenerated(data.imageUrl, 'custom-backdrop')
+      }
+      
+      console.log('[ImagePanel] Photo changes applied successfully')
+    } catch (err) {
+      console.error('[ImagePanel] Error applying photo changes:', err)
+      setError(err instanceof Error ? err.message : 'Failed to apply photo changes')
+    } finally {
+      setIsReapplyingPhoto(false)
     }
   }
 
@@ -641,23 +688,57 @@ export function ImagePanel({
                   />
                 </div>
                 
-                <Button
-                  onClick={handleGenerateBackdrop}
-                  disabled={isGeneratingBackdrop}
-                  className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                >
-                  {isGeneratingBackdrop ? (
-                    <>
-                      <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-                      Generating Backdrop...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="mr-2 h-5 w-5" />
-                      Generate Backdrop
-                    </>
+                {/* Apply Photo Changes Button - Only show when image exists */}
+                {generatedImage && usedImageType === 'custom-backdrop' && (
+                  <div className="space-y-2">
+                    <Button
+                      onClick={handleReapplyPhoto}
+                      disabled={isReapplyingPhoto}
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 text-base font-semibold rounded-xl shadow-md transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    >
+                      {isReapplyingPhoto ? (
+                        <>
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                          Applying Changes...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          Apply Photo Changes
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-xs text-center text-gray-600">
+                      ✨ Keeps the backdrop, only adjusts your photo settings
+                    </p>
+                  </div>
+                )}
+                
+                {/* Generate New Backdrop Button */}
+                <div className="space-y-2">
+                  <Button
+                    onClick={handleGenerateBackdrop}
+                    disabled={isGeneratingBackdrop}
+                    className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    {isGeneratingBackdrop ? (
+                      <>
+                        <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+                        Generating Backdrop...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-5 w-5" />
+                        Generate New Backdrop
+                      </>
+                    )}
+                  </Button>
+                  {generatedImage && usedImageType === 'custom-backdrop' && (
+                    <p className="text-xs text-center text-gray-600">
+                      🎨 Creates a completely new AI backdrop
+                    </p>
                   )}
-                </Button>
+                </div>
               </>
             )}
             
