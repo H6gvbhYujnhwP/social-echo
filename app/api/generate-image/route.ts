@@ -317,8 +317,38 @@ If text is absolutely unavoidable, use short English only (max 3-5 words).`
     // Log telemetry
     console.log('[generate-image] Telemetry:', telemetry)
     
+    // Apply logo overlay if requested
+    let finalImageBase64 = imageBase64
+    if (validatedRequest.apply_logo) {
+      try {
+        const { prisma } = await import('@/lib/prisma')
+        const { overlayLogo, shouldApplyLogo } = await import('@/lib/image-overlay')
+        
+        // Get user's profile with logo settings
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          include: { profile: true }
+        })
+        
+        if (user?.profile && shouldApplyLogo(user.profile)) {
+          console.log('[generate-image] Applying logo overlay...')
+          finalImageBase64 = await overlayLogo(imageBase64, {
+            logoPath: user.profile.logoUrl!,
+            position: (user.profile.logoPosition as any) || 'bottom-right',
+            size: (user.profile.logoSize as any) || 'medium'
+          })
+          console.log('[generate-image] Logo overlay applied successfully')
+        } else {
+          console.log('[generate-image] Logo overlay skipped (no logo or disabled)')
+        }
+      } catch (logoError: any) {
+        console.error('[generate-image] Logo overlay failed:', logoError)
+        // Continue with original image if logo overlay fails
+      }
+    }
+    
     const response: ImageGenerationResponse = {
-      image_base64: imageBase64,
+      image_base64: finalImageBase64,
       image_type: imageType,
       generator: generatorUsed // Add for debugging
     }

@@ -97,6 +97,12 @@ model Profile {
   country           String?  // User's country for localized content (UK, US, CA, AU, etc.)
   documents         Json?    // Array of uploaded document objects {filename, content, uploadedAt}
   
+  // Logo overlay settings
+  logoUrl           String?  // URL/path to uploaded logo image
+  logoPosition      String?  @default("bottom-right") // 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center'
+  logoSize          String?  @default("medium") // 'small' | 'medium' | 'large'
+  logoEnabled       Boolean  @default(true) // Whether to apply logo by default
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

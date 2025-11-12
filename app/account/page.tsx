@@ -4,12 +4,13 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { motion } from 'framer-motion'
-import { CreditCard, Mail, Lock, User, Calendar, AlertCircle, Shield, FileText, CheckCircle, XCircle } from 'lucide-react'
+import { CreditCard, Mail, Lock, User, Calendar, AlertCircle, Shield, FileText, CheckCircle, XCircle, Image as ImageIcon } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import Container from '../../components/layout/Container'
 import UpgradeModal from '../../components/UpgradeModal'
 import { TrialCountdown } from '../../components/TrialCountdown'
+import { LogoUpload } from '../../components/LogoUpload'
 import { PLAN_METADATA, getPlanMetadata, isUnlimitedPlan } from '@/lib/billing/plan-metadata'
 
 interface Subscription {
@@ -45,6 +46,7 @@ function AccountPageInner() {
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -110,6 +112,13 @@ function AccountPageInner() {
         // Initialize selectedPlan with current plan (starter, pro, or ultimate)
         const currentPlan = data.plan?.toLowerCase() || 'starter'
         setSelectedPlan(currentPlan as 'starter' | 'pro' | 'ultimate')
+        
+        // Fetch profile data
+        const profileRes = await fetch('/api/profile')
+        if (profileRes.ok) {
+          const profileData = await profileRes.json()
+          setProfile(profileData)
+        }
         // Only show trial banner for real Starter trials ('trialing'), not admin trials ('trial')
         setIsTrialing(data.status === 'trialing')
         
@@ -825,6 +834,29 @@ function AccountPageInner() {
                     <p className="text-white break-words">{session?.user?.name}</p>
                   </div>
                 </div>
+              </motion.div>
+
+              {/* Company Logo */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20"
+              >
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-4 flex items-center break-words min-w-0">
+                  <ImageIcon className="w-5 h-5 mr-2 flex-shrink-0" />
+                  <span className="break-words min-w-0">Company Logo</span>
+                </h3>
+                <p className="text-white/60 text-sm mb-4">
+                  Upload your company logo to automatically overlay it on generated images
+                </p>
+                <LogoUpload
+                  currentLogoUrl={profile?.logoUrl}
+                  logoPosition={profile?.logoPosition || 'bottom-right'}
+                  logoSize={profile?.logoSize || 'medium'}
+                  logoEnabled={profile?.logoEnabled ?? true}
+                  onLogoUpdate={() => window.location.reload()}
+                />
               </motion.div>
             </div>
           )}

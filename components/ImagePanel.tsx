@@ -45,6 +45,7 @@ export function ImagePanel({
   const [allowText, setAllowText] = useState(false)
   const [userHasSelectedStyle, setUserHasSelectedStyle] = useState(false)
   const [customDescription, setCustomDescription] = useState('')
+  const [applyLogo, setApplyLogo] = useState(true) // Apply logo by default
 
   // Update selected style when auto-selected type changes, but only if user hasn't manually selected a style
   React.useEffect(() => {
@@ -100,6 +101,8 @@ export function ImagePanel({
         allow_text: allowText,
         // Custom description flag
         is_custom_description: customDescription.trim().length > 0,
+        // Logo overlay option
+        apply_logo: applyLogo,
       }
 
       console.log('[ImagePanel] Sending request:', {
@@ -267,6 +270,25 @@ export function ImagePanel({
             checked={allowText}
             onChange={(e) => setAllowText(e.target.checked)}
             className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded cursor-pointer"
+          />
+        </div>
+
+        {/* Logo Overlay Toggle */}
+        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex-1">
+            <label htmlFor="apply-logo" className="text-sm font-medium text-gray-700 cursor-pointer">
+              Apply company logo
+            </label>
+            <p className="text-xs text-gray-500 mt-1">
+              Overlay your logo on the generated image
+            </p>
+          </div>
+          <input
+            id="apply-logo"
+            type="checkbox"
+            checked={applyLogo}
+            onChange={(e) => setApplyLogo(e.target.checked)}
+            className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
           />
         </div>
 
