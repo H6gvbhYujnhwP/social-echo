@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Image, Download, RefreshCw, Palette, Info, Clock } from 'lucide-react'
+import { Image, Download, RefreshCw, Palette, Info, Clock, Sparkles } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Select } from './ui/Select'
 import { getAvailableImageTypes } from '../lib/ai/image-service'
+import CustomPhotoUpload from './CustomPhotoUpload'
 
 interface ImagePanelProps {
   visualPrompt?: string
@@ -54,6 +55,16 @@ export function ImagePanel({
   const [isReapplyingLogo, setIsReapplyingLogo] = useState(false)
   const [originalImage, setOriginalImage] = useState<string | null>(null) // Store original image without logo
   const [hasUploadedLogo, setHasUploadedLogo] = useState<boolean | null>(null) // null = loading, true/false = has logo or not
+  
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'ai' | 'custom'>('ai')
+  
+  // Custom photo backdrop states
+  const [selectedPhotoId, setSelectedPhotoId] = useState('')
+  const [backdropDescription, setBackdropDescription] = useState('')
+  const [photoPosition, setPhotoPosition] = useState<'left' | 'center' | 'right'>('center')
+  const [photoSize, setPhotoSize] = useState<'small' | 'medium' | 'large'>('medium')
+  const [isGeneratingBackdrop, setIsGeneratingBackdrop] = useState(false)
 
   // Update selected style when auto-selected type changes, but only if user hasn't manually selected a style
   React.useEffect(() => {
@@ -216,6 +227,58 @@ export function ImagePanel({
     }
   }
 
+  const handleGenerateBackdrop = async () => {
+    if (!selectedPhotoId) {
+      setError('Please select a photo first')
+      return
+    }
+    
+    if (!backdropDescription.trim()) {
+      setError('Please describe the backdrop you want')
+      return
+    }
+    
+    setIsGeneratingBackdrop(true)
+    setError(null)
+    
+    try {
+      const response = await fetch('/api/generate-backdrop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          photoId: selectedPhotoId,
+          backdropDescription,
+          photoPosition,
+          photoSize,
+          photoPlacement: 'foreground',
+          includeLogo: applyLogo
+        })
+      })
+      
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to generate backdrop')
+      }
+      
+      const data = await response.json()
+      setGeneratedImage(data.imageUrl)
+      setUsedImageType('custom-backdrop')
+      setOriginalImage(data.imageUrl) // Store for logo adjustments
+      
+      // Notify parent component
+      if (onImageGenerated) {
+        onImageGenerated(data.imageUrl, 'custom-backdrop')
+      }
+      
+      console.log('[ImagePanel] Backdrop generated successfully')
+    } catch (err) {
+      console.error('[ImagePanel] Error generating backdrop:', err)
+      setError(err instanceof Error ? err.message : 'Failed to generate backdrop')
+    } finally {
+      setIsGeneratingBackdrop(false)
+    }
+  }
+
   const handleDownload = async () => {
     if (!generatedImage) return
 
@@ -308,7 +371,43 @@ export function ImagePanel({
         </div>
       </div>
       
+      
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200">
+        <div className="flex">
+          <button
+            onClick={() => setActiveTab('ai')}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+              activeTab === 'ai'
+                ? 'border-b-2 border-green-500 text-green-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              <span>AI Image</span>
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('custom')}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+              activeTab === 'custom'
+                ? 'border-b-2 border-purple-500 text-purple-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Image className="h-4 w-4" />
+              <span>Custom Photo</span>
+            </div>
+          </button>
+        </div>
+      </div>
+      
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        {/* AI Image Tab Content */}
+        {activeTab === 'ai' && (
+          <>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
             <Palette className="h-4 w-4 mr-2" />
@@ -424,7 +523,122 @@ export function ImagePanel({
             </p>
           </motion.div>
         )}
-
+        </>
+        )}
+        
+        {/* Custom Photo Tab Content */}
+        {activeTab === 'custom' && (
+          <>
+            <CustomPhotoUpload
+              onPhotoSelect={setSelectedPhotoId}
+              selectedPhotoId={selectedPhotoId}
+            />
+            
+            {selectedPhotoId && (
+              <>
+                <div>
+                  <label htmlFor="backdrop-description" className="block text-sm font-medium text-gray-700 mb-2">
+                    Backdrop Description
+                  </label>
+                  <textarea
+                    id="backdrop-description"
+                    value={backdropDescription}
+                    onChange={(e) => setBackdropDescription(e.target.value)}
+                    placeholder="Describe the backdrop you want... e.g., 'modern office with glass windows', 'outdoor nature scene with mountains', 'luxury showroom with spotlights'"
+                    rows={3}
+                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm resize-none"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Photo Position</label>
+                    <select
+                      value={photoPosition}
+                      onChange={(e) => setPhotoPosition(e.target.value as 'left' | 'center' | 'right')}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                    >
+                      <option value="left">Left</option>
+                      <option value="center">Center</option>
+                      <option value="right">Right</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Photo Size</label>
+                    <select
+                      value={photoSize}
+                      onChange={(e) => setPhotoSize(e.target.value as 'small' | 'medium' | 'large')}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                    >
+                      <option value="small">Small (25%)</option>
+                      <option value="medium">Medium (40%)</option>
+                      <option value="large">Large (60%)</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* Logo Overlay Toggle for Custom Photo */}
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex-1">
+                    <label htmlFor="apply-logo-custom" className="text-sm font-medium text-gray-700 cursor-pointer">
+                      Apply company logo
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {hasUploadedLogo === false ? (
+                        <span>
+                          Please upload your logo by clicking <a href="/account" className="text-blue-600 hover:underline font-medium">Account</a>
+                        </span>
+                      ) : (
+                        'Overlay your logo on the generated image'
+                      )}
+                    </p>
+                  </div>
+                  <input
+                    id="apply-logo-custom"
+                    type="checkbox"
+                    checked={applyLogo}
+                    onChange={(e) => setApplyLogo(e.target.checked)}
+                    disabled={hasUploadedLogo === false}
+                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                </div>
+                
+                <Button
+                  onClick={handleGenerateBackdrop}
+                  disabled={isGeneratingBackdrop}
+                  className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {isGeneratingBackdrop ? (
+                    <>
+                      <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+                      Generating Backdrop...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      Generate Backdrop
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
+            
+            {!selectedPhotoId && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 bg-purple-50 border border-purple-200 rounded-xl"
+              >
+                <p className="text-purple-700 text-center text-sm">
+                  📸 Upload and select a photo to get started
+                </p>
+              </motion.div>
+            )}
+          </>
+        )}
+        
+        {/* Error and Generated Image (shared between tabs) */}
         {error && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -435,14 +649,14 @@ export function ImagePanel({
             <Button
               variant="outline"
               size="sm"
-              onClick={handleGenerateImage}
+              onClick={activeTab === 'ai' ? handleGenerateImage : handleGenerateBackdrop}
               className="border-red-300 text-red-600 hover:bg-red-50"
             >
               Try again
             </Button>
           </motion.div>
         )}
-
+        
         {generatedImage && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}

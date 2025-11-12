@@ -103,6 +103,9 @@ model Profile {
   logoSize          String?  @default("medium") // 'small' | 'medium' | 'large'
   logoEnabled       Boolean  @default(true) // Whether to apply logo by default
   
+  // Custom photo uploads for backdrop compositing
+  customPhotos      Json?    // Array of uploaded photos: [{id, name, base64, uploadedAt}]
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
