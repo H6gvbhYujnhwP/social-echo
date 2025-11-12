@@ -127,7 +127,7 @@ export async function compositeImages(options: CompositeOptions): Promise<string
 }
 
 /**
- * Generate a backdrop prompt optimized for photo compositing
+ * Generate a backdrop prompt optimized for immersive photo compositing
  * @param userDescription User's backdrop description
  * @param position Where the photo will be placed
  * @returns Optimized DALL-E prompt
@@ -137,10 +137,11 @@ export function generateBackdropPrompt(
   position: PhotoPosition
 ): string {
   const positionHints = {
-    left: 'with open space on the left side',
-    center: 'with a clear central area',
-    right: 'with open space on the right side'
+    left: 'with open space on the left third of the frame',
+    center: 'with a clear central focus area',
+    right: 'with open space on the right third of the frame'
   }
 
-  return `Professional photography backdrop: ${userDescription}. ${positionHints[position]}. High quality, well-lit, suitable for product or portrait photography. No people or faces. Clean composition.`
+  // Create an immersive environment prompt that blends naturally with composited photos
+  return `A photorealistic scene: ${userDescription}. ${positionHints[position]}. Cinematic lighting, professional photography quality, depth of field, atmospheric perspective. Wide angle view showing the full environment. No people, no faces, no text. Ultra detailed, 8K quality.`
 }
