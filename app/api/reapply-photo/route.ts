@@ -6,12 +6,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import sharp from 'sharp'
 import { removeBackground } from '@/lib/background-removal'
 import { overlayLogo } from '@/lib/image-overlay'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
 
 export async function POST(req: NextRequest) {
   try {
@@ -51,7 +49,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Find the selected photo
-    const photo = profile.customPhotos.find((p: any) => p.id === photoId)
+    const customPhotos = (profile.customPhotos as any[]) || []
+    const photo = customPhotos.find((p: any) => p.id === photoId)
     if (!photo) {
       return NextResponse.json({ error: 'Photo not found' }, { status: 404 })
     }
@@ -66,13 +65,13 @@ export async function POST(req: NextRequest) {
     const backdropHeight = backdropMetadata.height || 1024
 
     // Process the custom photo
-    let photoBuffer = Buffer.from(photo.imageData.replace(/^data:image\/\w+;base64,/, ''), 'base64')
+    let photoBuffer = Buffer.from(photo.base64.replace(/^data:image/\w+;base64,/, ''), 'base64')
 
     // Remove background if enabled
     if (removeBackgroundEnabled) {
       console.log('[reapply-photo] Removing background from photo')
-      const processedPhoto = await removeBackground(photo.imageData)
-      photoBuffer = Buffer.from(processedPhoto.replace(/^data:image\/\w+;base64,/, ''), 'base64')
+      const processedPhoto = await removeBackground(photo.base64)
+      photoBuffer = Buffer.from(processedPhoto.replace(/^data:image/\w+;base64,/, ''), 'base64')
     }
 
     // Rotate the photo
