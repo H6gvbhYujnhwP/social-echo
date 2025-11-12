@@ -1,42 +1,52 @@
 /**
- * Background removal service using remove.bg API
- * Falls back to original image if API key not configured or removal fails
+ * Background removal service using Replicate API
+ * Uses BRIA background removal model
+ * Cost: ~$0.018 per image (60x cheaper than remove.bg)
  */
 
+import Replicate from 'replicate'
+
+const replicate = new Replicate({
+  auth: process.env.REPLICATE_API_TOKEN || process.env.REPLICATE_API_KEY
+})
+
 export async function removeBackground(imageBase64: string): Promise<string> {
-  const apiKey = process.env.REMOVEBG_API_KEY
+  const apiToken = process.env.REPLICATE_API_TOKEN || process.env.REPLICATE_API_KEY
   
-  if (!apiKey) {
-    console.warn('[background-removal] REMOVEBG_API_KEY not configured, skipping background removal')
+  if (!apiToken) {
+    console.warn('[background-removal] REPLICATE_API_TOKEN not configured, skipping background removal')
     return imageBase64
   }
 
   try {
-    // Remove data URI prefix if present
-    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '')
+    console.log('[background-removal] Removing background with Replicate BRIA model')
     
-    const response = await fetch('https://api.remove.bg/v1.0/removebg', {
-      method: 'POST',
-      headers: {
-        'X-Api-Key': apiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        image_file_b64: base64Data,
-        size: 'auto',
-        format: 'png'
-      })
-    })
+    // Run the background removal model
+    const output = await replicate.run(
+      "bria/remove-background:a029dff38972b5fda4ec5d75d7d1cd25aeff621d2cf4946a41055d7db66b80bc",
+      {
+        input: {
+          image: imageBase64
+        }
+      }
+    ) as string
 
-    if (!response.ok) {
-      const error = await response.text()
-      console.error('[background-removal] API error:', error)
-      return imageBase64 // Return original on error
+    if (!output) {
+      console.error('[background-removal] No output from Replicate')
+      return imageBase64
     }
 
-    // Get the result as a buffer
-    const resultBuffer = await response.arrayBuffer()
-    const base64Result = Buffer.from(resultBuffer).toString('base64')
+    // Output is a URL to the processed image, fetch it and convert to base64
+    console.log('[background-removal] Fetching processed image from Replicate')
+    const response = await fetch(output)
+    
+    if (!response.ok) {
+      console.error('[background-removal] Failed to fetch processed image')
+      return imageBase64
+    }
+
+    const buffer = await response.arrayBuffer()
+    const base64Result = Buffer.from(buffer).toString('base64')
     
     console.log('[background-removal] Background removed successfully')
     return `data:image/png;base64,${base64Result}`
