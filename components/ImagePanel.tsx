@@ -665,31 +665,6 @@ export function ImagePanel({
                   />
                 </div>
                 
-                {/* Logo Overlay Toggle for Custom Photo */}
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex-1">
-                    <label htmlFor="apply-logo-custom" className="text-sm font-medium text-gray-700 cursor-pointer">
-                      Apply company logo
-                    </label>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {hasUploadedLogo === false ? (
-                        <span>
-                          Please upload your logo by clicking <a href="/account" className="text-blue-600 hover:underline font-medium">Account</a>
-                        </span>
-                      ) : (
-                        'Overlay your logo on the generated image'
-                      )}
-                    </p>
-                  </div>
-                  <input
-                    id="apply-logo-custom"
-                    type="checkbox"
-                    checked={applyLogo}
-                    onChange={(e) => setApplyLogo(e.target.checked)}
-                    disabled={hasUploadedLogo === false}
-                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  />
-                </div>
                 
                 {/* Apply Photo Changes Button - Only show when image exists */}
                 {generatedImage && usedImageType === 'custom-backdrop' && (
@@ -807,15 +782,26 @@ export function ImagePanel({
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Logo Settings</h3>
                 
-                {/* Logo Enable/Disable */}
+                {/* Logo Enable/Disable Toggle */}
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium text-gray-700">Show Logo</label>
-                  <input
-                    type="checkbox"
-                    checked={logoEnabled}
-                    onChange={(e) => setLogoEnabled(e.target.checked)}
-                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
-                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setLogoEnabled(!logoEnabled)
+                      // Wait for state update then reapply
+                      setTimeout(() => handleReapplyLogo(), 0)
+                    }}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                      logoEnabled ? 'bg-blue-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        logoEnabled ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
                 </div>
                 
                 {/* Logo Position */}
@@ -823,7 +809,10 @@ export function ImagePanel({
                   <label className="block text-sm font-medium text-gray-700 mb-2">Position</label>
                   <select
                     value={logoPosition}
-                    onChange={(e) => setLogoPosition(e.target.value)}
+                    onChange={(e) => {
+                      setLogoPosition(e.target.value)
+                      setTimeout(() => handleReapplyLogo(), 0)
+                    }}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   >
                     <option value="top-left">Top Left</option>
@@ -839,7 +828,10 @@ export function ImagePanel({
                   <label className="block text-sm font-medium text-gray-700 mb-2">Size</label>
                   <select
                     value={logoSize}
-                    onChange={(e) => setLogoSize(e.target.value)}
+                    onChange={(e) => {
+                      setLogoSize(e.target.value)
+                      setTimeout(() => handleReapplyLogo(), 0)
+                    }}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   >
                     <option value="small">Small (15%)</option>
@@ -847,15 +839,6 @@ export function ImagePanel({
                     <option value="large">Large (35%)</option>
                   </select>
                 </div>
-                
-                {/* Apply Button */}
-                <Button
-                  onClick={handleReapplyLogo}
-                  disabled={isReapplyingLogo}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium text-sm"
-                >
-                  {isReapplyingLogo ? 'Applying...' : 'Apply Logo Changes'}
-                </Button>
               </div>
             )}
             
