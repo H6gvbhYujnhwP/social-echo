@@ -98,7 +98,7 @@ model Profile {
   documents         Json?    // Array of uploaded document objects {filename, content, uploadedAt}
   
   // Logo overlay settings
-  logoUrl           String?  // URL/path to uploaded logo image
+  logoUrl           String?  @db.Text // Base64 encoded logo image (data:image/...;base64,...)
   logoPosition      String?  @default("bottom-right") // 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center'
   logoSize          String?  @default("medium") // 'small' | 'medium' | 'large'
   logoEnabled       Boolean  @default(true) // Whether to apply logo by default

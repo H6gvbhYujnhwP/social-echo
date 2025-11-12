@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+// No longer need file system imports - using base64 storage
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,25 +38,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Create logos directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'logos')
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
-
-    // Generate unique filename
-    const timestamp = Date.now()
-    const extension = file.name.split('.').pop()
-    const filename = `${user.id}-${timestamp}.${extension}`
-    const filepath = join(uploadsDir, filename)
-
-    // Save file
+    // Convert image to base64 for database storage
+    // This avoids issues with ephemeral file systems in production
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    await writeFile(filepath, buffer)
-
-    // Update profile with logo URL
-    const logoUrl = `/uploads/logos/${filename}`
+    const base64 = buffer.toString('base64')
+    const mimeType = file.type
+    const logoUrl = `data:${mimeType};base64,${base64}`
     
     if (user.profile) {
       await prisma.profile.update({
