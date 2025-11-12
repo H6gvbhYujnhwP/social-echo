@@ -5,7 +5,6 @@ import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
-const MAX_PHOTOS = 5
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
 
 export async function POST(req: NextRequest) {
@@ -54,18 +53,7 @@ export async function POST(req: NextRequest) {
     const mimeType = file.type
     const photoUrl = `data:${mimeType};base64,${base64}`
 
-    // Get existing photos
-    const existingPhotos = (user.profile?.customPhotos as any[]) || []
-
-    // Check max photos limit
-    if (existingPhotos.length >= MAX_PHOTOS) {
-      return NextResponse.json(
-        { error: `Maximum ${MAX_PHOTOS} photos allowed. Please delete a photo first.` },
-        { status: 400 }
-      )
-    }
-
-    // Create new photo object
+    // Create new photo object (replaces any existing photo)
     const photoId = crypto.randomBytes(16).toString('hex')
     const newPhoto = {
       id: photoId,
@@ -74,8 +62,8 @@ export async function POST(req: NextRequest) {
       uploadedAt: new Date().toISOString()
     }
 
-    // Add to photos array
-    const updatedPhotos = [...existingPhotos, newPhoto]
+    // Replace existing photo with new one (single photo only)
+    const updatedPhotos = [newPhoto]
 
     // Update profile
     await prisma.profile.update({

@@ -105,8 +105,8 @@ export default function CustomPhotoUpload({ onPhotoSelect, selectedPhotoId }: Cu
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-700">Custom Photos</h3>
-        <span className="text-xs text-gray-500">{photos.length}/5 photos</span>
+        <h3 className="text-sm font-medium text-gray-700">Custom Photo</h3>
+        <span className="text-xs text-gray-500">{photos.length > 0 ? '1 photo' : 'No photo'}</span>
       </div>
 
       {/* Upload Button */}
@@ -114,17 +114,16 @@ export default function CustomPhotoUpload({ onPhotoSelect, selectedPhotoId }: Cu
         flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg
         cursor-pointer transition-colors
         ${uploading ? 'opacity-50 cursor-not-allowed' : 'hover:border-purple-400 hover:bg-purple-50'}
-        ${photos.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}
       `}>
         <Upload className="w-5 h-5 text-gray-400" />
         <span className="text-sm text-gray-600">
-          {uploading ? 'Uploading...' : 'Upload Photo'}
+          {uploading ? 'Uploading...' : photos.length > 0 ? 'Replace Photo' : 'Upload Photo'}
         </span>
         <input
           type="file"
           accept="image/png,image/jpeg,image/jpg,image/webp"
           onChange={handleUpload}
-          disabled={uploading || photos.length >= 5}
+          disabled={uploading}
           className="hidden"
         />
       </label>
@@ -136,9 +135,9 @@ export default function CustomPhotoUpload({ onPhotoSelect, selectedPhotoId }: Cu
         </div>
       )}
 
-      {/* Photo Gallery */}
+      {/* Single Photo Display */}
       {photos.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="">
           {photos.map((photo) => (
             <div
               key={photo.id}
@@ -190,8 +189,9 @@ export default function CustomPhotoUpload({ onPhotoSelect, selectedPhotoId }: Cu
 
       {/* Help Text */}
       <p className="text-xs text-gray-500">
-        Upload your product photos, team photos, or any images you want to use with AI-generated backdrops.
-        Max 5 photos, 5MB each. Supported formats: PNG, JPG, WEBP.
+        Upload your product photo, team photo, or any image you want to use with AI-generated backdrops.
+        {photos.length > 0 ? ' Uploading a new photo will replace the current one.' : ''}
+        Max 5MB. Supported formats: PNG, JPG, WEBP.
       </p>
     </div>
   )
