@@ -375,14 +375,14 @@ export function ImagePanel({
       
       
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
-        <div className="flex">
+      <div className="border-b border-gray-200 bg-gray-50">
+        <div className="flex gap-1 px-2 pt-2">
           <button
             onClick={() => setActiveTab('ai')}
-            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+            className={`flex-1 px-4 py-2.5 text-sm font-medium transition-all rounded-t-lg ${
               activeTab === 'ai'
-                ? 'border-b-2 border-green-500 text-green-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-white text-green-600 border-t-2 border-x border-green-500 border-b-0 shadow-sm'
+                : 'bg-transparent text-gray-600 hover:bg-gray-100 border border-transparent'
             }`}
           >
             <div className="flex items-center justify-center gap-2">
@@ -392,10 +392,10 @@ export function ImagePanel({
           </button>
           <button
             onClick={() => setActiveTab('custom')}
-            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+            className={`flex-1 px-4 py-2.5 text-sm font-medium transition-all rounded-t-lg ${
               activeTab === 'custom'
-                ? 'border-b-2 border-purple-500 text-purple-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-white text-purple-600 border-t-2 border-x border-purple-500 border-b-0 shadow-sm'
+                : 'bg-transparent text-gray-600 hover:bg-gray-100 border border-transparent'
             }`}
           >
             <div className="flex items-center justify-center gap-2">
