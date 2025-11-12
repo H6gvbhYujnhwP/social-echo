@@ -65,6 +65,9 @@ export function LogoUpload({
       setLogoUrl(data.logoUrl)
       setSuccess('Logo uploaded successfully!')
       setTimeout(() => setSuccess(null), 3000)
+      
+      // Notify parent to refresh profile data
+      onLogoUpdate()
     } catch (err: any) {
       setError(err.message || 'Failed to upload logo')
     } finally {
@@ -92,6 +95,9 @@ export function LogoUpload({
       setLogoUrl(null)
       setSuccess('Logo deleted successfully!')
       setTimeout(() => setSuccess(null), 3000)
+      
+      // Notify parent to refresh profile data
+      onLogoUpdate()
     } catch (err: any) {
       setError(err.message || 'Failed to delete logo')
     } finally {
@@ -122,6 +128,9 @@ export function LogoUpload({
 
       setSuccess('Settings updated successfully!')
       setTimeout(() => setSuccess(null), 3000)
+      
+      // Notify parent to refresh profile data
+      onLogoUpdate()
     } catch (err: any) {
       setError(err.message || 'Failed to update settings')
     } finally {
@@ -134,13 +143,20 @@ export function LogoUpload({
       {/* Current Logo */}
       {logoUrl && (
         <div className="flex items-center gap-4 p-4 bg-white/5 rounded-lg">
-          <img
-            src={logoUrl}
-            alt="Company logo"
-            className="h-16 w-16 object-contain bg-white/10 rounded"
-          />
+          <div className="h-16 w-16 flex items-center justify-center bg-white/10 rounded">
+            <img
+              src={logoUrl}
+              alt="Company logo"
+              className="max-h-16 max-w-16 object-contain"
+              onError={(e) => {
+                console.error('[LogoUpload] Failed to load logo:', logoUrl)
+                e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%23888" stroke-width="2"%3E%3Crect x="3" y="3" width="18" height="18" rx="2"%3E%3C/rect%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"%3E%3C/circle%3E%3Cpath d="M21 15l-5-5L5 21"%3E%3C/path%3E%3C/svg%3E'
+              }}
+            />
+          </div>
           <div className="flex-1">
-            <p className="text-white/80 text-sm">Current logo</p>
+            <p className="text-white/80 text-sm font-medium">Current logo</p>
+            <p className="text-white/50 text-xs mt-1">{logoUrl.split('/').pop()}</p>
           </div>
           <Button
             onClick={handleDeleteLogo}
