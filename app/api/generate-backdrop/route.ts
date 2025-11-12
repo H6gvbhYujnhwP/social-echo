@@ -102,9 +102,11 @@ export async function POST(req: NextRequest) {
       console.log('[generate-backdrop] Adding logo overlay')
       compositeImage = await overlayLogo(
         compositeImage,
-        user.profile.logoUrl,
-        user.profile.logoPosition || 'bottom-right',
-        user.profile.logoSize || 'medium'
+        {
+          logoPath: user.profile.logoUrl,
+          position: (user.profile.logoPosition as any) || 'bottom-right',
+          size: (user.profile.logoSize as any) || 'medium'
+        }
       )
     }
 

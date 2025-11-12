@@ -88,9 +88,18 @@ export async function overlayLogo(
       throw new Error('Could not determine image dimensions')
     }
 
-    // Read logo file
-    const logoPath = join(process.cwd(), 'public', options.logoPath)
-    const logoBuffer = await readFile(logoPath)
+    // Read logo - handle both file paths and base64 data URIs
+    let logoBuffer: Buffer
+    
+    if (options.logoPath.startsWith('data:image/')) {
+      // Base64 data URI - extract and convert
+      const base64Data = options.logoPath.replace(/^data:image\/\w+;base64,/, '')
+      logoBuffer = Buffer.from(base64Data, 'base64')
+    } else {
+      // File path - read from public directory
+      const logoPath = join(process.cwd(), 'public', options.logoPath)
+      logoBuffer = await readFile(logoPath)
+    }
 
     // Calculate logo dimensions
     const logoDimensions = calculateLogoDimensions(
