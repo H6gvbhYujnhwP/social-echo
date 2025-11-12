@@ -64,6 +64,7 @@ export function ImagePanel({
   const [backdropDescription, setBackdropDescription] = useState('')
   const [photoPosition, setPhotoPosition] = useState<'left' | 'center' | 'right'>('center')
   const [photoSize, setPhotoSize] = useState<'small' | 'medium' | 'large'>('medium')
+  const [photoRotation, setPhotoRotation] = useState<0 | 90 | 180 | 270>(0)
   const [isGeneratingBackdrop, setIsGeneratingBackdrop] = useState(false)
 
   // Update selected style when auto-selected type changes, but only if user hasn't manually selected a style
@@ -250,6 +251,7 @@ export function ImagePanel({
           backdropDescription,
           photoPosition,
           photoSize,
+          photoRotation,
           photoPlacement: 'foreground',
           includeLogo: applyLogo
         })
@@ -574,6 +576,20 @@ export function ImagePanel({
                       <option value="small">Small (25%)</option>
                       <option value="medium">Medium (40%)</option>
                       <option value="large">Large (60%)</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Photo Rotation</label>
+                    <select
+                      value={photoRotation}
+                      onChange={(e) => setPhotoRotation(Number(e.target.value) as 0 | 90 | 180 | 270)}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                    >
+                      <option value="0">0° (No rotation)</option>
+                      <option value="90">90° (Clockwise)</option>
+                      <option value="180">180° (Upside down)</option>
+                      <option value="270">270° (Counter-clockwise)</option>
                     </select>
                   </div>
                 </div>

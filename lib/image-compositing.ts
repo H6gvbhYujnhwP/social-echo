@@ -3,6 +3,7 @@ import sharp from 'sharp'
 export type PhotoPosition = 'left' | 'center' | 'right'
 export type PhotoSize = 'small' | 'medium' | 'large'
 export type PhotoPlacement = 'foreground' | 'background'
+export type PhotoRotation = 0 | 90 | 180 | 270
 
 interface CompositeOptions {
   backdropBase64: string
@@ -10,6 +11,7 @@ interface CompositeOptions {
   position: PhotoPosition
   size: PhotoSize
   placement: PhotoPlacement
+  rotation?: PhotoRotation
 }
 
 /**
@@ -18,7 +20,7 @@ interface CompositeOptions {
  * @returns Base64 encoded composite image
  */
 export async function compositeImages(options: CompositeOptions): Promise<string> {
-  const { backdropBase64, photoBase64, position, size, placement } = options
+  const { backdropBase64, photoBase64, position, size, placement, rotation = 0 } = options
 
   // Remove data URI prefix if present
   const backdropData = backdropBase64.replace(/^data:image\/\w+;base64,/, '')
@@ -42,8 +44,16 @@ export async function compositeImages(options: CompositeOptions): Promise<string
   }
   const photoWidth = Math.floor(backdropWidth * sizeMultipliers[size])
 
+  // Rotate and resize photo
+  let photoSharp = sharp(photoBuffer)
+  
+  // Apply rotation if specified
+  if (rotation !== 0) {
+    photoSharp = photoSharp.rotate(rotation)
+  }
+  
   // Resize photo maintaining aspect ratio
-  const resizedPhoto = await sharp(photoBuffer)
+  const resizedPhoto = await photoSharp
     .resize(photoWidth, null, {
       fit: 'inside',
       withoutEnlargement: true

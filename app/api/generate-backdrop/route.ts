@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
       photoPosition = 'center',
       photoSize = 'medium',
       photoPlacement = 'foreground',
+      photoRotation = 0,
       includeText = false,
       textContent = '',
       includeLogo = false
@@ -87,7 +88,8 @@ export async function POST(req: NextRequest) {
       photoBase64: selectedPhoto.base64,
       position: photoPosition as PhotoPosition,
       size: photoSize as PhotoSize,
-      placement: photoPlacement as PhotoPlacement
+      placement: photoPlacement as PhotoPlacement,
+      rotation: photoRotation as any
     })
 
     // Add text overlay if requested
