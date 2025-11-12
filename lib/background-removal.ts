@@ -22,23 +22,26 @@ export async function removeBackground(imageBase64: string): Promise<string> {
     console.log('[background-removal] Removing background with Replicate BRIA model')
     
     // Run the background removal model
-    const output = await replicate.run(
+    const output: any = await replicate.run(
       "bria/remove-background:a029dff38972b5fda4ec5d75d7d1cd25aeff621d2cf4946a41055d7db66b80bc",
       {
         input: {
           image: imageBase64
         }
       }
-    ) as string
+    )
 
-    if (!output) {
+    // Extract the image URL from the response
+    const imageUrl = typeof output === 'string' ? output : output?.output || output
+    
+    if (!imageUrl) {
       console.error('[background-removal] No output from Replicate')
       return imageBase64
     }
 
     // Output is a URL to the processed image, fetch it and convert to base64
     console.log('[background-removal] Fetching processed image from Replicate')
-    const response = await fetch(output)
+    const response = await fetch(imageUrl)
     
     if (!response.ok) {
       console.error('[background-removal] Failed to fetch processed image')
