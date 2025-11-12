@@ -56,15 +56,20 @@ export async function POST(request: NextRequest) {
       })
     }
     
-    // Download the original image
-    let imageBuffer: Buffer
+    // Handle different image URL formats
+    let imageBase64: string
     
-    // Check if it's a local file or external URL
-    if (imageUrl.startsWith('/')) {
+    if (imageUrl.startsWith('data:image/')) {
+      // Already a base64 data URI - use directly
+      imageBase64 = imageUrl
+      console.log('[reapply-logo] Using base64 data URI directly')
+    } else if (imageUrl.startsWith('/')) {
       // Local file - read from public directory
       const { readFile } = await import('fs/promises')
       const publicPath = join(process.cwd(), 'public', imageUrl)
-      imageBuffer = await readFile(publicPath)
+      const imageBuffer = await readFile(publicPath)
+      imageBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`
+      console.log('[reapply-logo] Loaded local file, size:', imageBuffer.length)
     } else {
       // External URL - download it
       const imageResponse = await fetch(imageUrl)
@@ -72,13 +77,10 @@ export async function POST(request: NextRequest) {
         throw new Error('Failed to download image')
       }
       const arrayBuffer = await imageResponse.arrayBuffer()
-      imageBuffer = Buffer.from(arrayBuffer)
+      const imageBuffer = Buffer.from(arrayBuffer)
+      imageBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`
+      console.log('[reapply-logo] Downloaded external image, size:', imageBuffer.length)
     }
-    
-    console.log('[reapply-logo] Downloaded original image, size:', imageBuffer.length)
-    
-    // Convert buffer to base64 for overlayLogo function
-    const imageBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`
     
     // Apply logo overlay with specified settings
     const processedBase64 = await overlayLogo(imageBase64, {
