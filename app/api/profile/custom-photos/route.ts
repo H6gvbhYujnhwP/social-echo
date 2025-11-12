@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
+import sharp from 'sharp'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
@@ -46,10 +47,16 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Convert to base64
+    // Convert to base64 and fix orientation
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    const base64 = buffer.toString('base64')
+    
+    // Use Sharp to normalize orientation (removes EXIF rotation)
+    const normalizedBuffer = await sharp(buffer)
+      .rotate() // Auto-rotates based on EXIF, then removes EXIF data
+      .toBuffer()
+    
+    const base64 = normalizedBuffer.toString('base64')
     const mimeType = file.type
     const photoUrl = `data:${mimeType};base64,${base64}`
 

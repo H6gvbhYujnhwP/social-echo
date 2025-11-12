@@ -54,6 +54,7 @@ export function ImagePanel({
   const [logoEnabled, setLogoEnabled] = useState(true)
   const [isReapplyingLogo, setIsReapplyingLogo] = useState(false)
   const [originalImage, setOriginalImage] = useState<string | null>(null) // Store original image without logo
+  const [backdropOnly, setBackdropOnly] = useState<string | null>(null) // Store backdrop without photo/logo for recompositing
   const [hasUploadedLogo, setHasUploadedLogo] = useState<boolean | null>(null) // null = loading, true/false = has logo or not
   
   // Tab state
@@ -187,8 +188,8 @@ export function ImagePanel({
   }
 
   const handleReapplyLogo = async () => {
-    if (!originalImage) {
-      setError('Original image not available')
+    if (!generatedImage) {
+      setError('No image available to apply logo')
       return
     }
 
@@ -202,7 +203,7 @@ export function ImagePanel({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          imageUrl: originalImage,
+          imageUrl: originalImage || generatedImage,
           logoPosition: logoPosition,
           logoSize: logoSize,
           logoEnabled: logoEnabled
@@ -269,6 +270,7 @@ export function ImagePanel({
       setGeneratedImage(data.imageUrl)
       setUsedImageType('custom-backdrop')
       setOriginalImage(data.imageUrl) // Store for logo adjustments
+      setBackdropOnly(data.backdropUrl) // Store backdrop-only for recompositing
       
       // Notify parent component
       if (onImageGenerated) {
@@ -298,7 +300,7 @@ export function ImagePanel({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          existingImageUrl: originalImage || generatedImage,
+          existingImageUrl: backdropOnly || originalImage || generatedImage,
           photoId: selectedPhotoId,
           photoPosition,
           photoSize,
@@ -315,6 +317,7 @@ export function ImagePanel({
       
       const data = await response.json()
       setGeneratedImage(data.imageUrl)
+      setOriginalImage(data.imageUrl) // Update original so logo changes work on this version
       
       // Notify parent component
       if (onImageGenerated) {
