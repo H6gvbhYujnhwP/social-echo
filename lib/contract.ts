@@ -68,6 +68,7 @@ export const ImageGenerationResponseSchema = z.object({
   image_base64: z.string().startsWith('data:image/'),
   image_type: z.string().optional(), // The actual type used (for feedback)
   generator: z.string().optional(), // Which generator was used (for debugging)
+  original_image_base64: z.string().startsWith('data:image/').optional(), // Original image without logo (for re-applying logo)
 })
 
 export type TextGenerationRequest = z.infer<typeof TextGenerationRequestSchema>

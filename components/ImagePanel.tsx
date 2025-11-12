@@ -46,6 +46,13 @@ export function ImagePanel({
   const [userHasSelectedStyle, setUserHasSelectedStyle] = useState(false)
   const [customDescription, setCustomDescription] = useState('')
   const [applyLogo, setApplyLogo] = useState(true) // Apply logo by default
+  
+  // Logo controls for re-applying logo to existing image
+  const [logoPosition, setLogoPosition] = useState('bottom-right')
+  const [logoSize, setLogoSize] = useState('medium')
+  const [logoEnabled, setLogoEnabled] = useState(true)
+  const [isReapplyingLogo, setIsReapplyingLogo] = useState(false)
+  const [originalImage, setOriginalImage] = useState<string | null>(null) // Store original image without logo
 
   // Update selected style when auto-selected type changes, but only if user hasn't manually selected a style
   React.useEffect(() => {
@@ -124,6 +131,14 @@ export function ImagePanel({
       }
 
       const data = await response.json()
+      
+      // Store original image (without logo) if logo was applied
+      if (applyLogo && data.original_image_base64) {
+        setOriginalImage(data.original_image_base64)
+      } else {
+        setOriginalImage(data.image_base64) // If no logo, original = final
+      }
+      
       setGeneratedImage(data.image_base64)
       setUsedImageType(data.image_type || selectedStyle)
       console.log('[ImagePanel] Image generated successfully, type:', data.image_type)
@@ -137,6 +152,50 @@ export function ImagePanel({
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setIsGenerating(false)
+    }
+  }
+
+  const handleReapplyLogo = async () => {
+    if (!originalImage) {
+      setError('Original image not available')
+      return
+    }
+
+    setIsReapplyingLogo(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/reapply-logo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageUrl: originalImage,
+          logoPosition: logoPosition,
+          logoSize: logoSize,
+          logoEnabled: logoEnabled
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to reapply logo')
+      }
+
+      const data = await response.json()
+      setGeneratedImage(data.imageUrl)
+      console.log('[ImagePanel] Logo reapplied successfully')
+      
+      // Update parent component with new image
+      if (onImageGenerated && data.imageUrl) {
+        onImageGenerated(data.imageUrl, usedImageType || selectedStyle)
+      }
+    } catch (err) {
+      console.error('[ImagePanel] Error reapplying logo:', err)
+      setError(err instanceof Error ? err.message : 'Failed to reapply logo')
+    } finally {
+      setIsReapplyingLogo(false)
     }
   }
 
@@ -383,6 +442,64 @@ export function ImagePanel({
                 </span>
               </div>
             )}
+            
+            {/* Logo Controls - Only show if original image exists */}
+            {originalImage && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Logo Settings</h3>
+                
+                {/* Logo Enable/Disable */}
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-gray-700">Show Logo</label>
+                  <input
+                    type="checkbox"
+                    checked={logoEnabled}
+                    onChange={(e) => setLogoEnabled(e.target.checked)}
+                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+                  />
+                </div>
+                
+                {/* Logo Position */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Position</label>
+                  <select
+                    value={logoPosition}
+                    onChange={(e) => setLogoPosition(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    <option value="top-left">Top Left</option>
+                    <option value="top-right">Top Right</option>
+                    <option value="bottom-left">Bottom Left</option>
+                    <option value="bottom-right">Bottom Right</option>
+                    <option value="center">Center</option>
+                  </select>
+                </div>
+                
+                {/* Logo Size */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Size</label>
+                  <select
+                    value={logoSize}
+                    onChange={(e) => setLogoSize(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    <option value="small">Small (15%)</option>
+                    <option value="medium">Medium (25%)</option>
+                    <option value="large">Large (35%)</option>
+                  </select>
+                </div>
+                
+                {/* Apply Button */}
+                <Button
+                  onClick={handleReapplyLogo}
+                  disabled={isReapplyingLogo}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium text-sm"
+                >
+                  {isReapplyingLogo ? 'Applying...' : 'Apply Logo Changes'}
+                </Button>
+              </div>
+            )}
+            
             <Button
               onClick={handleDownload}
               className="w-full bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white py-3 rounded-xl font-semibold"

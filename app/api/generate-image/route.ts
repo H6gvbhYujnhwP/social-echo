@@ -319,6 +319,7 @@ If text is absolutely unavoidable, use short English only (max 3-5 words).`
     
     // Apply logo overlay if requested
     let finalImageBase64 = imageBase64
+    let logoApplied = false
     if (validatedRequest.apply_logo) {
       try {
         const { prisma } = await import('@/lib/prisma')
@@ -338,6 +339,7 @@ If text is absolutely unavoidable, use short English only (max 3-5 words).`
             size: (user.profile.logoSize as any) || 'medium'
           })
           console.log('[generate-image] Logo overlay applied successfully')
+          logoApplied = true
         } else {
           console.log('[generate-image] Logo overlay skipped (no logo or disabled)')
         }
@@ -350,7 +352,9 @@ If text is absolutely unavoidable, use short English only (max 3-5 words).`
     const response: ImageGenerationResponse = {
       image_base64: finalImageBase64,
       image_type: imageType,
-      generator: generatorUsed // Add for debugging
+      generator: generatorUsed, // Add for debugging
+      // Include original image if logo was applied (for re-applying with different settings)
+      original_image_base64: logoApplied ? imageBase64 : undefined
     }
     
     return NextResponse.json(response)

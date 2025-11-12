@@ -1,0 +1,117 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { applyLogoOverlay } from '@/services/logoOverlay.server'
+import { writeFile, mkdir } from 'fs/promises'
+import { join } from 'path'
+import fetch from 'node-fetch'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    
+    const userId = (session.user as any).id
+    const body = await request.json()
+    const { imageUrl, logoPosition, logoSize, logoEnabled } = body
+    
+    if (!imageUrl) {
+      return NextResponse.json(
+        { error: 'Image URL is required' },
+        { status: 400 }
+      )
+    }
+    
+    console.log('[reapply-logo] Request:', { imageUrl, logoPosition, logoSize, logoEnabled })
+    
+    // Get user profile for logo
+    const profile = await prisma.profile.findUnique({
+      where: { userId },
+      select: { logoUrl: true }
+    })
+    
+    if (!profile?.logoUrl) {
+      return NextResponse.json(
+        { error: 'No logo uploaded. Please upload a logo first.' },
+        { status: 400 }
+      )
+    }
+    
+    // If logo is disabled, return original image
+    if (!logoEnabled) {
+      return NextResponse.json({
+        success: true,
+        imageUrl: imageUrl,
+        message: 'Logo removed'
+      })
+    }
+    
+    // Download the original image
+    let imageBuffer: Buffer
+    
+    // Check if it's a local file or external URL
+    if (imageUrl.startsWith('/')) {
+      // Local file - read from public directory
+      const { readFile } = await import('fs/promises')
+      const publicPath = join(process.cwd(), 'public', imageUrl)
+      imageBuffer = await readFile(publicPath)
+    } else {
+      // External URL - download it
+      const imageResponse = await fetch(imageUrl)
+      if (!imageResponse.ok) {
+        throw new Error('Failed to download image')
+      }
+      const arrayBuffer = await imageResponse.arrayBuffer()
+      imageBuffer = Buffer.from(arrayBuffer)
+    }
+    
+    console.log('[reapply-logo] Downloaded original image, size:', imageBuffer.length)
+    
+    // Apply logo overlay with specified settings
+    const processedBuffer = await applyLogoOverlay(
+      imageBuffer,
+      profile.logoUrl,
+      logoPosition || 'bottom-right',
+      logoSize || 'medium'
+    )
+    
+    console.log('[reapply-logo] Logo applied, new size:', processedBuffer.length)
+    
+    // Save the new image
+    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'images')
+    await mkdir(uploadsDir, { recursive: true })
+    
+    const timestamp = Date.now()
+    const filename = `reapplied-${userId}-${timestamp}.png`
+    const filepath = join(uploadsDir, filename)
+    
+    await writeFile(filepath, processedBuffer)
+    
+    const newImageUrl = `/uploads/images/${filename}`
+    
+    console.log('[reapply-logo] Saved new image:', newImageUrl)
+    
+    return NextResponse.json({
+      success: true,
+      imageUrl: newImageUrl,
+      message: 'Logo applied successfully'
+    })
+    
+  } catch (error: any) {
+    console.error('[reapply-logo] Error:', error)
+    return NextResponse.json(
+      { error: error.message || 'Failed to reapply logo' },
+      { status: 500 }
+    )
+  }
+}
