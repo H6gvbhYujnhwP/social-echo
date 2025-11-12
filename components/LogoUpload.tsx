@@ -22,6 +22,7 @@ export function LogoUpload({
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [logoUrl, setLogoUrl] = useState(currentLogoUrl)
   const [position, setPosition] = useState(logoPosition)
   const [size, setSize] = useState(logoSize)
   const [enabled, setEnabled] = useState(logoEnabled)
@@ -60,8 +61,10 @@ export function LogoUpload({
         throw new Error(data.error || 'Failed to upload logo')
       }
 
+      const data = await response.json()
+      setLogoUrl(data.logoUrl)
       setSuccess('Logo uploaded successfully!')
-      onLogoUpdate()
+      setTimeout(() => setSuccess(null), 3000)
     } catch (err: any) {
       setError(err.message || 'Failed to upload logo')
     } finally {
@@ -86,8 +89,9 @@ export function LogoUpload({
         throw new Error(data.error || 'Failed to delete logo')
       }
 
+      setLogoUrl(null)
       setSuccess('Logo deleted successfully!')
-      onLogoUpdate()
+      setTimeout(() => setSuccess(null), 3000)
     } catch (err: any) {
       setError(err.message || 'Failed to delete logo')
     } finally {
@@ -117,7 +121,7 @@ export function LogoUpload({
       }
 
       setSuccess('Settings updated successfully!')
-      onLogoUpdate()
+      setTimeout(() => setSuccess(null), 3000)
     } catch (err: any) {
       setError(err.message || 'Failed to update settings')
     } finally {
@@ -128,10 +132,10 @@ export function LogoUpload({
   return (
     <div className="space-y-4">
       {/* Current Logo */}
-      {currentLogoUrl && (
+      {logoUrl && (
         <div className="flex items-center gap-4 p-4 bg-white/5 rounded-lg">
           <img
-            src={currentLogoUrl}
+            src={logoUrl}
             alt="Company logo"
             className="h-16 w-16 object-contain bg-white/10 rounded"
           />
@@ -154,7 +158,7 @@ export function LogoUpload({
       {/* Upload */}
       <div>
         <label className="block text-white/80 text-sm mb-2">
-          {currentLogoUrl ? 'Replace Logo' : 'Upload Logo'}
+          {logoUrl ? 'Replace Logo' : 'Upload Logo'}
         </label>
         <div className="flex items-center gap-2">
           <input
@@ -177,7 +181,7 @@ export function LogoUpload({
       </div>
 
       {/* Settings */}
-      {currentLogoUrl && (
+      {logoUrl && (
         <div className="space-y-3 p-4 bg-white/5 rounded-lg">
           <div>
             <label className="block text-white/80 text-sm mb-2">Position</label>
