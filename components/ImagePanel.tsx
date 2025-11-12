@@ -53,6 +53,7 @@ export function ImagePanel({
   const [logoEnabled, setLogoEnabled] = useState(true)
   const [isReapplyingLogo, setIsReapplyingLogo] = useState(false)
   const [originalImage, setOriginalImage] = useState<string | null>(null) // Store original image without logo
+  const [hasUploadedLogo, setHasUploadedLogo] = useState<boolean | null>(null) // null = loading, true/false = has logo or not
 
   // Update selected style when auto-selected type changes, but only if user hasn't manually selected a style
   React.useEffect(() => {
@@ -77,6 +78,22 @@ export function ImagePanel({
     console.log('[ImagePanel] Post type:', postType)
     console.log('[ImagePanel] Post headline:', postHeadline?.substring(0, 50))
   }, [visualPrompt, postType, postHeadline])
+
+  // Check if user has uploaded a logo
+  React.useEffect(() => {
+    const checkLogo = async () => {
+      try {
+        const response = await fetch('/api/profile')
+        if (response.ok) {
+          const profile = await response.json()
+          setHasUploadedLogo(!!profile.logoUrl)
+        }
+      } catch (error) {
+        console.error('[ImagePanel] Error checking logo:', error)
+      }
+    }
+    checkLogo()
+  }, [])
 
   const handleGenerateImage = async () => {
     console.log('[ImagePanel] Generate Image clicked!')
@@ -339,7 +356,13 @@ export function ImagePanel({
               Apply company logo
             </label>
             <p className="text-xs text-gray-500 mt-1">
-              Overlay your logo on the generated image
+              {hasUploadedLogo === false ? (
+                <span>
+                  Please upload your logo by clicking <a href="/account" className="text-blue-600 hover:underline font-medium">Account</a>
+                </span>
+              ) : (
+                'Overlay your logo on the generated image'
+              )}
             </p>
           </div>
           <input
@@ -347,7 +370,8 @@ export function ImagePanel({
             type="checkbox"
             checked={applyLogo}
             onChange={(e) => setApplyLogo(e.target.checked)}
-            className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+            disabled={hasUploadedLogo === false}
+            className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
 

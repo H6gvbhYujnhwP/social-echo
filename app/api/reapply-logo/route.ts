@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { overlayLogo } from '@/lib/image-overlay'
-import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import fetch from 'node-fetch'
 
@@ -91,27 +90,11 @@ export async function POST(request: NextRequest) {
     
     console.log('[reapply-logo] Logo applied successfully')
     
-    // Convert base64 back to buffer for saving
-    const base64Data = processedBase64.replace(/^data:image\/\w+;base64,/, '')
-    const processedBuffer = Buffer.from(base64Data, 'base64')
-    
-    // Save the new image
-    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'images')
-    await mkdir(uploadsDir, { recursive: true })
-    
-    const timestamp = Date.now()
-    const filename = `reapplied-${userId}-${timestamp}.png`
-    const filepath = join(uploadsDir, filename)
-    
-    await writeFile(filepath, processedBuffer)
-    
-    const newImageUrl = `/uploads/images/${filename}`
-    
-    console.log('[reapply-logo] Saved new image:', newImageUrl)
-    
+    // Return the base64 image directly instead of saving to disk
+    // This avoids 404 errors and works consistently with the frontend
     return NextResponse.json({
       success: true,
-      imageUrl: newImageUrl,
+      imageUrl: processedBase64,
       message: 'Logo applied successfully'
     })
     
