@@ -61,7 +61,11 @@ export async function GET(request: NextRequest) {
       usp: profile.usp,
       keywords: profile.keywords,
       rotation: profile.rotation,
-      country: profile.country || null  // v8.8: country for localized content
+      country: profile.country || null,  // v8.8: country for localized content
+      logoUrl: profile.logoUrl || null,  // Logo overlay feature
+      logoPosition: profile.logoPosition || 'bottom-right',
+      logoSize: profile.logoSize || 'medium',
+      logoEnabled: profile.logoEnabled ?? true
     }, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
