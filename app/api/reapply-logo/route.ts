@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { applyLogoOverlay } from '@/services/logoOverlay.server'
+import { overlayLogo } from '@/lib/image-overlay'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import fetch from 'node-fetch'
@@ -77,15 +77,21 @@ export async function POST(request: NextRequest) {
     
     console.log('[reapply-logo] Downloaded original image, size:', imageBuffer.length)
     
-    // Apply logo overlay with specified settings
-    const processedBuffer = await applyLogoOverlay(
-      imageBuffer,
-      profile.logoUrl,
-      logoPosition || 'bottom-right',
-      logoSize || 'medium'
-    )
+    // Convert buffer to base64 for overlayLogo function
+    const imageBase64 = `data:image/png;base64,${imageBuffer.toString('base64')}`
     
-    console.log('[reapply-logo] Logo applied, new size:', processedBuffer.length)
+    // Apply logo overlay with specified settings
+    const processedBase64 = await overlayLogo(imageBase64, {
+      logoPath: profile.logoUrl,
+      position: (logoPosition || 'bottom-right') as any,
+      size: (logoSize || 'medium') as any
+    })
+    
+    console.log('[reapply-logo] Logo applied successfully')
+    
+    // Convert base64 back to buffer for saving
+    const base64Data = processedBase64.replace(/^data:image\/\w+;base64,/, '')
+    const processedBuffer = Buffer.from(base64Data, 'base64')
     
     // Save the new image
     const uploadsDir = join(process.cwd(), 'public', 'uploads', 'images')
