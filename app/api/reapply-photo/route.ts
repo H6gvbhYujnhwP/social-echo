@@ -8,7 +8,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import sharp from 'sharp'
 import { removeBackground } from '@/lib/background-removal'
-import { overlayLogoOnImage } from '@/lib/image-overlay'
+import { overlayLogo } from '@/lib/image-overlay'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -142,12 +142,11 @@ export async function POST(req: NextRequest) {
     if (applyLogo && profile.logoUrl) {
       console.log('[reapply-photo] Applying logo overlay')
       const finalBase64 = `data:image/png;base64,${finalBuffer.toString('base64')}`
-      const withLogo = await overlayLogoOnImage(
-        finalBase64,
-        profile.logoUrl,
-        profile.logoPosition || 'bottom-right',
-        profile.logoSize || 'medium'
-      )
+      const withLogo = await overlayLogo(finalBase64, {
+        logoPath: profile.logoUrl,
+        position: (profile.logoPosition as any) || 'bottom-right',
+        size: (profile.logoSize as any) || 'medium'
+      })
       finalBuffer = Buffer.from(withLogo.replace(/^data:image\/\w+;base64,/, ''), 'base64')
     }
 
