@@ -80,42 +80,25 @@ export async function compositeImages(options: CompositeOptions): Promise<string
       break
   }
 
-  // Create shadow/glow effect for depth
-  const photoWithShadow = await sharp(resizedPhoto)
-    .extend({
-      top: 10,
-      bottom: 10,
-      left: 10,
-      right: 10,
-      background: { r: 0, g: 0, b: 0, alpha: 0.3 }
-    })
-    .blur(5)
-    .composite([{
-      input: resizedPhoto,
-      top: 10,
-      left: 10
-    }])
-    .toBuffer()
-
-  // Composite photo onto backdrop
+  // Composite photo onto backdrop (no shadow/border)
   let composite
 
   if (placement === 'foreground') {
     // Photo in front of backdrop
     composite = await backdrop
       .composite([{
-        input: photoWithShadow,
-        top: top - 10, // Adjust for shadow
-        left: left - 10
+        input: resizedPhoto,
+        top: top,
+        left: left
       }])
       .toBuffer()
   } else {
     // Photo behind backdrop (blend mode)
     composite = await backdrop
       .composite([{
-        input: photoWithShadow,
-        top: top - 10,
-        left: left - 10,
+        input: resizedPhoto,
+        top: top,
+        left: left,
         blend: 'multiply' // Blend into background
       }])
       .toBuffer()

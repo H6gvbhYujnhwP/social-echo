@@ -65,6 +65,7 @@ export function ImagePanel({
   const [photoPosition, setPhotoPosition] = useState<'left' | 'center' | 'right'>('center')
   const [photoSize, setPhotoSize] = useState<'small' | 'medium' | 'large'>('medium')
   const [photoRotation, setPhotoRotation] = useState<0 | 90 | 180 | 270>(0)
+  const [removeBackground, setRemoveBackground] = useState(true) // Default to true for better results
   const [isGeneratingBackdrop, setIsGeneratingBackdrop] = useState(false)
 
   // Update selected style when auto-selected type changes, but only if user hasn't manually selected a style
@@ -252,6 +253,7 @@ export function ImagePanel({
           photoPosition,
           photoSize,
           photoRotation,
+          removeBackground,
           photoPlacement: 'foreground',
           includeLogo: applyLogo
         })
@@ -592,6 +594,25 @@ export function ImagePanel({
                       <option value="270">270° (Counter-clockwise)</option>
                     </select>
                   </div>
+                </div>
+                
+                {/* Background Removal Toggle */}
+                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200">
+                  <div className="flex-1">
+                    <label htmlFor="remove-background" className="text-sm font-medium text-gray-700 cursor-pointer">
+                      Remove background
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Isolate people/objects from photo background. Best for photos with clear subjects.
+                    </p>
+                  </div>
+                  <input
+                    id="remove-background"
+                    type="checkbox"
+                    checked={removeBackground}
+                    onChange={(e) => setRemoveBackground(e.target.checked)}
+                    className="h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-2 focus:ring-purple-500"
+                  />
                 </div>
                 
                 {/* Logo Overlay Toggle for Custom Photo */}

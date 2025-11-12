@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import OpenAI from 'openai'
 import { compositeImages, generateBackdropPrompt, PhotoPosition, PhotoSize, PhotoPlacement } from '@/lib/image-compositing'
 import { overlayLogo } from '@/lib/image-overlay'
+import { removeBackground } from '@/lib/background-removal'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -34,6 +35,7 @@ export async function POST(req: NextRequest) {
       photoSize = 'medium',
       photoPlacement = 'foreground',
       photoRotation = 0,
+      removeBackground: shouldRemoveBackground = false,
       includeText = false,
       textContent = '',
       includeLogo = false
@@ -82,10 +84,17 @@ export async function POST(req: NextRequest) {
 
     console.log('[generate-backdrop] Compositing photo onto backdrop')
 
+    // Remove background if requested
+    let photoToComposite = selectedPhoto.base64
+    if (shouldRemoveBackground) {
+      console.log('[generate-backdrop] Removing background from photo')
+      photoToComposite = await removeBackground(selectedPhoto.base64)
+    }
+
     // Composite photo onto backdrop
     let compositeImage = await compositeImages({
       backdropBase64: backdropDataUri,
-      photoBase64: selectedPhoto.base64,
+      photoBase64: photoToComposite,
       position: photoPosition as PhotoPosition,
       size: photoSize as PhotoSize,
       placement: photoPlacement as PhotoPlacement,
