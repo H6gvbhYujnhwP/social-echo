@@ -28,11 +28,12 @@ function extractKeywords(headline: string): string[] {
 export const IMAGE_BRIEFS: Record<string, string> = {
   "photo-real": `
 Generate a PHOTOREALISTIC image that looks like an actual photograph taken with a professional camera.
-Use natural lighting, realistic textures, depth of field, and authentic human expressions.
+Use natural lighting, realistic textures, depth of field, and authentic details.
 The image MUST look like real photography - NOT illustration, NOT 3D render, NOT digital art, NOT cartoon.
-Think: Canon 5D Mark IV, 50mm lens, natural light, shallow depth of field, authentic moment.
-Style: Documentary photography, corporate photojournalism, professional headshot quality.
-Tone: Authentic, believable, real-world, professional photography.
+Think: Canon 5D Mark IV, professional lens, natural light, shallow depth of field, authentic moment.
+Capture the SUBJECT from the post content - whether it's a workspace, office environment, product, scene, or person.
+Style: Documentary photography, corporate photojournalism, professional quality.
+Tone: Authentic, believable, real-world, professional photography that matches the post's topic.
 `,
 
   "illustration": `
