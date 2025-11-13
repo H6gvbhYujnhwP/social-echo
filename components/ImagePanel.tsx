@@ -787,10 +787,14 @@ export function ImagePanel({
                   <button
                     type="button"
                     onClick={async () => {
+                      console.log('[Logo Toggle] Clicked, current state:', logoEnabled, 'generatedImage exists:', !!generatedImage)
                       setLogoEnabled(!logoEnabled)
                       // Auto-apply if image exists
                       if (generatedImage) {
+                        console.log('[Logo Toggle] Calling handleReapplyLogo')
                         setTimeout(() => handleReapplyLogo(), 0)
+                      } else {
+                        console.log('[Logo Toggle] No generatedImage, skipping reapply')
                       }
                     }}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
@@ -811,10 +815,14 @@ export function ImagePanel({
                   <select
                     value={logoPosition}
                     onChange={(e) => {
+                      console.log('[Logo Position] Changed to:', e.target.value, 'generatedImage exists:', !!generatedImage)
                       setLogoPosition(e.target.value)
                       // Auto-apply if image exists
                       if (generatedImage) {
-                        setTimeout(() => handleReapplyLogo(), 0)
+                        console.log('[Logo Position] Calling handleReapplyLogo')
+                        setTimeout(() => handleReapplyLogo(), 100)
+                      } else {
+                        console.log('[Logo Position] No generatedImage, skipping reapply')
                       }
                     }}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -833,10 +841,14 @@ export function ImagePanel({
                   <select
                     value={logoSize}
                     onChange={(e) => {
+                      console.log('[Logo Size] Changed to:', e.target.value, 'generatedImage exists:', !!generatedImage)
                       setLogoSize(e.target.value)
                       // Auto-apply if image exists
                       if (generatedImage) {
-                        setTimeout(() => handleReapplyLogo(), 0)
+                        console.log('[Logo Size] Calling handleReapplyLogo')
+                        setTimeout(() => handleReapplyLogo(), 100)
+                      } else {
+                        console.log('[Logo Size] No generatedImage, skipping reapply')
                       }
                     }}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
