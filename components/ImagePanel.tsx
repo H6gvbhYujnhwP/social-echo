@@ -789,7 +789,7 @@ export function ImagePanel({
                     onClick={async () => {
                       setLogoEnabled(!logoEnabled)
                       // Auto-apply if image exists
-                      if (originalImage) {
+                      if (generatedImage) {
                         setTimeout(() => handleReapplyLogo(), 0)
                       }
                     }}
@@ -813,7 +813,7 @@ export function ImagePanel({
                     onChange={(e) => {
                       setLogoPosition(e.target.value)
                       // Auto-apply if image exists
-                      if (originalImage) {
+                      if (generatedImage) {
                         setTimeout(() => handleReapplyLogo(), 0)
                       }
                     }}
@@ -835,7 +835,7 @@ export function ImagePanel({
                     onChange={(e) => {
                       setLogoSize(e.target.value)
                       // Auto-apply if image exists
-                      if (originalImage) {
+                      if (generatedImage) {
                         setTimeout(() => handleReapplyLogo(), 0)
                       }
                     }}
