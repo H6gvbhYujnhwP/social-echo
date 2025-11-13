@@ -789,8 +789,10 @@ export function ImagePanel({
                     type="button"
                     onClick={async () => {
                       setLogoEnabled(!logoEnabled)
-                      // Wait for state update then reapply
-                      setTimeout(() => handleReapplyLogo(), 0)
+                      // Instant apply only for custom backdrops (where we have backdropOnly)
+                      if (usedImageType === 'custom-backdrop' && backdropOnly) {
+                        setTimeout(() => handleReapplyLogo(), 0)
+                      }
                     }}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                       logoEnabled ? 'bg-blue-600' : 'bg-gray-300'
@@ -811,7 +813,10 @@ export function ImagePanel({
                     value={logoPosition}
                     onChange={(e) => {
                       setLogoPosition(e.target.value)
-                      setTimeout(() => handleReapplyLogo(), 0)
+                      // Instant apply only for custom backdrops
+                      if (usedImageType === 'custom-backdrop' && backdropOnly) {
+                        setTimeout(() => handleReapplyLogo(), 0)
+                      }
                     }}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   >
@@ -830,7 +835,10 @@ export function ImagePanel({
                     value={logoSize}
                     onChange={(e) => {
                       setLogoSize(e.target.value)
-                      setTimeout(() => handleReapplyLogo(), 0)
+                      // Instant apply only for custom backdrops
+                      if (usedImageType === 'custom-backdrop' && backdropOnly) {
+                        setTimeout(() => handleReapplyLogo(), 0)
+                      }
                     }}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   >
@@ -839,6 +847,17 @@ export function ImagePanel({
                     <option value="large">Large (35%)</option>
                   </select>
                 </div>
+                
+                {/* Apply Button - Only show for AI generated images (not custom backdrops) */}
+                {usedImageType !== 'custom-backdrop' && (
+                  <Button
+                    onClick={handleReapplyLogo}
+                    disabled={isReapplyingLogo}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium text-sm"
+                  >
+                    {isReapplyingLogo ? 'Applying...' : 'Apply Logo Changes'}
+                  </Button>
+                )}
               </div>
             )}
             
