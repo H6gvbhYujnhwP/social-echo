@@ -204,36 +204,78 @@ export function ImagePanel({
     console.log('[handleReapplyLogo] generatedImage exists:', !!generatedImage, 'length:', generatedImage?.length)
     console.log('[handleReapplyLogo] Using:', originalImage ? 'originalImage' : 'generatedImage')
     console.log('[handleReapplyLogo] Position:', position, 'Size:', size, 'Enabled:', enabled)
+    console.log('[handleReapplyLogo] usedImageType:', usedImageType)
 
     setIsReapplyingLogo(true)
     setError(null)
 
     try {
-      const response = await fetch('/api/reapply-logo', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          imageUrl: originalImage || generatedImage,
-          logoPosition: position,
-          logoSize: size,
-          logoEnabled: enabled
-        }),
-      })
+      // For custom backdrops, use reapply-photo endpoint to avoid logo duplication
+      // because it recomposes from backdropOnly
+      if (usedImageType === 'custom-backdrop' && backdropOnly) {
+        console.log('[handleReapplyLogo] Using reapply-photo for custom backdrop')
+        const response = await fetch('/api/reapply-photo', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            photoId: selectedPhotoId,
+            backdropDescription: backdropDescription,
+            position: photoPosition,
+            size: photoSize,
+            rotation: photoRotation,
+            removeBackground: removeBackground,
+            applyLogo: enabled,
+            logoPosition: position,
+            logoSize: size,
+            existingImageUrl: backdropOnly
+          }),
+        })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to reapply logo')
-      }
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to reapply logo')
+        }
 
-      const data = await response.json()
-      setGeneratedImage(data.imageUrl)
-      console.log('[ImagePanel] Logo reapplied successfully')
-      
-      // Update parent component with new image
-      if (onImageGenerated && data.imageUrl) {
-        onImageGenerated(data.imageUrl, usedImageType || selectedStyle)
+        const data = await response.json()
+        setGeneratedImage(data.imageUrl)
+        setOriginalImage(data.imageUrl)
+        console.log('[ImagePanel] Logo reapplied successfully via reapply-photo')
+        
+        // Update parent component with new image
+        if (onImageGenerated && data.imageUrl) {
+          onImageGenerated(data.imageUrl, 'custom-backdrop')
+        }
+      } else {
+        // For AI generated images, use reapply-logo endpoint
+        console.log('[handleReapplyLogo] Using reapply-logo for AI image')
+        const response = await fetch('/api/reapply-logo', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            imageUrl: originalImage || generatedImage,
+            logoPosition: position,
+            logoSize: size,
+            logoEnabled: enabled
+          }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to reapply logo')
+        }
+
+        const data = await response.json()
+        setGeneratedImage(data.imageUrl)
+        console.log('[ImagePanel] Logo reapplied successfully')
+        
+        // Update parent component with new image
+        if (onImageGenerated && data.imageUrl) {
+          onImageGenerated(data.imageUrl, usedImageType || selectedStyle)
+        }
       }
     } catch (err) {
       console.error('[ImagePanel] Error reapplying logo:', err)
