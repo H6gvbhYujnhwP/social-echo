@@ -166,8 +166,10 @@ export function ImagePanel({
       
       // Store original image (without logo) if logo was applied
       if (applyLogo && data.original_image_base64) {
+        console.log('[ImagePanel] Setting originalImage (without logo), length:', data.original_image_base64.length)
         setOriginalImage(data.original_image_base64)
       } else {
+        console.log('[ImagePanel] Setting originalImage (same as final), length:', data.image_base64.length)
         setOriginalImage(data.image_base64) // If no logo, original = final
       }
       
@@ -192,6 +194,11 @@ export function ImagePanel({
       setError('No image available to apply logo')
       return
     }
+
+    console.log('[handleReapplyLogo] originalImage exists:', !!originalImage, 'length:', originalImage?.length)
+    console.log('[handleReapplyLogo] generatedImage exists:', !!generatedImage, 'length:', generatedImage?.length)
+    console.log('[handleReapplyLogo] Using:', originalImage ? 'originalImage' : 'generatedImage')
+    console.log('[handleReapplyLogo] Position:', logoPosition, 'Size:', logoSize, 'Enabled:', logoEnabled)
 
     setIsReapplyingLogo(true)
     setError(null)
