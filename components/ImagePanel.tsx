@@ -189,16 +189,21 @@ export function ImagePanel({
     }
   }
 
-  const handleReapplyLogo = async () => {
+  const handleReapplyLogo = async (newPosition?: string, newSize?: string, newEnabled?: boolean) => {
     if (!generatedImage) {
       setError('No image available to apply logo')
       return
     }
 
+    // Use provided values or fall back to state
+    const position = newPosition !== undefined ? newPosition : logoPosition
+    const size = newSize !== undefined ? newSize : logoSize
+    const enabled = newEnabled !== undefined ? newEnabled : logoEnabled
+
     console.log('[handleReapplyLogo] originalImage exists:', !!originalImage, 'length:', originalImage?.length)
     console.log('[handleReapplyLogo] generatedImage exists:', !!generatedImage, 'length:', generatedImage?.length)
     console.log('[handleReapplyLogo] Using:', originalImage ? 'originalImage' : 'generatedImage')
-    console.log('[handleReapplyLogo] Position:', logoPosition, 'Size:', logoSize, 'Enabled:', logoEnabled)
+    console.log('[handleReapplyLogo] Position:', position, 'Size:', size, 'Enabled:', enabled)
 
     setIsReapplyingLogo(true)
     setError(null)
@@ -211,9 +216,9 @@ export function ImagePanel({
         },
         body: JSON.stringify({
           imageUrl: originalImage || generatedImage,
-          logoPosition: logoPosition,
-          logoSize: logoSize,
-          logoEnabled: logoEnabled
+          logoPosition: position,
+          logoSize: size,
+          logoEnabled: enabled
         }),
       })
 
@@ -794,12 +799,13 @@ export function ImagePanel({
                   <button
                     type="button"
                     onClick={async () => {
-                      console.log('[Logo Toggle] Clicked, current state:', logoEnabled, 'generatedImage exists:', !!generatedImage)
-                      setLogoEnabled(!logoEnabled)
+                      const newEnabled = !logoEnabled
+                      console.log('[Logo Toggle] Clicked, new state:', newEnabled, 'generatedImage exists:', !!generatedImage)
+                      setLogoEnabled(newEnabled)
                       // Auto-apply if image exists
                       if (generatedImage) {
-                        console.log('[Logo Toggle] Calling handleReapplyLogo')
-                        setTimeout(() => handleReapplyLogo(), 0)
+                        console.log('[Logo Toggle] Calling handleReapplyLogo with newEnabled:', newEnabled)
+                        setTimeout(() => handleReapplyLogo(undefined, undefined, newEnabled), 0)
                       } else {
                         console.log('[Logo Toggle] No generatedImage, skipping reapply')
                       }
@@ -822,12 +828,13 @@ export function ImagePanel({
                   <select
                     value={logoPosition}
                     onChange={(e) => {
-                      console.log('[Logo Position] Changed to:', e.target.value, 'generatedImage exists:', !!generatedImage)
-                      setLogoPosition(e.target.value)
+                      const newPosition = e.target.value
+                      console.log('[Logo Position] Changed to:', newPosition, 'generatedImage exists:', !!generatedImage)
+                      setLogoPosition(newPosition)
                       // Auto-apply if image exists
                       if (generatedImage) {
-                        console.log('[Logo Position] Calling handleReapplyLogo')
-                        setTimeout(() => handleReapplyLogo(), 100)
+                        console.log('[Logo Position] Calling handleReapplyLogo with newPosition:', newPosition)
+                        setTimeout(() => handleReapplyLogo(newPosition, undefined, undefined), 100)
                       } else {
                         console.log('[Logo Position] No generatedImage, skipping reapply')
                       }
@@ -848,12 +855,13 @@ export function ImagePanel({
                   <select
                     value={logoSize}
                     onChange={(e) => {
-                      console.log('[Logo Size] Changed to:', e.target.value, 'generatedImage exists:', !!generatedImage)
-                      setLogoSize(e.target.value)
+                      const newSize = e.target.value
+                      console.log('[Logo Size] Changed to:', newSize, 'generatedImage exists:', !!generatedImage)
+                      setLogoSize(newSize)
                       // Auto-apply if image exists
                       if (generatedImage) {
-                        console.log('[Logo Size] Calling handleReapplyLogo')
-                        setTimeout(() => handleReapplyLogo(), 100)
+                        console.log('[Logo Size] Calling handleReapplyLogo with newSize:', newSize)
+                        setTimeout(() => handleReapplyLogo(undefined, newSize, undefined), 100)
                       } else {
                         console.log('[Logo Size] No generatedImage, skipping reapply')
                       }
