@@ -777,9 +777,8 @@ export function ImagePanel({
               </div>
             )}
             
-            {/* Logo Controls - Only show if original image exists */}
-            {originalImage && (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
+            {/* Logo Settings - Always visible */}
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Logo Settings</h3>
                 
                 {/* Logo Enable/Disable Toggle */}
@@ -848,8 +847,8 @@ export function ImagePanel({
                   </select>
                 </div>
                 
-                {/* Apply Button - Only show for AI generated images (not custom backdrops) */}
-                {usedImageType !== 'custom-backdrop' && (
+                {/* Apply Button - Only show for AI generated images (not custom backdrops) and when image exists */}
+                {originalImage && usedImageType !== 'custom-backdrop' && (
                   <Button
                     onClick={handleReapplyLogo}
                     disabled={isReapplyingLogo}
@@ -859,7 +858,6 @@ export function ImagePanel({
                   </Button>
                 )}
               </div>
-            )}
             
             <Button
               onClick={handleDownload}
