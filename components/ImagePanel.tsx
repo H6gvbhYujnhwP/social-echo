@@ -589,26 +589,30 @@ export function ImagePanel({
         </div>
 
         {/* Generate Button - Moved directly after Custom Description */}
-        <Button
-          onClick={handleGenerateImage}
-          disabled={isGenerating}
-          className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-        >
-          {isGenerating ? (
-            <div className="flex flex-col items-center">
-              <div className="flex items-center mb-1">
+        <div className="space-y-2">
+          <Button
+            onClick={handleGenerateImage}
+            disabled={isGenerating}
+            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          >
+            {isGenerating ? (
+              <>
                 <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
                 Generating {selectedTypeInfo?.label || 'image'}...
-              </div>
-              <span className="text-xs opacity-90">⏱️ Please wait, this can take up to 30 seconds</span>
-            </div>
-          ) : (
-            <>
-              <Image className="mr-2 h-5 w-5" />
-              Generate {selectedTypeInfo?.label || 'Image'}
-            </>
+              </>
+            ) : (
+              <>
+                <Image className="mr-2 h-5 w-5" />
+                Generate {selectedTypeInfo?.label || 'Image'}
+              </>
+            )}
+          </Button>
+          {isGenerating && (
+            <p className="text-center text-sm text-gray-600">
+              ⏱️ Please wait, this can take up to 30 seconds
+            </p>
           )}
-        </Button>
+        </div>
 
         {!visualPrompt && (
           <motion.div
@@ -744,13 +748,10 @@ export function ImagePanel({
                     className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
                     {isGeneratingBackdrop ? (
-                      <div className="flex flex-col items-center">
-                        <div className="flex items-center mb-1">
-                          <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-                          Generating Backdrop...
-                        </div>
-                        <span className="text-xs opacity-90">⏱️ Please wait, this can take up to 30 seconds</span>
-                      </div>
+                      <>
+                        <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+                        Generating Backdrop...
+                      </>
                     ) : (
                       <>
                         <Sparkles className="mr-2 h-5 w-5" />
@@ -758,7 +759,12 @@ export function ImagePanel({
                       </>
                     )}
                   </Button>
-                  {generatedImage && usedImageType === 'custom-backdrop' && (
+                  {isGeneratingBackdrop && (
+                    <p className="text-center text-sm text-gray-600">
+                      ⏱️ Please wait, this can take up to 30 seconds
+                    </p>
+                  )}
+                  {generatedImage && usedImageType === 'custom-backdrop' && !isGeneratingBackdrop && (
                     <p className="text-xs text-center text-gray-600">
                       🎨 Creates a completely new AI backdrop
                     </p>
