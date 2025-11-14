@@ -907,6 +907,12 @@ export function ImagePanel({
                 <div className="space-y-3 pt-3 border-t border-gray-200">
                   <p className="text-xs text-gray-500 mb-2">Fine-tune position (optional)</p>
                   
+                  {!originalImage && (
+                    <div className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded p-2 mb-3">
+                      ⚠️ Offset controls are disabled for saved images. Generate a new image to use fine positioning.
+                    </div>
+                  )}
+                  
                   {/* Horizontal Offset */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Horizontal Offset</label>
@@ -919,7 +925,8 @@ export function ImagePanel({
                             setTimeout(() => handleReapplyLogo(undefined, undefined, undefined), 100)
                           }
                         }}
-                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                        disabled={!originalImage}
+                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Move left"
                       >
                         ←
@@ -936,7 +943,8 @@ export function ImagePanel({
                             setTimeout(() => handleReapplyLogo(undefined, undefined, undefined), 100)
                           }
                         }}
-                        className="flex-1 p-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        disabled={!originalImage}
+                        className="flex-1 p-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                         min="-200"
                         max="200"
                       />
@@ -949,7 +957,8 @@ export function ImagePanel({
                             setTimeout(() => handleReapplyLogo(undefined, undefined, undefined), 100)
                           }
                         }}
-                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                        disabled={!originalImage}
+                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Move right"
                       >
                         →
@@ -969,7 +978,8 @@ export function ImagePanel({
                             setTimeout(() => handleReapplyLogo(undefined, undefined, undefined), 100)
                           }
                         }}
-                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                        disabled={!originalImage}
+                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Move up"
                       >
                         ↑
@@ -986,7 +996,8 @@ export function ImagePanel({
                             setTimeout(() => handleReapplyLogo(undefined, undefined, undefined), 100)
                           }
                         }}
-                        className="flex-1 p-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        disabled={!originalImage}
+                        className="flex-1 p-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                         min="-200"
                         max="200"
                       />
@@ -999,7 +1010,8 @@ export function ImagePanel({
                             setTimeout(() => handleReapplyLogo(undefined, undefined, undefined), 100)
                           }
                         }}
-                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                        disabled={!originalImage}
+                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Move down"
                       >
                         ↓
