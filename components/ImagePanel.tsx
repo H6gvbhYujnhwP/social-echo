@@ -617,9 +617,17 @@ export function ImagePanel({
               💡 Generate text content first to create a contextually relevant image
             </p>
           </motion.div>
-        )}
-        </>
-        )}
+                )}
+              </>
+            
+            {/* Show message if no photo selected */}
+            {!selectedPhotoId && (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  📸 Please select or upload a photo above to use the backdrop generator
+                </p>
+              </div>
+            )}
         
         {/* Custom Photo Tab Content */}
         {activeTab === 'custom' && (
@@ -629,8 +637,8 @@ export function ImagePanel({
               selectedPhotoId={selectedPhotoId}
             />
             
-            {selectedPhotoId && (
-              <>
+            {/* Always show controls, but require photo selection for generation */}
+            <>
                 <div>
                   <label htmlFor="backdrop-description" className="block text-sm font-medium text-gray-700 mb-2">
                     Backdrop Description
@@ -759,7 +767,6 @@ export function ImagePanel({
                   )}
                 </div>
               </>
-            )}
             
             {!selectedPhotoId && (
               <motion.div
@@ -801,21 +808,26 @@ export function ImagePanel({
             transition={{ duration: 0.6 }}
             className="space-y-4"
           >
-            {/* Generated Image */}
-            <div className="border-2 border-gray-200 rounded-2xl overflow-hidden shadow-lg">
-              <img
-                src={generatedImage}
-                alt={`Generated ${usedImageType || 'social media'} image`}
-                className="w-full h-auto"
-              />
-            </div>
-            
-            {usedImageType && (
-              <div className="text-center">
-                <span className="inline-block px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                  Style: {imageTypes.find(t => t.value === usedImageType)?.label || usedImageType}
-                </span>
-              </div>
+            {/* Generated Image - Only show on the tab that generated it */}
+            {((activeTab === 'ai' && usedImageType !== 'custom-backdrop') || 
+              (activeTab === 'custom' && usedImageType === 'custom-backdrop')) && (
+              <>
+                <div className="border-2 border-gray-200 rounded-2xl overflow-hidden shadow-lg">
+                  <img
+                    src={generatedImage}
+                    alt={`Generated ${usedImageType || 'social media'} image`}
+                    className="w-full h-auto"
+                  />
+                </div>
+                
+                {usedImageType && (
+                  <div className="text-center">
+                    <span className="inline-block px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                      Style: {imageTypes.find(t => t.value === usedImageType)?.label || usedImageType}
+                    </span>
+                  </div>
+                )}
+              </>  
             )}
             
             {/* Logo Settings - Always visible */}
