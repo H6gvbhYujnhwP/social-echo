@@ -9,6 +9,8 @@ interface OverlayOptions {
   logoPath: string
   position: LogoPosition
   size: LogoSize
+  offsetX?: number  // Horizontal offset in pixels (default: 0)
+  offsetY?: number  // Vertical offset in pixels (default: 0)
 }
 
 /**
@@ -37,32 +39,47 @@ function calculatePosition(
   imageHeight: number,
   logoWidth: number,
   logoHeight: number,
-  position: LogoPosition
+  position: LogoPosition,
+  offsetX: number = 0,
+  offsetY: number = 0
 ): { left: number; top: number } {
   const padding = Math.floor(Math.min(imageWidth, imageHeight) * 0.05) // 5% padding
 
+  let basePosition: { left: number; top: number }
+  
   switch (position) {
     case 'top-left':
-      return { left: padding, top: padding }
+      basePosition = { left: padding, top: padding }
+      break
     
     case 'top-right':
-      return { left: imageWidth - logoWidth - padding, top: padding }
+      basePosition = { left: imageWidth - logoWidth - padding, top: padding }
+      break
     
     case 'bottom-left':
-      return { left: padding, top: imageHeight - logoHeight - padding }
+      basePosition = { left: padding, top: imageHeight - logoHeight - padding }
+      break
     
     case 'bottom-right':
-      return { left: imageWidth - logoWidth - padding, top: imageHeight - logoHeight - padding }
+      basePosition = { left: imageWidth - logoWidth - padding, top: imageHeight - logoHeight - padding }
+      break
     
     case 'center':
-      return {
+      basePosition = {
         left: Math.floor((imageWidth - logoWidth) / 2),
         top: Math.floor((imageHeight - logoHeight) / 2)
       }
+      break
     
     default:
-      return { left: imageWidth - logoWidth - padding, top: imageHeight - logoHeight - padding }
+      basePosition = { left: imageWidth - logoWidth - padding, top: imageHeight - logoHeight - padding }
   }
+  
+  // Apply offsets and clamp to image bounds
+  const finalLeft = Math.max(0, Math.min(imageWidth - logoWidth, basePosition.left + offsetX))
+  const finalTop = Math.max(0, Math.min(imageHeight - logoHeight, basePosition.top + offsetY))
+  
+  return { left: finalLeft, top: finalTop }
 }
 
 /**
@@ -123,13 +140,15 @@ export async function overlayLogo(
       throw new Error('Could not determine logo dimensions')
     }
 
-    // Calculate position
+    // Calculate position with offsets
     const position = calculatePosition(
       metadata.width,
       metadata.height,
       logoMetadata.width,
       logoMetadata.height,
-      options.position
+      options.position,
+      options.offsetX || 0,
+      options.offsetY || 0
     )
 
     // Composite logo onto image

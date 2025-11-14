@@ -52,6 +52,8 @@ export function ImagePanel({
   const [logoPosition, setLogoPosition] = useState('bottom-right')
   const [logoSize, setLogoSize] = useState('medium')
   const [logoEnabled, setLogoEnabled] = useState(true)
+  const [logoOffsetX, setLogoOffsetX] = useState(0) // Horizontal offset in pixels (-200 to +200)
+  const [logoOffsetY, setLogoOffsetY] = useState(0) // Vertical offset in pixels (-200 to +200)
   const [isReapplyingLogo, setIsReapplyingLogo] = useState(false)
   const [originalImage, setOriginalImage] = useState<string | null>(null) // Store original image without logo
   const [backdropOnly, setBackdropOnly] = useState<string | null>(null) // Store backdrop without photo/logo for recompositing
@@ -229,6 +231,8 @@ export function ImagePanel({
             applyLogo: enabled,
             logoPosition: position,
             logoSize: size,
+            logoOffsetX: logoOffsetX,
+            logoOffsetY: logoOffsetY,
             existingImageUrl: backdropOnly
           }),
         })
@@ -259,7 +263,9 @@ export function ImagePanel({
             imageUrl: originalImage || generatedImage,
             logoPosition: position,
             logoSize: size,
-            logoEnabled: enabled
+            logoEnabled: enabled,
+            logoOffsetX: logoOffsetX,
+            logoOffsetY: logoOffsetY
           }),
         })
 
@@ -895,6 +901,127 @@ export function ImagePanel({
                     <option value="medium">Medium (25%)</option>
                     <option value="large">Large (35%)</option>
                   </select>
+                </div>
+                
+                {/* Logo Offset Controls */}
+                <div className="space-y-3 pt-3 border-t border-gray-200">
+                  <p className="text-xs text-gray-500 mb-2">Fine-tune position (optional)</p>
+                  
+                  {/* Horizontal Offset */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Horizontal Offset</label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          const newOffset = Math.max(-200, logoOffsetX - 10)
+                          setLogoOffsetX(newOffset)
+                          if (generatedImage) {
+                            setTimeout(() => handleReapplyLogo(undefined, undefined, undefined), 100)
+                          }
+                        }}
+                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                        title="Move left"
+                      >
+                        ←
+                      </button>
+                      <input
+                        type="number"
+                        value={logoOffsetX}
+                        onChange={(e) => {
+                          const value = Math.max(-200, Math.min(200, parseInt(e.target.value) || 0))
+                          setLogoOffsetX(value)
+                        }}
+                        onBlur={() => {
+                          if (generatedImage) {
+                            setTimeout(() => handleReapplyLogo(undefined, undefined, undefined), 100)
+                          }
+                        }}
+                        className="flex-1 p-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        min="-200"
+                        max="200"
+                      />
+                      <span className="text-xs text-gray-500 w-8">px</span>
+                      <button
+                        onClick={() => {
+                          const newOffset = Math.min(200, logoOffsetX + 10)
+                          setLogoOffsetX(newOffset)
+                          if (generatedImage) {
+                            setTimeout(() => handleReapplyLogo(undefined, undefined, undefined), 100)
+                          }
+                        }}
+                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                        title="Move right"
+                      >
+                        →
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Vertical Offset */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Vertical Offset</label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          const newOffset = Math.max(-200, logoOffsetY - 10)
+                          setLogoOffsetY(newOffset)
+                          if (generatedImage) {
+                            setTimeout(() => handleReapplyLogo(undefined, undefined, undefined), 100)
+                          }
+                        }}
+                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                        title="Move up"
+                      >
+                        ↑
+                      </button>
+                      <input
+                        type="number"
+                        value={logoOffsetY}
+                        onChange={(e) => {
+                          const value = Math.max(-200, Math.min(200, parseInt(e.target.value) || 0))
+                          setLogoOffsetY(value)
+                        }}
+                        onBlur={() => {
+                          if (generatedImage) {
+                            setTimeout(() => handleReapplyLogo(undefined, undefined, undefined), 100)
+                          }
+                        }}
+                        className="flex-1 p-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        min="-200"
+                        max="200"
+                      />
+                      <span className="text-xs text-gray-500 w-8">px</span>
+                      <button
+                        onClick={() => {
+                          const newOffset = Math.min(200, logoOffsetY + 10)
+                          setLogoOffsetY(newOffset)
+                          if (generatedImage) {
+                            setTimeout(() => handleReapplyLogo(undefined, undefined, undefined), 100)
+                          }
+                        }}
+                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                        title="Move down"
+                      >
+                        ↓
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Reset Button */}
+                  {(logoOffsetX !== 0 || logoOffsetY !== 0) && (
+                    <button
+                      onClick={() => {
+                        setLogoOffsetX(0)
+                        setLogoOffsetY(0)
+                        if (generatedImage) {
+                          setTimeout(() => handleReapplyLogo(undefined, undefined, undefined), 100)
+                        }
+                      }}
+                      className="w-full px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Reset to Default Position
+                    </button>
+                  )}
                 </div>
 
               </div>

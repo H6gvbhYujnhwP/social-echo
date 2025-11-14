@@ -27,7 +27,11 @@ export async function POST(req: NextRequest) {
       photoSize,
       photoRotation,
       removeBackgroundEnabled,
-      applyLogo
+      applyLogo,
+      logoPosition,
+      logoSize,
+      logoOffsetX,
+      logoOffsetY
     } = body
 
     console.log('[reapply-photo] Reapplying photo with new settings:', {
@@ -144,8 +148,10 @@ export async function POST(req: NextRequest) {
       const finalBase64 = `data:image/png;base64,${finalBuffer.toString('base64')}`
       const withLogo = await overlayLogo(finalBase64, {
         logoPath: profile.logoUrl,
-        position: (profile.logoPosition as any) || 'bottom-right',
-        size: (profile.logoSize as any) || 'medium'
+        position: (logoPosition || profile.logoPosition as any) || 'bottom-right',
+        size: (logoSize || profile.logoSize as any) || 'medium',
+        offsetX: logoOffsetX || 0,
+        offsetY: logoOffsetY || 0
       })
       finalBuffer = Buffer.from(withLogo.replace(/^data:image\/\w+;base64,/, ''), 'base64')
     }

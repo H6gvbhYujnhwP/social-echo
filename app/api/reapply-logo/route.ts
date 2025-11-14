@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     
     const userId = (session.user as any).id
     const body = await request.json()
-    const { imageUrl, logoPosition, logoSize, logoEnabled } = body
+    const { imageUrl, logoPosition, logoSize, logoEnabled, logoOffsetX, logoOffsetY } = body
     
     if (!imageUrl) {
       return NextResponse.json(
@@ -85,7 +85,9 @@ export async function POST(request: NextRequest) {
     const processedBase64 = await overlayLogo(imageBase64, {
       logoPath: profile.logoUrl,
       position: (logoPosition || 'bottom-right') as any,
-      size: (logoSize || 'medium') as any
+      size: (logoSize || 'medium') as any,
+      offsetX: logoOffsetX || 0,
+      offsetY: logoOffsetY || 0
     })
     
     console.log('[reapply-logo] Logo applied successfully')
