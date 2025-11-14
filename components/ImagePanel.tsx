@@ -212,76 +212,36 @@ export function ImagePanel({
     setError(null)
 
     try {
-      // For custom backdrops, use reapply-photo endpoint to avoid logo duplication
-      // because it recomposes from backdropOnly
-      if (usedImageType === 'custom-backdrop' && backdropOnly) {
-        console.log('[handleReapplyLogo] Using reapply-photo for custom backdrop')
-        const response = await fetch('/api/reapply-photo', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            photoId: selectedPhotoId,
-            backdropDescription: backdropDescription,
-            position: photoPosition,
-            size: photoSize,
-            rotation: photoRotation,
-            removeBackground: removeBackground,
-            applyLogo: enabled,
-            logoPosition: position,
-            logoSize: size,
-            logoOffsetX: logoOffsetX,
-            logoOffsetY: logoOffsetY,
-            existingImageUrl: backdropOnly
-          }),
-        })
+      // Always use reapply-logo endpoint for logo-only changes
+      // This prevents photo from moving when adjusting logo offsets
+      console.log('[handleReapplyLogo] Using reapply-logo endpoint')
+      const response = await fetch('/api/reapply-logo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageUrl: originalImage || generatedImage,
+          logoPosition: position,
+          logoSize: size,
+          logoEnabled: enabled,
+          logoOffsetX: logoOffsetX,
+          logoOffsetY: logoOffsetY
+        }),
+      })
 
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to reapply logo')
-        }
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to reapply logo')
+      }
 
-        const data = await response.json()
-        setGeneratedImage(data.imageUrl)
-        setOriginalImage(data.imageUrl)
-        console.log('[ImagePanel] Logo reapplied successfully via reapply-photo')
-        
-        // Update parent component with new image
-        if (onImageGenerated && data.imageUrl) {
-          onImageGenerated(data.imageUrl, 'custom-backdrop')
-        }
-      } else {
-        // For AI generated images, use reapply-logo endpoint
-        console.log('[handleReapplyLogo] Using reapply-logo for AI image')
-        const response = await fetch('/api/reapply-logo', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            imageUrl: originalImage || generatedImage,
-            logoPosition: position,
-            logoSize: size,
-            logoEnabled: enabled,
-            logoOffsetX: logoOffsetX,
-            logoOffsetY: logoOffsetY
-          }),
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to reapply logo')
-        }
-
-        const data = await response.json()
-        setGeneratedImage(data.imageUrl)
-        console.log('[ImagePanel] Logo reapplied successfully')
-        
-        // Update parent component with new image
-        if (onImageGenerated && data.imageUrl) {
-          onImageGenerated(data.imageUrl, usedImageType || selectedStyle)
-        }
+      const data = await response.json()
+      setGeneratedImage(data.imageUrl)
+      console.log('[ImagePanel] Logo reapplied successfully')
+      
+      // Update parent component with new image
+      if (onImageGenerated && data.imageUrl) {
+        onImageGenerated(data.imageUrl, usedImageType || selectedStyle)
       }
     } catch (err) {
       console.error('[ImagePanel] Error reapplying logo:', err)
@@ -347,8 +307,13 @@ export function ImagePanel({
   }
 
   const handleReapplyPhoto = async () => {
-    if (!generatedImage || !selectedPhotoId) {
-      setError('No existing image to modify')
+    if (!generatedImage) {
+      setError('No image available to modify')
+      return
+    }
+    
+    if (!selectedPhotoId) {
+      setError('Please upload a photo first to apply changes. The photo from your saved image is not available for editing.')
       return
     }
     
@@ -366,7 +331,11 @@ export function ImagePanel({
           photoSize,
           photoRotation,
           removeBackgroundEnabled: removeBackground,
-          applyLogo
+          applyLogo: logoEnabled,
+          logoPosition,
+          logoSize,
+          logoOffsetX,
+          logoOffsetY
         })
       })
       
