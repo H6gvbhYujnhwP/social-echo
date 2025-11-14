@@ -168,7 +168,7 @@ function SignUpForm() {
                 plan.toLowerCase().includes('starter') ? 'text-green-600' : 'text-blue-600'
               }`}>
               {plan.toLowerCase().includes('starter')
-                ? '🎉 Free Trial - 30 posts, no bank details required'
+                ? '🎉 Free Trial - 8 posts, no bank details required'
                 : 'You\'ll be redirected to payment after signup'
               }
               </p>
@@ -277,7 +277,7 @@ function SignUpForm() {
             </a>
             .<br />
             {plan?.toLowerCase().includes('starter') 
-              ? 'This is a free trial with 30 posts, no bank details required at this stage. Once your trial has ended you can enter bank details to continue enjoying Social Echo.'
+              ? 'This is a free trial with 8 posts, no bank details required at this stage. Once your trial has ended you can enter bank details to continue enjoying Social Echo.'
               : 'Subscriptions bill monthly until canceled. No refunds within the first 30 days.'
             }
           </p>

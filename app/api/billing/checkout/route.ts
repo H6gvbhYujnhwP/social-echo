@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
           quantity: quantity.toString(),
           isAgencyPlan: isAgencyPlan.toString(),
         },
-        // NO Stripe trial periods - the only trial is the 30-post free trial
+        // NO Stripe trial periods - the only trial is the 8-post free trial
         // All paid plans charge immediately
         // trial_period_days: undefined, // Removed - no Stripe trials
       },

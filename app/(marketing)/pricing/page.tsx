@@ -40,8 +40,8 @@ export default function PricingPage() {
                   <span className="text-gray-700 text-lg">/month</span>
                 </div>
                 <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-4">
-                  <p className="text-green-800 text-sm font-semibold">🎉 Free Trial - 30 Posts</p>
-                  <p className="text-green-700 text-xs mt-1">Sign up now, no bank details required, free 30 posts trial</p>
+                  <p className="text-green-800 text-sm font-semibold">🎉 Free Trial - 8 Posts</p>
+                  <p className="text-green-700 text-xs mt-1">Sign up now, no bank details required, free 8 posts trial</p>
                 </div>
                 <p className="text-gray-700 text-base">Perfect for freelancers and solopreneurs</p>
               </div>
@@ -177,7 +177,7 @@ export default function PricingPage() {
             </div>
             <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
               <h3 className="font-bold text-gray-900 text-lg mb-2">What happens when I reach my limit?</h3>
-              <p className="text-gray-700 text-base">On Starter (8/month) and Pro (30/month) plans, you'll be prompted to wait for your monthly reset or contact us for custom solutions.</p>
+              <p className="text-gray-700 text-base">On Starter (30/month) and Pro (100/month) plans, you'll be prompted to wait for your monthly reset or contact us for custom solutions.</p>
             </div>
             <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
               <h3 className="font-bold text-gray-900 text-lg mb-2">Can I upgrade or downgrade?</h3>
