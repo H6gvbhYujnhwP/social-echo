@@ -617,17 +617,9 @@ export function ImagePanel({
               💡 Generate text content first to create a contextually relevant image
             </p>
           </motion.div>
-                )}
-              </>
-            
-            {/* Show message if no photo selected */}
-            {!selectedPhotoId && (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  📸 Please select or upload a photo above to use the backdrop generator
-                </p>
-              </div>
-            )}
+        )}
+        </>
+        )}
         
         {/* Custom Photo Tab Content */}
         {activeTab === 'custom' && (
