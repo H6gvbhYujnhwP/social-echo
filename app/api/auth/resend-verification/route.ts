@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     // Get current session
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     // Get user
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { email: session.user.email },
       select: {
         id: true,
         email: true,
