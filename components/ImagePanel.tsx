@@ -806,10 +806,8 @@ export function ImagePanel({
             transition={{ duration: 0.6 }}
             className="space-y-4"
           >
-            {/* Generated Image - Only show on the tab that generated it */}
-            {((activeTab === 'ai' && usedImageType !== 'custom-backdrop') || 
-              (activeTab === 'custom' && usedImageType === 'custom-backdrop')) && (
-              <>
+            {/* Generated Image - Always visible regardless of active tab */}
+            <>
                 <div className="border-2 border-gray-200 rounded-2xl overflow-hidden shadow-lg">
                   <img
                     src={generatedImage}
@@ -824,9 +822,8 @@ export function ImagePanel({
                       Style: {imageTypes.find(t => t.value === usedImageType)?.label || usedImageType}
                     </span>
                   </div>
-                )}
-              </>  
-            )}
+                )
+              </>
             
             {/* Logo Settings - Always visible */}
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
