@@ -620,8 +620,8 @@ export function ImagePanel({
               💡 Generate text content first to create a contextually relevant image
             </p>
           </motion.div>
-        )}
-        </>
+                )}
+            </>
         )}
         
         {/* Custom Photo Tab Content */}
@@ -822,8 +822,8 @@ export function ImagePanel({
                       Style: {imageTypes.find(t => t.value === usedImageType)?.label || usedImageType}
                     </span>
                   </div>
-                )
-              </>
+                )}
+            </>
             
             {/* Logo Settings - Always visible */}
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
