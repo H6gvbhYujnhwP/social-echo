@@ -298,7 +298,7 @@ Style Guidelines:
 - Target 150-200 words (LinkedIn's sweet spot for engagement and reach)
 - Focus on TEACHING, not SELLING
 
-${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}${learningEnhancement}
+${inputs.notes ? `\n🎯 USER'S CUSTOM BRIEF (HIGHEST PRIORITY):\n${inputs.notes}\n\nThis is the main topic for the post. Focus entirely on what the user has requested above. Use the business context and sector information as background, but the user's brief determines the content direction.` : ''}${learningEnhancement}
 
 Return STRICT JSON with fields:
 - "headline_options": array of 3 hooks (1 contrarian, 1 data-led, 1 story-first)
@@ -359,7 +359,7 @@ Style Guidelines:
 - End with a question or reflection that invites engagement
 - Balance fun with professional value
 
-${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}${learningEnhancement}
+${inputs.notes ? `\n🎯 USER'S CUSTOM BRIEF (HIGHEST PRIORITY):\n${inputs.notes}\n\nThis is the main topic for the post. Focus entirely on what the user has requested above. Use the business context and sector information as background, but the user's brief determines the content direction.` : ''}${learningEnhancement}
 
 Return STRICT JSON with fields:
 - "headline_options": array of 3 hooks (1 playful, 1 curious, 1 thought-provoking)
@@ -453,7 +453,7 @@ Style Guidelines:
 - Professional and credible tone
 - If using real news, cite source inline
 
-${inputs.notes ? `\nAdditional Instructions:\n${inputs.notes}` : ''}${learningEnhancement}
+${inputs.notes ? `\n🎯 USER'S CUSTOM BRIEF (HIGHEST PRIORITY):\n${inputs.notes}\n\nThis is the main topic for the post. Focus entirely on what the user has requested above. Use the business context and sector information as background, but the user's brief determines the content direction.` : ''}${learningEnhancement}
 
 Return STRICT JSON with fields:
 - "headline_options": array of 3 hooks (1 urgent, 1 analytical, 1 questioning)
