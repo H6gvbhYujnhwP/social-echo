@@ -4,11 +4,6 @@ import { useRouter } from 'next/navigation'
 import { Check, Users, Zap, TrendingUp, Clock } from 'lucide-react'
 import { SchemaMarkup } from '@/components/seo/SchemaMarkup'
 
-export const metadata = {
-  title: 'AI Social Media Tool for Agencies',
-  description: 'Scale your agency with AI-powered social media content generation. Create client posts faster, manage multiple brands, and deliver consistent quality.',
-}
-
 export default function ForAgenciesPage() {
   const router = useRouter()
 

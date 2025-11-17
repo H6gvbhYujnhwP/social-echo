@@ -4,11 +4,6 @@ import { useRouter } from 'next/navigation'
 import { Check, Clock, DollarSign, TrendingUp, Target } from 'lucide-react'
 import { SchemaMarkup } from '@/components/seo/SchemaMarkup'
 
-export const metadata = {
-  title: 'AI Social Media for Small Businesses & SMEs',
-  description: 'Affordable AI-powered social media marketing for small businesses. Generate professional posts daily without hiring a marketing team. From £29.99/month.',
-}
-
 export default function ForSmallBusinessesPage() {
   const router = useRouter()
 
