@@ -12,6 +12,9 @@ type Client = {
   status: 'active' | 'paused'
   lastLogin: string | null
   createdAt: string
+  clientCompanyName?: string | null
+  clientWebsite?: string | null
+  clientBusinessSector?: string | null
 }
 
 type AgencyData = {
