@@ -8,6 +8,7 @@ import { FeatureCard } from '@/components/ui/FeatureCard'
 import { StatCard } from '@/components/ui/StatCard'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { trackCTAClick } from '@/lib/analytics/track-event'
+import { SchemaMarkup } from '@/components/seo/SchemaMarkup'
 
 export default function HomePage() {
   const router = useRouter()
@@ -685,6 +686,14 @@ export default function HomePage() {
                   Contact
                 </a>
               </div>
+              <div className="flex flex-wrap gap-6 justify-center md:justify-start mt-4">
+                <a href="/for-agencies" className="text-gray-400 hover:text-white transition-colors">
+                  For Agencies
+                </a>
+                <a href="/for-small-businesses" className="text-gray-400 hover:text-white transition-colors">
+                  For Small Businesses
+                </a>
+              </div>
             </div>
             <div className="text-center text-gray-400">
               <p>&copy; 2025 Social Echo. AI-powered social media content generation for SMEs.</p>
@@ -692,6 +701,11 @@ export default function HomePage() {
           </div>
         </footer>
       </div>
+      
+      {/* Schema Markup for SEO */}
+      <SchemaMarkup type="software" />
+      <SchemaMarkup type="organization" />
+      <SchemaMarkup type="faq" />
     </div>
   )
 }

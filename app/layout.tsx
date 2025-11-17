@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     default: 'Social Echo - AI Social Media Content Generator for SMEs',
     template: '%s | Social Echo'
   },
-  description: 'Train your ECHO once — then generate your daily social media post + image in under 10 minutes. AI-powered content creation for busy SME owners.',
+  description: 'Generate professional social media posts in seconds with AI. Social Echo creates LinkedIn posts, marketing content, and images automatically. Free trial available—no credit card required.',
   keywords: ['social media content', 'AI content generator', 'social media automation', 'SME marketing', 'social posts', 'AI writing', 'content creation', 'business marketing'],
   authors: [{ name: 'Social Echo Team' }],
   creator: 'Social Echo',
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     url: 'https://socialecho.ai',
     siteName: 'Social Echo',
     title: 'Social Echo - AI Social Media Content Generator for SMEs',
-    description: 'Train your ECHO once — then generate your daily social media post + image in under 10 minutes. AI-powered content creation for busy SME owners.',
+    description: 'Generate professional social media posts in seconds with AI. Social Echo creates LinkedIn posts, marketing content, and images automatically. Free trial available—no credit card required.',
     images: [
       {
         url: '/og-image.png',

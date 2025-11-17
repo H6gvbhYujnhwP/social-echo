@@ -3,6 +3,7 @@
 
 import { useRouter } from 'next/navigation';
 import { trackPlanSelected } from '@/lib/analytics/track-event';
+import { SchemaMarkup } from '@/components/seo/SchemaMarkup';
 
 export default function PricingPage() {
   const router = useRouter();
@@ -186,6 +187,24 @@ export default function PricingPage() {
           </div>
         </div>
       </div>
+      
+      {/* Schema Markup for SEO */}
+      <SchemaMarkup 
+        type="product" 
+        data={{
+          name: 'Social Echo Starter Plan',
+          description: '30 AI-generated social media posts per month with text and image generation',
+          price: '29.99'
+        }} 
+      />
+      <SchemaMarkup 
+        type="product" 
+        data={{
+          name: 'Social Echo Pro Plan',
+          description: '100 AI-generated social media posts per month with full Content Mix Planner',
+          price: '49.99'
+        }} 
+      />
     </div>
   );
 }
