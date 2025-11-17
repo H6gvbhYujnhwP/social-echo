@@ -156,7 +156,9 @@ export async function checkPostsRemaining(userId: string): Promise<{
     subscription = await ensureUsageWindowFresh(subscription);
 
     const plan = subscription.plan.toLowerCase() as Plan;
-    const postsAllowance = getUsageLimit(plan);
+    // Use database usageLimit if set, otherwise fall back to plan-based limits
+    // This allows for custom limits (e.g., 8-post free trials on Starter plan)
+    const postsAllowance = subscription.usageLimit ?? getUsageLimit(plan);
     const isUnlimited = !Number.isFinite(postsAllowance);
 
     const cycleStart = subscription.currentPeriodStart;
