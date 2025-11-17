@@ -47,29 +47,6 @@ export async function checkUserAccess(userId: string): Promise<AccessCheckResult
     }
   }
   
-  // Check email verification for free trial users
-  if (subscription.status === 'free_trial') {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { emailVerified: true }
-    });
-    
-    if (!user?.emailVerified) {
-      return {
-        allowed: false,
-        reason: 'Please verify your email address to start using your free trial. Check your inbox for the verification link.',
-        subscription: {
-          status: subscription.status,
-          plan: subscription.plan,
-          usageCount: subscription.usageCount,
-          usageLimit: subscription.usageLimit,
-          trialEnd: subscription.trialEnd,
-          currentPeriodEnd: subscription.currentPeriodEnd
-        }
-      }
-    }
-  }
-
   // Check if trial has expired and auto-suspend
   if (subscription.status === 'trial' && subscription.trialEnd) {
     const now = new Date()

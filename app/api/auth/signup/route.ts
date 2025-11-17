@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
         password: passwordHash,
         name: validated.name || 'User',
         businessName: validated.businessName || null,
+        emailVerified: new Date(), // Auto-verify email to remove friction
         hasUsedFreeTrial: true, // Mark that they've used their free trial
         freeTrialUsedAt: new Date(),
         subscription: {
@@ -95,41 +96,20 @@ export async function POST(request: NextRequest) {
       }
     })
     
-    console.log('[signup] User created with free_trial status', {
+    console.log('[signup] User created with free_trial status (email auto-verified)', {
       userId: user.id,
       businessName: user.businessName || 'none',
       usageLimit: 8
     });
     
-    // Create email verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex')
-    const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-    
-    await prisma.emailVerificationToken.create({
-      data: {
-        userId: user.id,
-        email: user.email,
-        token: verificationToken,
-        expiresAt: verificationExpiry,
-      },
-    })
-    
-    // Send verification email
-    const verificationUrl = `${process.env.NEXTAUTH_URL}/api/auth/verify-email?token=${verificationToken}`
-    
-    try {
-      await sendFreeTrialWelcomeEmail(user.email, user.name, verificationUrl)
-      console.log('[signup] Verification email sent', { userId: user.id })
-    } catch (emailError) {
-      console.error('[signup] Failed to send verification email', emailError)
-      // Don't fail signup if email fails - user can request resend
-    }
+    // Email verification removed to reduce signup friction
+    // Users can now access the platform immediately after signup
     
     // Return userId and email for signin flow
     return NextResponse.json({
       userId: user.id,
       email: user.email,
-      message: 'Account created! Please check your email to verify your account.',
+      message: 'Account created successfully! You can now sign in.',
     }, { status: 201 });
     
   } catch (error: any) {
