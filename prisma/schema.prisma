@@ -59,6 +59,11 @@ model User {
   agency               Agency?  @relation("AgencyCustomers", fields: [agencyId], references: [id], onDelete: SetNull)
   ownedAgency          Agency?  @relation("AgencyOwner")
   
+  // Immutable client details (for agency customers only, anti-gaming)
+  clientCompanyName    String?  // Locked at creation, cannot be changed
+  clientWebsite        String?  // Locked at creation, cannot be changed
+  clientBusinessSector String?  // Locked at creation, cannot be changed
+  
   // Relations
   profile              Profile?
   subscription         Subscription?

@@ -36,6 +36,9 @@ export default function AgencyDashboard() {
   const [showBranding, setShowBranding] = useState(false)
   const [newClientEmail, setNewClientEmail] = useState('')
   const [newClientName, setNewClientName] = useState('')
+  const [newClientCompanyName, setNewClientCompanyName] = useState('')
+  const [newClientWebsite, setNewClientWebsite] = useState('')
+  const [newClientBusinessSector, setNewClientBusinessSector] = useState('')
 
   // Check authorization
   useEffect(() => {
@@ -74,6 +77,21 @@ export default function AgencyDashboard() {
       alert('Email is required')
       return
     }
+    
+    if (!newClientCompanyName.trim()) {
+      alert('Company name is required')
+      return
+    }
+    
+    if (!newClientWebsite.trim()) {
+      alert('Website is required')
+      return
+    }
+    
+    if (!newClientBusinessSector.trim()) {
+      alert('Business sector is required')
+      return
+    }
 
     try {
       const res = await fetch('/api/agency/clients', {
@@ -81,7 +99,10 @@ export default function AgencyDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: newClientEmail.trim(),
-          name: newClientName.trim() || newClientEmail.split('@')[0]
+          name: newClientName.trim() || newClientEmail.split('@')[0],
+          companyName: newClientCompanyName.trim(),
+          website: newClientWebsite.trim(),
+          businessSector: newClientBusinessSector.trim()
         })
       })
 
@@ -95,6 +116,9 @@ export default function AgencyDashboard() {
       
       setNewClientEmail('')
       setNewClientName('')
+      setNewClientCompanyName('')
+      setNewClientWebsite('')
+      setNewClientBusinessSector('')
       setShowAddClient(false)
       loadAgencyData()
     } catch (error: any) {
@@ -393,6 +417,9 @@ export default function AgencyDashboard() {
                     Client
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Company Details
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -406,7 +433,7 @@ export default function AgencyDashboard() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {agency.clients.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
                       No clients yet. Click "Add Client" to get started.
                     </td>
                   </tr>
@@ -417,6 +444,28 @@ export default function AgencyDashboard() {
                         <div>
                           <div className="text-sm font-medium text-gray-900">{client.name}</div>
                           <div className="text-sm text-gray-500">{client.email}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-xs text-gray-600">
+                          {client.clientCompanyName && (
+                            <div className="flex items-center gap-1">
+                              <span className="font-medium">🏢 {client.clientCompanyName}</span>
+                            </div>
+                          )}
+                          {client.clientWebsite && (
+                            <div className="text-gray-500 truncate max-w-xs">
+                              🌐 {client.clientWebsite}
+                            </div>
+                          )}
+                          {client.clientBusinessSector && (
+                            <div className="text-gray-500">
+                              📊 {client.clientBusinessSector}
+                            </div>
+                          )}
+                          {!client.clientCompanyName && (
+                            <span className="text-gray-400 italic">Not set</span>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -517,6 +566,52 @@ export default function AgencyDashboard() {
                   onChange={(e) => setNewClientName(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Client Name"
+                />
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                <p className="text-xs font-medium text-yellow-800 mb-2">⚠️ The following details cannot be changed after creation</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Company Name *
+                </label>
+                <input
+                  type="text"
+                  value={newClientCompanyName}
+                  onChange={(e) => setNewClientCompanyName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="e.g., Smith & Co Ltd"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Website *
+                </label>
+                <input
+                  type="url"
+                  value={newClientWebsite}
+                  onChange={(e) => setNewClientWebsite(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="https://example.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Business Sector *
+                </label>
+                <input
+                  type="text"
+                  value={newClientBusinessSector}
+                  onChange={(e) => setNewClientBusinessSector(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="e.g., Accounting, Legal, IT Consulting"
+                  required
                 />
               </div>
 

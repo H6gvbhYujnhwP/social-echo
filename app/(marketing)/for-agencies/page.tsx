@@ -19,10 +19,10 @@ export default function ForAgenciesPage() {
             Stop spending hours creating social posts for every client. Social Echo lets you generate professional, brand-aligned content in seconds—freeing your team to focus on strategy and growth.
           </p>
           <button
-            onClick={() => router.push('/pricing')}
+            onClick={() => router.push('/signup-agency')}
             className="px-10 py-5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-2xl"
           >
-            Start Free Trial
+            Start Agency Account - 8 Free Posts
           </button>
         </div>
       </section>

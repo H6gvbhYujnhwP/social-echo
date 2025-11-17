@@ -99,6 +99,24 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validated = ProfileSchema.parse(body)
     
+    // Check if user is an agency client with immutable details
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { 
+        role: true, 
+        clientCompanyName: true,
+        clientWebsite: true,
+        clientBusinessSector: true
+      }
+    })
+    
+    // If user is agency client with locked details, use those instead of submitted values
+    if (user && user.role === 'CUSTOMER' && user.clientCompanyName) {
+      validated.business_name = user.clientCompanyName
+      validated.website = user.clientWebsite || validated.website
+      validated.industry = user.clientBusinessSector || validated.industry
+    }
+    
     // Prepare data for upsert - allow all fields to be updated
     const profileData = {
       userId,

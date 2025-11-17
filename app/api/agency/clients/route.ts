@@ -51,11 +51,32 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json()
-    const { email, name } = body
+    const { email, name, companyName, website, businessSector } = body
 
     if (!email || !email.trim()) {
       return NextResponse.json(
         { error: 'Email is required' },
+        { status: 400 }
+      )
+    }
+    
+    if (!companyName || !companyName.trim()) {
+      return NextResponse.json(
+        { error: 'Company name is required' },
+        { status: 400 }
+      )
+    }
+    
+    if (!website || !website.trim()) {
+      return NextResponse.json(
+        { error: 'Website is required' },
+        { status: 400 }
+      )
+    }
+    
+    if (!businessSector || !businessSector.trim()) {
+      return NextResponse.json(
+        { error: 'Business sector is required' },
         { status: 400 }
       )
     }
@@ -79,14 +100,19 @@ export async function POST(request: NextRequest) {
     const tempPassword = Math.random().toString(36).slice(-12)
     const hashedPassword = await bcrypt.hash(tempPassword, 10)
 
-    // Create client user
+    // Create client user with immutable details
     const client = await prisma.user.create({
       data: {
         email: cleanEmail,
         name: cleanName,
         password: hashedPassword,
         role: 'CUSTOMER',
-        agencyId: agency.id
+        agencyId: agency.id,
+        emailVerified: new Date(), // Auto-verify agency clients
+        // Immutable client details (anti-gaming)
+        clientCompanyName: companyName.trim(),
+        clientWebsite: website.trim(),
+        clientBusinessSector: businessSector.trim()
       }
     })
 
