@@ -102,11 +102,22 @@ export async function POST(
       }
     })
 
-    return NextResponse.json({
+    // Set the impersonation cookie server-side
+    const response = NextResponse.json({
       token,
       expiresAt: expiresAt.toISOString(),
-      message: 'Impersonation session started'
+      message: 'Impersonation session started',
+      redirectUrl: '/dashboard'
     })
+    
+    response.cookies.set('impersonating', token, {
+      path: '/',
+      maxAge: 900, // 15 minutes
+      httpOnly: false, // Allow JavaScript access for debugging
+      sameSite: 'lax'
+    })
+    
+    return response
   } catch (error: any) {
     console.error('[api/agency/clients/impersonate] Error:', error)
     return NextResponse.json(

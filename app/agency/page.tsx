@@ -227,18 +227,19 @@ export default function AgencyDashboard() {
   async function impersonateClient(clientId: string) {
     try {
       const res = await fetch(`/api/agency/clients/${clientId}/impersonate`, {
-        method: 'POST'
+        method: 'POST',
+        credentials: 'include' // Ensure cookies are sent and received
       })
 
       if (!res.ok) throw new Error('Failed to start impersonation')
       
       const data = await res.json()
       
-      // Set impersonation cookie with the token
-      document.cookie = `impersonating=${data.token}; path=/; max-age=900; SameSite=Lax`
+      // Cookie is now set server-side, but add a small delay to ensure it's processed
+      await new Promise(resolve => setTimeout(resolve, 100))
       
       // Redirect to client dashboard
-      window.location.href = '/dashboard'
+      window.location.href = data.redirectUrl || '/dashboard'
     } catch (error) {
       console.error('Error starting impersonation:', error)
       alert('Failed to start impersonation')
