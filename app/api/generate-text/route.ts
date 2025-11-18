@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { assertOpenAIKey } from '@/lib/openai'
+import { getEffectiveUserIdFromSession } from '@/lib/impersonation'
 import { 
   TextGenerationRequestSchema, 
   type TextGenerationResponse 
@@ -28,7 +29,8 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    const userId = (session.user as any).id
+    // Check for impersonation and get effective user ID
+    const { effectiveUserId: userId } = await getEffectiveUserIdFromSession(request, session)
     
     // Assert API key is available
     assertOpenAIKey()

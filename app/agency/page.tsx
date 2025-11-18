@@ -232,8 +232,13 @@ export default function AgencyDashboard() {
 
       if (!res.ok) throw new Error('Failed to start impersonation')
       
-      // Redirect to client dashboard with impersonation session
-      window.location.href = '/dashboard?impersonating=true'
+      const data = await res.json()
+      
+      // Set impersonation cookie with the token
+      document.cookie = `impersonating=${data.token}; path=/; max-age=900; SameSite=Lax`
+      
+      // Redirect to client dashboard
+      window.location.href = '/dashboard'
     } catch (error) {
       console.error('Error starting impersonation:', error)
       alert('Failed to start impersonation')

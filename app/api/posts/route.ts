@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getEffectiveUserIdFromSession } from '@/lib/impersonation'
 
 // Force Node.js runtime and dynamic rendering
 export const runtime = 'nodejs'
@@ -19,12 +20,14 @@ export async function GET(request: NextRequest) {
       )
     }
     
-    const userId = (session.user as any).id
+    // Check for impersonation and get effective user ID
+    const { effectiveUserId } = await getEffectiveUserIdFromSession(request, session)
+    
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date') // YYYY-MM-DD format
     
     // Build query
-    const where: any = { userId }
+    const where: any = { userId: effectiveUserId }
     if (date) {
       where.date = date
     }

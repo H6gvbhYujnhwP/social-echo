@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { getRssFeedsForIndustry } from '@/lib/industry-rss-feeds'
+import { getEffectiveUserIdFromSession } from '@/lib/impersonation'
 
 // Force Node.js runtime
 export const runtime = 'nodejs'
@@ -35,11 +36,12 @@ export async function GET(request: NextRequest) {
       )
     }
     
-    const userId = (session.user as any).id
+    // Check for impersonation and get effective user ID
+    const { effectiveUserId } = await getEffectiveUserIdFromSession(request, session)
     
     // Get profile with fresh data (no caching)
     const profile = await prisma.profile.findUnique({
-      where: { userId }
+      where: { userId: effectiveUserId }
     })
     
     if (!profile) {

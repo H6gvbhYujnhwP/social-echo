@@ -1,18 +1,22 @@
 // app/api/subscription/route.ts
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getEffectiveUserIdFromSession } from '@/lib/impersonation';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   
-  if (!session?.user?.email) {
+  if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Check for impersonation and get effective user ID
+  const { effectiveUserId } = await getEffectiveUserIdFromSession(request, session);
+
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { id: effectiveUserId },
     include: { subscription: true }
   });
 
