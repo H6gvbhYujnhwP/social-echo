@@ -102,19 +102,16 @@ export async function POST(
       }
     })
 
-    // Set the impersonation cookie server-side
-    const response = NextResponse.json({
-      token,
-      expiresAt: expiresAt.toISOString(),
-      message: 'Impersonation session started',
-      redirectUrl: '/dashboard'
-    })
+    // Set the impersonation cookie and redirect server-side
+    // This ensures the cookie is sent with the redirect request
+    const response = NextResponse.redirect(new URL('/dashboard', request.url))
     
     response.cookies.set('impersonating', token, {
       path: '/',
       maxAge: 900, // 15 minutes
       httpOnly: false, // Allow JavaScript access for debugging
-      sameSite: 'lax'
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production'
     })
     
     return response
