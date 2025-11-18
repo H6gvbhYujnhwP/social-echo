@@ -9,11 +9,6 @@ module.exports = {
         destination: '/account',
         permanent: true,
       },
-      {
-        source: '/agency',
-        destination: '/resellers',
-        permanent: true,
-      },
     ];
   },
   
@@ -34,4 +29,3 @@ module.exports = {
     ];
   },
 }
-
