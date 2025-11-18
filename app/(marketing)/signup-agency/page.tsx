@@ -238,11 +238,11 @@ export default function AgencySignupPage() {
                     Client Website
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     value={clientWebsite}
                     onChange={(e) => setClientWebsite(e.target.value)}
                     className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="https://example.com"
+                    placeholder="example.com or www.example.com"
                     required
                   />
                 </div>
@@ -299,6 +299,42 @@ export default function AgencySignupPage() {
           </p>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="px-6 py-8 border-t border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
+            <div className="flex flex-wrap gap-6 justify-center md:justify-start">
+              <a href="/features" className="text-gray-400 hover:text-white transition-colors">
+                How It Works
+              </a>
+              <a href="/pricing" className="text-gray-400 hover:text-white transition-colors">
+                Pricing
+              </a>
+              <a href="/help" className="text-gray-400 hover:text-white transition-colors">
+                Help
+              </a>
+              <a href="/terms" className="text-gray-400 hover:text-white transition-colors">
+                Terms
+              </a>
+              <a href="mailto:support@socialecho.ai" className="text-gray-400 hover:text-white transition-colors">
+                Contact
+              </a>
+            </div>
+            <div className="flex flex-wrap gap-6 justify-center md:justify-start mt-4">
+              <a href="/for-agencies" className="text-gray-400 hover:text-white transition-colors">
+                For Agencies
+              </a>
+              <a href="/for-small-businesses" className="text-gray-400 hover:text-white transition-colors">
+                For Small Businesses
+              </a>
+            </div>
+          </div>
+          <div className="text-center text-gray-400">
+            <p>&copy; 2025 Social Echo. AI-powered social media content generation for SMEs.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

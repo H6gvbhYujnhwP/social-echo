@@ -147,7 +147,7 @@ export default function ForAgenciesPage() {
               </li>
             </ul>
             <button
-              onClick={() => router.push('/pricing')}
+              onClick={() => router.push('/signup-agency')}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all"
             >
               Start Free Trial
