@@ -44,9 +44,10 @@ export async function middleware(request: NextRequest) {
   if (pathname === '/dashboard' && token) {
     if (token.role === 'AGENCY_ADMIN' || token.role === 'AGENCY_STAFF') {
       // Check if they're impersonating (allow dashboard access during impersonation)
-      const impersonating = request.cookies.get('impersonating')
+      const impersonatingCookie = request.cookies.get('impersonating')
+      const isImpersonating = impersonatingCookie && impersonatingCookie.value
       
-      if (!impersonating) {
+      if (!isImpersonating) {
         const url = request.nextUrl.clone()
         url.pathname = '/agency'
         return NextResponse.redirect(url)
