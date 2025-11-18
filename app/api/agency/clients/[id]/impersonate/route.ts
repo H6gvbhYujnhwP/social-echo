@@ -13,11 +13,12 @@ import {
 import { SignJWT } from 'jose'
 
 /**
- * POST /api/agency/clients/[id]/impersonate
+ * POST/GET /api/agency/clients/[id]/impersonate
  * 
  * Start impersonation session (15 minutes)
+ * Supports both POST and GET to allow window.location navigation
  */
-export async function POST(
+async function handleImpersonate(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
@@ -122,4 +123,19 @@ export async function POST(
       { status: 500 }
     )
   }
+}
+
+// Support both POST and GET methods
+export async function POST(
+  request: NextRequest,
+  context: { params: { id: string } }
+) {
+  return handleImpersonate(request, context)
+}
+
+export async function GET(
+  request: NextRequest,
+  context: { params: { id: string } }
+) {
+  return handleImpersonate(request, context)
 }
