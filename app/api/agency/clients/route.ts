@@ -17,6 +17,66 @@ import { welcomeEmail } from '@/lib/email/templates'
 import bcrypt from 'bcryptjs'
 
 /**
+ * GET /api/agency/clients
+ * 
+ * Get list of clients for the agency
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const user = session.user as any
+    
+    // Check role - only agency users can view clients
+    if (!isAgencyAdmin(user.role) && user.role !== 'AGENCY_STAFF') {
+      return NextResponse.json(
+        { error: 'Access denied. Agency role required.' },
+        { status: 403 }
+      )
+    }
+
+    // Get agency
+    const agency = await getAgencyForUser(user.id)
+    
+    if (!agency) {
+      return NextResponse.json(
+        { error: 'Agency not found' },
+        { status: 404 }
+      )
+    }
+
+    // Get all clients for this agency
+    const clients = await prisma.user.findMany({
+      where: {
+        agencyId: agency.id,
+        role: 'USER'
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        status: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+
+    return NextResponse.json({ clients })
+  } catch (error) {
+    console.error('Error fetching clients:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch clients' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
  * POST /api/agency/clients
  * 
  * Add a new client to the agency
