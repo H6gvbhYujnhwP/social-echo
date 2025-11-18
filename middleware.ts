@@ -43,11 +43,13 @@ export async function middleware(request: NextRequest) {
   // Agency routing: redirect agency users from /dashboard to /agency
   if (pathname === '/dashboard' && token) {
     if (token.role === 'AGENCY_ADMIN' || token.role === 'AGENCY_STAFF') {
-      // Check if they're impersonating (allow dashboard access during impersonation)
+      // Check if they're viewing a client (via cookie or URL parameter)
       const impersonatingCookie = request.cookies.get('impersonating')
       const isImpersonating = impersonatingCookie && impersonatingCookie.value
+      const viewingClientId = request.nextUrl.searchParams.get('viewingClientId')
       
-      if (!isImpersonating) {
+      // Allow dashboard access if impersonating OR viewing a client
+      if (!isImpersonating && !viewingClientId) {
         const url = request.nextUrl.clone()
         url.pathname = '/agency'
         return NextResponse.redirect(url)

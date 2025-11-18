@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { AgencyBillingTab } from '@/components/AgencyBillingTab'
+import { ClientSelector } from '@/components/ClientSelector'
 
 type Client = {
   id: string
@@ -283,6 +284,9 @@ export default function AgencyDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Client Selector */}
+      <ClientSelector />
+      
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
