@@ -58,8 +58,7 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         name: true,
-        email: true,
-        status: true
+        email: true
       },
       orderBy: {
         createdAt: 'desc'
