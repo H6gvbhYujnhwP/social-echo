@@ -49,21 +49,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get all clients for this agency
-    const clients = await prisma.user.findMany({
-      where: {
-        agencyId: agency.id,
-        role: 'USER'
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+    // Get all clients for this agency (from the customers relation)
+    const clients = agency.customers.map((c: any) => ({
+      id: c.id,
+      name: c.name,
+      email: c.email
+    }))
 
     return NextResponse.json({ clients })
   } catch (error) {
