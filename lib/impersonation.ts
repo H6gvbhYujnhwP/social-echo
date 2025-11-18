@@ -17,6 +17,26 @@ export async function getEffectiveUserId(
   request: NextRequest,
   currentUserId: string
 ): Promise<ImpersonationResult> {
+  // First check for viewingClientId query parameter (new simple approach)
+  const url = new URL(request.url)
+  const viewingClientId = url.searchParams.get('viewingClientId')
+  
+  if (viewingClientId) {
+    // Verify the user has access to this client
+    const targetUser = await prisma.user.findUnique({
+      where: { id: viewingClientId }
+    })
+
+    if (targetUser) {
+      return {
+        isImpersonating: true,
+        effectiveUserId: viewingClientId,
+        impersonatorId: currentUserId
+      }
+    }
+  }
+  
+  // Fall back to cookie-based impersonation (old approach)
   try {
     // Check for impersonation cookie
     const impersonatingCookie = request.cookies.get('impersonating')

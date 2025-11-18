@@ -12,6 +12,7 @@ import HistoryDrawer from '../../components/HistoryDrawer'
 import TrialExhaustedModal from '../../components/TrialExhaustedModal'
 import { TrialCountdown } from '../../components/TrialCountdown'
 import { OnboardingOrchestrator } from '../../components/onboarding/OnboardingOrchestrator'
+import { ClientSelector, useSelectedClient } from '../../components/ClientSelector'
 import { UserProfile, getProfile, getOrCreatePlanner, savePostHistory, type Planner, type PostType } from '../../lib/localstore'
 import Link from 'next/link'
 
@@ -28,7 +29,15 @@ export interface GeneratedDraft {
 export default function DashboardPage() {
   const router = useRouter()
   const { data: session, status } = useSession()
+  const selectedClientId = useSelectedClient()
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  
+  // Helper to build API URLs with viewingClientId if selected
+  const buildApiUrl = (path: string) => {
+    if (!selectedClientId) return path
+    const separator = path.includes('?') ? '&' : '?'
+    return `${path}${separator}viewingClientId=${selectedClientId}`
+  }
   const [planner, setPlanner] = useState<Planner | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -70,7 +79,7 @@ export default function DashboardPage() {
     const loadData = async () => {
       try {
         // Load profile from database with cache-busting
-        const profileResponse = await fetch('/api/profile', {
+        const profileResponse = await fetch(buildApiUrl('/api/profile'), {
           cache: 'no-store',
           headers: {
             'Cache-Control': 'no-cache'
@@ -86,7 +95,7 @@ export default function DashboardPage() {
         console.log('Profile loaded:', profileData.business_name)
         
         // Load subscription status
-        const subResponse = await fetch('/api/subscription', {
+        const subResponse = await fetch(buildApiUrl('/api/subscription'), {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' }
         })
@@ -107,7 +116,7 @@ export default function DashboardPage() {
         }
         
         // Load usage data
-        const usageResponse = await fetch('/api/usage', {
+        const usageResponse = await fetch(buildApiUrl('/api/usage'), {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' }
         })
@@ -118,7 +127,7 @@ export default function DashboardPage() {
         }
         
         // Load planner from database
-        const plannerResponse = await fetch('/api/planner')
+        const plannerResponse = await fetch(buildApiUrl('/api/planner'))
         if (plannerResponse.ok) {
           const plannerData = await plannerResponse.json()
           setPlanner({ version: 1, days: plannerData.days })
@@ -203,7 +212,7 @@ export default function DashboardPage() {
     }
 
     try {
-      const response = await fetch('/api/history', {
+      const response = await fetch(buildApiUrl('/api/history'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -286,7 +295,7 @@ export default function DashboardPage() {
         user_prompt: userPrompt || '',
       }
 
-      const response = await fetch('/api/generate-text', {
+      const response = await fetch(buildApiUrl('/api/generate-text'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -383,7 +392,7 @@ export default function DashboardPage() {
       
       // Also manually refetch usage and subscription for immediate update
       try {
-        const usageResponse = await fetch('/api/usage', {
+        const usageResponse = await fetch(buildApiUrl('/api/usage'), {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' }
         })
@@ -394,7 +403,7 @@ export default function DashboardPage() {
         }
         
         // Also refetch subscription to update usage counter in banner
-        const subResponse = await fetch('/api/subscription', {
+        const subResponse = await fetch(buildApiUrl('/api/subscription'), {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' }
         })
@@ -527,7 +536,7 @@ export default function DashboardPage() {
   // Restore a previous version from history
   const handleRestoreHistory = async (item: any) => {
     try {
-      const response = await fetch('/api/history/restore', {
+      const response = await fetch(buildApiUrl('/api/history/restore'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: item.id })
@@ -604,6 +613,9 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Client Selector for Agency Users */}
+      <ClientSelector />
+      
       {/* Onboarding Trainer */}
       <OnboardingOrchestrator />
       {/* Background Pattern */}

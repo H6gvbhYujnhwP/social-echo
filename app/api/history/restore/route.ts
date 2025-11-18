@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { getEffectiveUserId } from '@/lib/impersonation'
 
 /**
  * POST /api/history/restore
@@ -16,13 +17,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = await prisma.user.findUnique({
+    const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email }
     })
 
-    if (!user) {
+    if (!currentUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
+    
+    // Check for impersonation
+    const { effectiveUserId } = await getEffectiveUserId(request, currentUser.id)
 
     // Parse request body
     const body = await request.json()
@@ -59,8 +63,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify ownership
-    if (historyItem.userId !== user.id) {
+    // Verify ownership (check against effective user ID)
+    if (historyItem.userId !== effectiveUserId) {
       return NextResponse.json(
         { error: 'Unauthorized - this history item does not belong to you' },
         { status: 403 }

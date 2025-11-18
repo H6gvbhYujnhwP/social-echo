@@ -2,13 +2,14 @@
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { checkPostsRemaining } from '@/lib/usage/service';
+import { getEffectiveUserId } from '@/lib/impersonation';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -16,8 +17,19 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    if (!currentUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Check for impersonation
+    const { effectiveUserId } = await getEffectiveUserId(request, currentUser.id);
+
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { id: effectiveUserId },
       include: { subscription: true }
     });
 

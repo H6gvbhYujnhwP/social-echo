@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { getEffectiveUserId } from '@/lib/impersonation'
 
 /**
  * GET /api/history
@@ -17,14 +18,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get current user
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    })
+
+    if (!currentUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+    
+    // Check for impersonation
+    const { effectiveUserId } = await getEffectiveUserId(request, currentUser.id)
+
     // Get user with subscription
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { id: effectiveUserId },
       include: { subscription: true }
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Target user not found' }, { status: 404 })
     }
     
     // Check access control (trial expiration, suspension, subscription status)

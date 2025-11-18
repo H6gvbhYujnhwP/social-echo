@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { getEffectiveUserId } from '@/lib/impersonation'
 
 // Force Node.js runtime
 export const runtime = 'nodejs'
@@ -39,7 +40,11 @@ export async function GET(request: NextRequest) {
       )
     }
     
-    const userId = (session.user as any).id
+    const currentUserId = (session.user as any).id
+    
+    // Check for impersonation
+    const { effectiveUserId } = await getEffectiveUserId(request, currentUserId)
+    const userId = effectiveUserId
     
     // Get all planner days for user
     const plannerDays = await prisma.plannerDay.findMany({
@@ -101,7 +106,11 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    const userId = (session.user as any).id
+    const currentUserId = (session.user as any).id
+    
+    // Check for impersonation
+    const { effectiveUserId } = await getEffectiveUserId(request, currentUserId)
+    const userId = effectiveUserId
     
     // Check access control (trial expiration, suspension, subscription status)
     const { checkUserAccess } = await import('@/lib/access-control')
