@@ -112,7 +112,8 @@ export async function POST(request: NextRequest) {
     
     // Get effective user ID (supports viewingClientId for agency admins)
     const { getEffectiveUserIdFromSession } = await import('@/lib/impersonation')
-    const userId = await getEffectiveUserIdFromSession(request, session)
+    const impersonationResult = await getEffectiveUserIdFromSession(request, session)
+    const userId = impersonationResult.effectiveUserId
     
     // Check access control (trial expiration, suspension, subscription status)
     const { checkUserAccess } = await import('@/lib/access-control')
