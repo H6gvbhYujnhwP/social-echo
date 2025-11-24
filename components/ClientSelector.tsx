@@ -54,13 +54,14 @@ export function ClientSelector() {
     if (clientId === 'none') {
       setSelectedClientId(null)
       localStorage.removeItem('selectedClientId')
+      // Navigate to agency page when no client selected
+      router.push('/agency')
     } else {
       setSelectedClientId(clientId)
       localStorage.setItem('selectedClientId', clientId)
+      // Navigate to dashboard with client ID parameter
+      router.push(`/dashboard?viewingClientId=${clientId}`)
     }
-    
-    // Reload the page to fetch new client's data
-    router.refresh()
   }
 
   // Don't show selector if not agency user
