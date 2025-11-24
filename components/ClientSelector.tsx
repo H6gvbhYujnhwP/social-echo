@@ -86,12 +86,20 @@ export function ClientSelector() {
           )}
         </div>
         
-        <Link
-          href="/agency"
-          className="px-4 py-2 bg-white text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors"
-        >
-          ← Back to Client Management
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/train?viewingClientId=${viewingClientId}`}
+            className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-400 transition-colors"
+          >
+            Train Your Echo
+          </Link>
+          <Link
+            href="/agency"
+            className="px-4 py-2 bg-white text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors"
+          >
+            ← Back to Client Management
+          </Link>
+        </div>
       </div>
     </div>
   )

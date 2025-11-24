@@ -19,8 +19,8 @@ export async function middleware(request: NextRequest) {
     const isAgencyUser = userRole === 'AGENCY_ADMIN' || userRole === 'AGENCY_STAFF';
     const viewingClientId = request.nextUrl.searchParams.get('viewingClientId');
     
-    if (isAgencyUser && viewingClientId && pathname === '/dashboard') {
-      // Agency user viewing a client's dashboard - allow access
+    if (isAgencyUser && viewingClientId && (pathname === '/dashboard' || pathname === '/train')) {
+      // Agency user viewing a client's dashboard or training their Echo - allow access
       return NextResponse.next();
     }
     

@@ -3,7 +3,7 @@
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 import { OnboardingToggle } from './onboarding/OnboardingToggle'
 
@@ -12,6 +12,8 @@ export function Header() {
   const loading = status === 'loading'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const viewingClientId = searchParams?.get('viewingClientId')
 
   // Don't render Header on marketing pages - they use NavBar instead
   const isMarketingPage = pathname === '/' || 
@@ -51,10 +53,15 @@ export function Header() {
                 <Link href="/dashboard" className="text-gray-600 hover:text-blue-600">
                   Dashboard
                 </Link>
-                <span className="text-gray-400">•</span>
-                <Link href="/train" className="text-gray-600 hover:text-blue-600">
-                  Train Again
-                </Link>
+                {/* Hide Train Again when viewing a client - it's in the blue banner instead */}
+                {!viewingClientId && (
+                  <>
+                    <span className="text-gray-400">•</span>
+                    <Link href="/train" className="text-gray-600 hover:text-blue-600">
+                      Train Again
+                    </Link>
+                  </>
+                )}
                 {/* Show Client Management link only for agency accounts */}
                 {((session.user as any)?.role === 'AGENCY_ADMIN' || (session.user as any)?.role === 'AGENCY_STAFF') && (
                   <>
@@ -133,13 +140,16 @@ export function Header() {
                 >
                   Dashboard
                 </Link>
-                <Link
-                  href="/train"
-                  className="text-gray-600 hover:text-blue-600 py-2"
-                  onClick={closeMobileMenu}
-                >
-                  Train Again
-                </Link>
+                {/* Hide Train Again when viewing a client - it's in the blue banner instead */}
+                {!viewingClientId && (
+                  <Link
+                    href="/train"
+                    className="text-gray-600 hover:text-blue-600 py-2"
+                    onClick={closeMobileMenu}
+                  >
+                    Train Again
+                  </Link>
+                )}
                 {/* Show Client Management link only for agency accounts */}
                 {((session.user as any)?.role === 'AGENCY_ADMIN' || (session.user as any)?.role === 'AGENCY_STAFF') && (
                   <Link
