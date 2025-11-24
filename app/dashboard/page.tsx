@@ -1,7 +1,5 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import { useEffect, useState, useRef, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
@@ -28,10 +26,9 @@ export interface GeneratedDraft {
   best_time_uk: string
 }
 
-export default function DashboardPage() {
+function DashboardPageContent({ selectedClientId }: { selectedClientId: string | null }) {
   const router = useRouter()
   const { data: session, status } = useSession()
-  const selectedClientId = useSelectedClient()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   
   // Helper to build API URLs with viewingClientId if selected
@@ -798,5 +795,27 @@ export default function DashboardPage() {
         onClose={() => setShowTrialExhaustedModal(false)}
       />
     </div>
+  )
+}
+
+// Wrapper component that handles useSearchParams with Suspense
+function ClientIdProvider() {
+  const selectedClientId = useSelectedClient()
+  return <DashboardPageContent selectedClientId={selectedClientId} />
+}
+
+// Main export with Suspense boundary
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p>Loading dashboard...</p>
+        </div>
+      </div>
+    }>
+      <ClientIdProvider />
+    </Suspense>
   )
 }
