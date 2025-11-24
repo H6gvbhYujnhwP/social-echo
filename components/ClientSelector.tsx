@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 
 interface Client {
   id: string
@@ -12,10 +13,10 @@ interface Client {
 
 export function ClientSelector() {
   const { data: session } = useSession()
-  const router = useRouter()
-  const [clients, setClients] = useState<Client[]>([])
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const searchParams = useSearchParams()
+  const viewingClientId = searchParams?.get('viewingClientId')
+  const [clientInfo, setClientInfo] = useState<Client | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   // Check if user is agency admin
   const isAgency = session?.user && (
@@ -24,105 +25,80 @@ export function ClientSelector() {
   )
 
   useEffect(() => {
-    if (!isAgency) return
+    // Only load client info if we're viewing a specific client
+    if (!isAgency || !viewingClientId) {
+      setClientInfo(null)
+      return
+    }
 
-    // Load clients from API
-    async function loadClients() {
+    async function loadClientInfo() {
+      setIsLoading(true)
       try {
         const res = await fetch('/api/agency/clients')
         if (res.ok) {
           const data = await res.json()
-          setClients(data.clients || [])
-          
-          // Load saved selection from localStorage
-          const saved = localStorage.getItem('selectedClientId')
-          if (saved && data.clients.some((c: Client) => c.id === saved)) {
-            setSelectedClientId(saved)
-          }
+          const client = data.clients?.find((c: Client) => c.id === viewingClientId)
+          setClientInfo(client || null)
         }
       } catch (error) {
-        console.error('Failed to load clients:', error)
+        console.error('Failed to load client info:', error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    loadClients()
-  }, [isAgency])
+    loadClientInfo()
+  }, [isAgency, viewingClientId])
 
-  const handleClientChange = (clientId: string) => {
-    if (clientId === 'none') {
-      setSelectedClientId(null)
-      localStorage.removeItem('selectedClientId')
-      // Navigate to agency page when no client selected
-      router.push('/agency')
-    } else {
-      setSelectedClientId(clientId)
-      localStorage.setItem('selectedClientId', clientId)
-      // Navigate to dashboard with client ID parameter
-      router.push(`/dashboard?viewingClientId=${clientId}`)
-    }
-  }
-
-  // Don't show selector if not agency user
+  // Don't show anything if not agency user
   if (!isAgency) return null
 
-  // Don't show if still loading
-  if (isLoading) return null
+  // Don't show if not viewing a client
+  if (!viewingClientId) return null
 
-  // Don't show if no clients
-  if (clients.length === 0) return null
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="bg-blue-50 border-b border-blue-200 px-4 py-3">
+        <div className="max-w-7xl mx-auto">
+          <span className="text-sm text-blue-700">Loading client information...</span>
+        </div>
+      </div>
+    )
+  }
 
-  const selectedClient = clients.find(c => c.id === selectedClientId)
-
+  // Show banner with client info
   return (
-    <div className="bg-blue-50 border-b border-blue-200 px-4 py-3">
+    <div className="bg-blue-600 border-b border-blue-700 px-4 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-blue-900">
-            Viewing Client:
+          <span className="text-sm font-medium text-white">
+            👤 Managing Client:
           </span>
-          <select
-            value={selectedClientId || 'none'}
-            onChange={(e) => handleClientChange(e.target.value)}
-            className="px-4 py-2 border border-blue-300 rounded-lg bg-white text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="none">-- Select a client --</option>
-            {clients.map((client) => (
-              <option key={client.id} value={client.id}>
-                {client.name}
-              </option>
-            ))}
-          </select>
+          {clientInfo ? (
+            <div className="text-sm text-blue-100">
+              <span className="font-semibold text-white">{clientInfo.name}</span>
+              <span className="mx-2">•</span>
+              <span>{clientInfo.email}</span>
+            </div>
+          ) : (
+            <span className="text-sm text-blue-100">Client ID: {viewingClientId}</span>
+          )}
         </div>
         
-        {selectedClient && (
-          <div className="text-sm text-blue-700">
-            Managing: <span className="font-semibold">{selectedClient.name}</span> ({selectedClient.email})
-          </div>
-        )}
+        <Link
+          href="/agency"
+          className="px-4 py-2 bg-white text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors"
+        >
+          ← Back to Client Management
+        </Link>
       </div>
     </div>
   )
 }
 
-// Hook to get the selected client ID
+// Hook to get the selected client ID from URL params
 export function useSelectedClient() {
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(null)
-
-  useEffect(() => {
-    const saved = localStorage.getItem('selectedClientId')
-    setSelectedClientId(saved)
-
-    // Listen for storage changes (when selection changes in another tab)
-    const handleStorageChange = () => {
-      const updated = localStorage.getItem('selectedClientId')
-      setSelectedClientId(updated)
-    }
-
-    window.addEventListener('storage', handleStorageChange)
-    return () => window.removeEventListener('storage', handleStorageChange)
-  }, [])
-
-  return selectedClientId
+  const searchParams = useSearchParams()
+  return searchParams?.get('viewingClientId')
 }

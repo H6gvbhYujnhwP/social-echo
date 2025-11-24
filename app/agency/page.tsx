@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { AgencyBillingTab } from '@/components/AgencyBillingTab'
-import { ClientSelector } from '@/components/ClientSelector'
 
 type Client = {
   id: string
@@ -284,9 +283,6 @@ export default function AgencyDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Client Selector */}
-      <ClientSelector />
-      
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -428,6 +424,9 @@ export default function AgencyDashboard() {
                     Last Login
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Dashboard
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -435,7 +434,7 @@ export default function AgencyDashboard() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {agency.clients.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                       No clients yet. Click "Add Client" to get started.
                     </td>
                   </tr>
@@ -481,6 +480,14 @@ export default function AgencyDashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {client.lastLogin ? new Date(client.lastLogin).toLocaleDateString() : 'Never'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <a
+                          href={`/dashboard?viewingClientId=${client.id}`}
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Go to Dashboard
+                        </a>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <button

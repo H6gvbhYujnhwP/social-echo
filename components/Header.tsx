@@ -55,6 +55,15 @@ export function Header() {
                 <Link href="/train" className="text-gray-600 hover:text-blue-600">
                   Train Again
                 </Link>
+                {/* Show Client Management link only for agency accounts */}
+                {((session.user as any)?.role === 'AGENCY_ADMIN' || (session.user as any)?.role === 'AGENCY_STAFF') && (
+                  <>
+                    <span className="text-gray-400">•</span>
+                    <Link href="/agency" className="text-gray-600 hover:text-blue-600">
+                      Client Management
+                    </Link>
+                  </>
+                )}
                 <span className="text-gray-400">•</span>
                 <Link href="/learning-profile" className="text-gray-600 hover:text-blue-600">
                   Learning Profile
@@ -131,6 +140,16 @@ export function Header() {
                 >
                   Train Again
                 </Link>
+                {/* Show Client Management link only for agency accounts */}
+                {((session.user as any)?.role === 'AGENCY_ADMIN' || (session.user as any)?.role === 'AGENCY_STAFF') && (
+                  <Link
+                    href="/agency"
+                    className="text-gray-600 hover:text-blue-600 py-2"
+                    onClick={closeMobileMenu}
+                  >
+                    Client Management
+                  </Link>
+                )}
                 <Link
                   href="/learning-profile"
                   className="text-gray-600 hover:text-blue-600 py-2"
