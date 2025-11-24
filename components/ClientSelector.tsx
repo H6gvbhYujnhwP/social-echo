@@ -50,6 +50,16 @@ export function ClientSelector() {
     loadClients()
   }, [isAgency])
 
+  // Auto-navigate to dashboard if on agency page with selected client
+  useEffect(() => {
+    if (selectedClientId && typeof window !== 'undefined') {
+      const currentPath = window.location.pathname
+      if (currentPath === '/agency') {
+        router.push(`/dashboard?viewingClientId=${selectedClientId}`)
+      }
+    }
+  }, [selectedClientId, router])
+
   const handleClientChange = (clientId: string) => {
     if (clientId === 'none') {
       setSelectedClientId(null)
