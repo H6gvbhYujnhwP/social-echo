@@ -749,6 +749,7 @@ function DashboardPageContent({ selectedClientId }: { selectedClientId: string |
               savedImageUrl={generatedImageUrl}
               savedImageStyle={generatedImageStyle}
               onHistoryClick={() => setIsHistoryDrawerOpen(true)}
+              selectedClientId={selectedClientId}
               onImageGenerated={async (imageUrl, imageStyle) => {
                 setGeneratedImageUrl(imageUrl)
                 setGeneratedImageStyle(imageStyle)

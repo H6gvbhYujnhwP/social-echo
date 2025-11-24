@@ -20,6 +20,7 @@ interface ImagePanelProps {
   savedImageStyle?: string | null
   onImageGenerated?: (imageUrl: string, imageStyle: string) => void
   onHistoryClick?: () => void
+  selectedClientId?: string | null
 }
 
 export function ImagePanel({ 
@@ -33,7 +34,8 @@ export function ImagePanel({
   savedImageUrl,
   savedImageStyle,
   onImageGenerated,
-  onHistoryClick
+  onHistoryClick,
+  selectedClientId
 }: ImagePanelProps) {
   const imageTypes = getAvailableImageTypes()
   
@@ -151,7 +153,12 @@ export function ImagePanel({
         post_text: requestData.post_text?.substring(0, 100) + '...'
       })
 
-      const response = await fetch('/api/generate-image', {
+      // Build API URL with viewingClientId if present
+      const apiUrl = selectedClientId 
+        ? `/api/generate-image?viewingClientId=${selectedClientId}`
+        : '/api/generate-image'
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
