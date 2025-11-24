@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from './ui/Button'
 import { Input } from './ui/Input'
 import { Textarea } from './ui/Textarea'
@@ -100,6 +100,8 @@ const FieldHelp = ({ text }: { text: string }) => (
 
 export function TrainForm({ initialProfile }: TrainFormProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const viewingClientId = searchParams?.get('viewingClientId')
   const { goToStep, isActive } = useOnboarding()
   
   // Initialize selectedAudiences from the saved profile
@@ -232,9 +234,14 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
       if (isActive) {
         goToStep(11)
       } else {
-        // If onboarding is not active, just redirect to dashboard
+        // If onboarding is not active, redirect to dashboard
         alert('✅ Profile saved successfully! Your AI is now trained with your latest business information.')
-        router.replace('/dashboard')
+        // If viewing a client, redirect back to their dashboard
+        if (viewingClientId) {
+          router.replace(`/dashboard?viewingClientId=${viewingClientId}`)
+        } else {
+          router.replace('/dashboard')
+        }
       }
     } catch (err: any) {
       console.error('save failed', err)

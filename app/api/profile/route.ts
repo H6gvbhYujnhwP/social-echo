@@ -97,7 +97,9 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    const userId = (session.user as any).id
+    // Check for impersonation/viewingClientId and get effective user ID
+    const { effectiveUserId: userId } = await getEffectiveUserIdFromSession(request, session)
+    
     const body = await request.json()
     const validated = ProfileSchema.parse(body)
     
