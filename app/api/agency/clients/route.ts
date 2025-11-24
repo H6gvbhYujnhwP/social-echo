@@ -166,6 +166,19 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Create unlimited subscription for agency client
+    await prisma.subscription.create({
+      data: {
+        userId: client.id,
+        plan: 'agency_client',
+        status: 'active',
+        usageCount: 0,
+        usageLimit: null, // null = unlimited posts
+        stripeCustomerId: null, // Agency clients don't have their own Stripe subscription
+        stripeSubscriptionId: null
+      }
+    })
+
     // Update agency client count
     const newClientCount = agency.activeClientCount + 1
     await prisma.agency.update({

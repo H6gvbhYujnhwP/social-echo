@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { ArrowLeft, User } from 'lucide-react'
@@ -15,6 +15,8 @@ import { OnboardingOrchestrator } from '../../components/onboarding/OnboardingOr
 
 export default function TrainPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const viewingClientId = searchParams?.get('viewingClientId')
   const { data: session, status } = useSession()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -31,7 +33,12 @@ export default function TrainPage() {
     // Load profile from database API
     const loadProfile = async () => {
       try {
-        const response = await fetch('/api/profile', {
+        // Build URL with viewingClientId if present
+        const url = viewingClientId 
+          ? `/api/profile?viewingClientId=${viewingClientId}`
+          : '/api/profile'
+        
+        const response = await fetch(url, {
           cache: 'no-store',
           headers: {
             'Cache-Control': 'no-cache'
@@ -60,7 +67,7 @@ export default function TrainPage() {
     }
     
     loadProfile()
-  }, [])
+  }, [viewingClientId])
 
   // Show loading spinner while checking authentication or loading profile
   if (status === 'loading' || isLoading || !session) {

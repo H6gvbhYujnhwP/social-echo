@@ -200,7 +200,12 @@ export function TrainForm({ initialProfile }: TrainFormProps) {
         : formData.target_audience
 
       // Save to database via API
-      const response = await fetch('/api/profile', {
+      // Build URL with viewingClientId if present
+      const url = viewingClientId 
+        ? `/api/profile?viewingClientId=${viewingClientId}`
+        : '/api/profile'
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
