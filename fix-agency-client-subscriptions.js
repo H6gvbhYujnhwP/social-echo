@@ -22,6 +22,9 @@ async function main() {
     
     if (!client.subscription) {
       // Create new unlimited subscription
+      const periodEnd = new Date()
+      periodEnd.setFullYear(periodEnd.getFullYear() + 1)
+      
       await prisma.subscription.create({
         data: {
           userId: client.id,
@@ -29,6 +32,7 @@ async function main() {
           status: 'active',
           usageCount: 0,
           usageLimit: null, // null = unlimited
+          currentPeriodEnd: periodEnd,
           stripeCustomerId: null,
           stripeSubscriptionId: null
         }

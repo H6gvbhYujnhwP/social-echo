@@ -167,6 +167,10 @@ export async function POST(request: NextRequest) {
     })
 
     // Create unlimited subscription for agency client
+    // Set billing period to 1 year from now (agency handles billing, not per-client)
+    const periodEnd = new Date()
+    periodEnd.setFullYear(periodEnd.getFullYear() + 1)
+    
     await prisma.subscription.create({
       data: {
         userId: client.id,
@@ -174,6 +178,7 @@ export async function POST(request: NextRequest) {
         status: 'active',
         usageCount: 0,
         usageLimit: null, // null = unlimited posts
+        currentPeriodEnd: periodEnd,
         stripeCustomerId: null, // Agency clients don't have their own Stripe subscription
         stripeSubscriptionId: null
       }
