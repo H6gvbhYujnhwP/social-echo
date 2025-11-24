@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
@@ -13,7 +13,7 @@ import { UserProfile, getProfile } from '../../lib/localstore'
 import { OnboardingToggle } from '../../components/onboarding/OnboardingToggle'
 import { OnboardingOrchestrator } from '../../components/onboarding/OnboardingOrchestrator'
 
-export default function TrainPage() {
+function TrainPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const viewingClientId = searchParams?.get('viewingClientId')
@@ -246,5 +246,18 @@ export default function TrainPage() {
         </Container>
       </main>
     </div>
+  )
+}
+
+// Wrapper component with Suspense boundary for useSearchParams
+export default function TrainPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      </div>
+    }>
+      <TrainPageContent />
+    </Suspense>
   )
 }
