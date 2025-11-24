@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
@@ -614,7 +614,9 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
       {/* Client Selector for Agency Users */}
-      <ClientSelector />
+      <Suspense fallback={null}>
+        <ClientSelector />
+      </Suspense>
       
       {/* Onboarding Trainer */}
       <OnboardingOrchestrator />
