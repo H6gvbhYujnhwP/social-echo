@@ -15,8 +15,11 @@ export default function UsageCounter({ usage }: UsageCounterProps) {
 
   const { posts_used, posts_allowance, posts_left, cycle_end, plan } = usage;
   
-  // Hide usage counter for Ultimate plan (unlimited = 1000000)
-  if (posts_allowance >= 1000000) return null;
+  // Hide usage counter for unlimited plans (Ultimate = 1000000, agency_client = null/0)
+  if (posts_allowance >= 1000000 || posts_allowance === 0) return null;
+  
+  // Hide for agency_client plan
+  if (plan === 'agency_client') return null;
   
   // Calculate percentage for visual indicator
   const percentage = (posts_used / posts_allowance) * 100;
