@@ -50,18 +50,6 @@ export function ClientSelector() {
     loadClients()
   }, [isAgency])
 
-  // Auto-navigate to dashboard if on agency page with selected client
-  useEffect(() => {
-    if (selectedClientId && typeof window !== 'undefined') {
-      const currentPath = window.location.pathname
-      // Only navigate if on agency page AND not already navigating
-      if (currentPath === '/agency') {
-        // Use replace instead of push to avoid back button issues
-        router.replace(`/dashboard?viewingClientId=${selectedClientId}`)
-      }
-    }
-  }, [selectedClientId])  // Remove router from dependencies to prevent re-runs
-
   const handleClientChange = (clientId: string) => {
     if (clientId === 'none') {
       setSelectedClientId(null)
