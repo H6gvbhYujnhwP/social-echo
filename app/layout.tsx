@@ -83,7 +83,9 @@ export default function RootLayout({
       <body className="min-h-screen bg-background text-foreground">
         <Providers>
           <ImpersonationBanner />
-          <Header />
+          <Suspense fallback={<div className="border-b border-gray-200 bg-white h-16"></div>}>
+            <Header />
+          </Suspense>
           <main className="flex-1">
             {children}
           </main>
