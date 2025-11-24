@@ -14,6 +14,16 @@ export async function middleware(request: NextRequest) {
   // Block access to dashboard/planner/train for cancelled or inactive subscriptions
   const protectedRoutes = ['/dashboard', '/planner', '/train'];
   if (protectedRoutes.includes(pathname) && token) {
+    // Allow agency users to access dashboard when viewing a client
+    const userRole = token.role as string | undefined;
+    const isAgencyUser = userRole === 'AGENCY_ADMIN' || userRole === 'AGENCY_STAFF';
+    const viewingClientId = request.nextUrl.searchParams.get('viewingClientId');
+    
+    if (isAgencyUser && viewingClientId && pathname === '/dashboard') {
+      // Agency user viewing a client's dashboard - allow access
+      return NextResponse.next();
+    }
+    
     // Check subscription status from token
     const subscriptionStatus = token.subscriptionStatus as string | undefined;
     const currentPeriodEnd = token.currentPeriodEnd as string | undefined;
@@ -39,9 +49,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
   }
-  
-  // Agency users can access dashboard when viewing a client
-  // The dashboard will check for viewingClientId parameter and show client data
   
   // Check if accessing admin routes (including hidden URL)
   if (pathname.startsWith('/admin') || pathname.startsWith('/admin73636')) {
