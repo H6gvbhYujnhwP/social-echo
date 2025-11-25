@@ -212,8 +212,8 @@ function SignUpForm() {
             disabled={loading}
           >
             {loading 
-              ? (plan?.toLowerCase().includes('starter') ? 'Creating account...' : 'Creating account & redirecting to payment...') 
-              : (plan?.toLowerCase().includes('starter') ? 'Create Account & Enjoy Your Free Trial' : (plan ? 'Create Account & Continue to Payment' : 'Create Account'))
+              ? 'Creating your account...' 
+              : 'Start My Free Trial →'
             }
           </Button>
         </form>
