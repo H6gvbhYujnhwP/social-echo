@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { overlayLogo } from '@/lib/image-overlay'
 import { join } from 'path'
-import fetch from 'node-fetch'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

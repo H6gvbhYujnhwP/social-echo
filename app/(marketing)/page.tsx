@@ -49,23 +49,26 @@ export default function HomePage() {
               transition={{ duration: 0.8 }}
               className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight"
             >
-              Your Social Media Marketing Team—
+              Get LinkedIn Leads with AI-Generated Posts—
               <br />
               <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Without the Team
+                Do It Now!
               </span>
             </motion.h1>
             
-            <motion.p
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
+              className="mb-8"
             >
-              Generate professional social posts daily. Train your AI. Build your brand.
-              <br />
-              <span className="text-white font-semibold">From £29.99/month.</span>
-            </motion.p>
+              <p className="text-2xl md:text-3xl text-green-400 font-bold mb-4">
+                No Credit Card • No Bank Details • Completely Free Trial
+              </p>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                Generate professional social media posts in seconds. Our AI learns your business voice and creates content that gets you noticed.
+              </p>
+            </motion.div>
             
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -75,9 +78,9 @@ export default function HomePage() {
             >
               <button
                 onClick={handleGetStarted}
-                className="px-10 py-5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-2xl hover:shadow-blue-500/50 transform hover:scale-105"
+                className="px-10 py-5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-xl font-bold hover:from-blue-700 hover:to-purple-700 transition-all shadow-2xl hover:shadow-blue-500/50 transform hover:scale-105"
               >
-                Start Free Trial
+                Try Free - No Credit Card Required →
               </button>
               <button
                 onClick={handleHowItWorks}
@@ -85,6 +88,27 @@ export default function HomePage() {
               >
                 See How It Works →
               </button>
+            </motion.div>
+            
+            {/* Trust Badges */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="mt-12 flex flex-wrap justify-center items-center gap-8 text-gray-400 text-sm"
+            >
+              <div className="flex items-center gap-2">
+                <Check className="w-5 h-5 text-green-400" />
+                <span>Join 500+ businesses</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-5 h-5 text-green-400" />
+                <span>Cancel anytime</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-5 h-5 text-green-400" />
+                <span>Setup in 2 minutes</span>
+              </div>
             </motion.div>
           </div>
         </section>
@@ -210,7 +234,7 @@ export default function HomePage() {
                 onClick={() => handleSignUp('SocialEcho_Pro')}
                 className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-10 py-4 rounded-full text-lg font-semibold shadow-xl transform hover:scale-105 transition-all duration-200"
               >
-                Start Saving Today →
+                Try Free - No Credit Card →
               </button>
             </motion.div>
           </div>
@@ -451,8 +475,11 @@ export default function HomePage() {
               className="text-center mb-16"
             >
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                Simple, Transparent Pricing
+                Start Your Free Trial Today
               </h2>
+              <p className="text-2xl text-green-400 font-bold mb-4">
+                No Credit Card Required • Cancel Anytime
+              </p>
               <p className="text-xl text-gray-300 max-w-3xl mx-auto">
                 Choose the plan that fits your business. All plans include our v8.9 AI features.
               </p>
@@ -471,7 +498,7 @@ export default function HomePage() {
                   "AI learning system",
                   "3 headline options"
                 ]}
-                buttonText="Start Free Trial"
+                buttonText="Try Free - No Card Required"
                 onButtonClick={() => handleSignUp('SocialEcho_Starter')}
                 gradient="purple"
                 delay={0.2}
@@ -495,7 +522,7 @@ export default function HomePage() {
                     "Content Mix Planner",
                     "Priority AI learning"
                   ]}
-                  buttonText="Get Started"
+                  buttonText="Try Free - No Card Required"
                   onButtonClick={() => handleSignUp('SocialEcho_Pro')}
                   gradient="blue"
                   delay={0.4}
@@ -521,7 +548,7 @@ export default function HomePage() {
                     "Priority AI learning",
                     "Planner & scheduling tools"
                   ]}
-                  buttonText="Get Started"
+                  buttonText="Try Free - No Card Required"
                   onButtonClick={() => handleSignUp('SocialEcho_Ultimate')}
                   gradient="pink"
                   delay={0.6}

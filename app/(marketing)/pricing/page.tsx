@@ -21,10 +21,13 @@ export default function PricingPage() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Choose Your Plan
+            Start Your Free Trial
           </h1>
+          <p className="text-2xl font-bold text-green-600 mb-3">
+            No Credit Card Required • No Bank Details • Cancel Anytime
+          </p>
           <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto">
-            Select the perfect plan for your content needs
+            Choose your plan and start generating professional social media posts in minutes
           </p>
         </div>
 
@@ -113,7 +116,7 @@ export default function PricingPage() {
                 onClick={() => handleSelectPlan('SocialEcho_Pro', 'Pro', 49.99)}
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3.5 px-6 rounded-lg transition-all shadow-md hover:shadow-lg text-base"
               >
-                Get Started
+                Try Free - No Card Required
               </button>
             </div>
 
@@ -162,7 +165,7 @@ export default function PricingPage() {
                 onClick={() => handleSelectPlan('SocialEcho_Ultimate', 'Ultimate', 179)}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3.5 px-6 rounded-lg transition-all shadow-md hover:shadow-lg text-base"
               >
-                Get Started
+                Try Free - No Card Required
               </button>
             </div>
           </div>
