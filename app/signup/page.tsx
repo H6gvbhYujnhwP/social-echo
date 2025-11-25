@@ -99,40 +99,8 @@ function SignUpForm() {
         throw new Error('Account created but sign-in failed. Please sign in manually.')
       }
 
-      // Step 3: Redirect based on plan
-      if (plan) {
-        const isStarterPlan = plan.toLowerCase().includes('starter');
-        
-        if (isStarterPlan) {
-          // Starter plan gets free trial - skip payment, go to training
-          router.push('/train?welcome=1')
-          return
-        }
-        
-        // For Pro and Ultimate plans, redirect to Stripe Checkout
-        const checkoutRes = await fetch('/api/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            planKey: plan,
-            withTrial: false // No Stripe trial for Pro/Ultimate
-          })
-        })
-
-        const checkoutData = await checkoutRes.json()
-
-        if (!checkoutRes.ok || checkoutData.error) {
-          throw new Error(checkoutData.error || 'Failed to create checkout session')
-        }
-
-        // Redirect to Stripe Checkout
-        if (checkoutData.url) {
-          window.location.href = checkoutData.url
-          return
-        }
-      }
-
-      // No plan selected, redirect to training
+      // Step 3: All plans get free trial - redirect to training
+      // Users will be prompted to upgrade after using their 8 free posts
       router.push('/train?welcome=1')
     } catch (err: any) {
       setError(err.message || 'Failed to create account')
@@ -152,25 +120,19 @@ function SignUpForm() {
         <div className="bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-3xl font-bold text-blue-600 mb-2">SOCIAL ECHO</h1>
-          <p className="text-gray-800 text-base md:text-base">Create your account</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Start Your Free Trial</h2>
+          <p className="text-lg text-green-600 font-semibold mb-1">Cancel Anytime - No Credit Card Required</p>
+          <p className="text-gray-700 text-sm">You'll be amazed at what Social Echo can do for you</p>
           {plan && (
-            <div className={`mt-3 p-3 rounded-md ${
-              plan.toLowerCase().includes('starter')
-                ? 'bg-green-50 border border-green-200'
-                : 'bg-blue-50 border border-blue-200'
-            }`}>
-              <p className={`text-sm font-semibold ${
-                plan.toLowerCase().includes('starter') ? 'text-green-800' : 'text-blue-800'
-              }`}>
+            <div className="mt-4 p-4 rounded-lg bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300">
+              <p className="text-base font-bold text-gray-900 mb-1">
                 Selected Plan: {plan.replace('SocialEcho_', '').replace('_', ' ')}
               </p>
-              <p className={`text-xs mt-1 ${
-                plan.toLowerCase().includes('starter') ? 'text-green-600' : 'text-blue-600'
-              }`}>
-              {plan.toLowerCase().includes('starter')
-                ? '🎉 Free Trial - 8 posts, no bank details required'
-                : 'You\'ll be redirected to payment after signup'
-              }
+              <p className="text-sm text-green-700 font-semibold">
+                🎉 Start with 8 FREE posts - no credit card required!
+              </p>
+              <p className="text-xs text-gray-600 mt-1">
+                Try the full platform risk-free, then choose to continue
               </p>
             </div>
           )}
